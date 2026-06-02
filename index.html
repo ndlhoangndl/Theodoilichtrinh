@@ -9,241 +9,566 @@
 </head>
 <body>
 
-<div id="app" class="fade-in">
-  <!-- Header -->
-  <header class="app-header">
-    <div class="brand">
+<!-- Authentication view (Login / Register full page) -->
+<div id="auth-container" class="fade-in">
+  <div class="auth-card">
+    <div class="auth-brand">
       <span>📅</span>
-      <h1>Lịch Trình</h1>
-      <span class="text-xs text-muted font-bold" id="current-month-display">- JANUARY 2026 -</span>
+      <h2>Lịch Trình Tracker</h2>
+      <p data-i18n="auth_subtitle">Quản lý thói quen & Nhìn nhận bản thân mỗi ngày</p>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-icon" id="btn-prev-month" title="Tháng trước">◀</button>
-      <button class="btn btn-icon" id="btn-next-month" title="Tháng sau">▶</button>
-      <button class="btn btn-primary" id="btn-manage-habits">
-        ⚙️ Quản lý thói quen
-      </button>
-      <button class="btn" id="btn-seed-data" title="Nạp dữ liệu mẫu để hiển thị biểu đồ đẹp hơn">
-        💡 Dữ liệu mẫu
-      </button>
-      <button class="btn btn-danger" id="btn-reset-data" title="Xóa toàn bộ dữ liệu">
-        🗑️ Xóa dữ liệu
-      </button>
-    </div>
-  </header>
 
-  <!-- Widgets row (Top row) -->
-  <section class="widgets-row">
-    <!-- Calendar Settings -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>Cài đặt lịch</span>
-      </div>
-      <div class="panel-content calendar-settings-content">
-        <div class="setting-group">
-          <label for="select-year">Năm</label>
-          <select id="select-year">
-            <option value="2025">2025</option>
-            <option value="2026" selected>2026</option>
-            <option value="2027">2027</option>
-            <option value="2028">2028</option>
-          </select>
+    <!-- Login Form View -->
+    <div id="auth-login-view">
+      <h3 class="auth-title" data-i18n="login_title">Đăng Nhập</h3>
+      <form id="form-login">
+        <div class="form-group">
+          <label for="login-username" data-i18n="username">Tên đăng nhập</label>
+          <input type="text" id="login-username" class="form-control" placeholder="Nhập tài khoản..." data-i18n-placeholder="login_username_placeholder" required autocomplete="username">
         </div>
-        <div class="setting-group">
-          <label for="select-month">Tháng</label>
-          <select id="select-month">
-            <option value="0">Tháng 1</option>
-            <option value="1">Tháng 2</option>
-            <option value="2">Tháng 3</option>
-            <option value="3">Tháng 4</option>
-            <option value="4">Tháng 5</option>
-            <option value="5">Tháng 6</option>
-            <option value="6">Tháng 7</option>
-            <option value="7">Tháng 8</option>
-            <option value="8">Tháng 9</option>
-            <option value="9">Tháng 10</option>
-            <option value="10">Tháng 11</option>
-            <option value="11">Tháng 12</option>
-          </select>
+        <div class="form-group">
+          <label for="login-password" data-i18n="password">Mật khẩu</label>
+          <input type="password" id="login-password" class="form-control" placeholder="Nhập mật khẩu..." data-i18n-placeholder="login_password_placeholder" required autocomplete="current-password">
         </div>
+        <div id="login-error" class="auth-error-msg" style="display: none;"></div>
+        <button type="submit" class="btn btn-primary auth-submit-btn" data-i18n="login_submit">Đăng nhập</button>
+      </form>
+      <div class="auth-toggle-link" id="login-toggle-container">
+        Chưa có tài khoản? <a href="#" id="btn-goto-register">Đăng ký ngay</a>
       </div>
     </div>
 
-    <!-- Daily Progress Chart -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>Tiến độ hàng ngày</span>
-      </div>
-      <div class="panel-content">
-        <div class="chart-container" id="daily-progress-container">
-          <svg class="chart-svg" id="daily-progress-svg"></svg>
+    <!-- Register Form View -->
+    <div id="auth-register-view" style="display: none;">
+      <h3 class="auth-title" data-i18n="register_title">Đăng Ký Tài Khoản</h3>
+      <form id="form-register">
+        <div class="form-group">
+          <label for="register-username" data-i18n="username">Tên đăng nhập</label>
+          <input type="text" id="register-username" class="form-control" placeholder="Viết liền không dấu..." data-i18n-placeholder="register_username_placeholder" required autocomplete="username">
         </div>
-      </div>
-    </div>
-
-    <!-- Weekly Progress Chart -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>Tiến độ hàng tuần</span>
-      </div>
-      <div class="panel-content">
-        <div class="chart-container" id="weekly-progress-container">
-          <svg class="chart-svg" id="weekly-progress-svg"></svg>
+        <div class="form-group">
+          <label for="register-fullname" data-i18n="fullname">Họ và tên</label>
+          <input type="text" id="register-fullname" class="form-control" placeholder="Nhập họ và tên đầy đủ..." data-i18n-placeholder="register_fullname_placeholder" required>
         </div>
-      </div>
-    </div>
-
-    <!-- Goal stats values -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>Thống kê mục tiêu</span>
-      </div>
-      <div class="panel-content">
-        <div class="stats-summary">
-          <div class="stat-item">
-            <span class="stat-label">Mục tiêu tổng:</span>
-            <span class="stat-value" id="stat-goal">0</span>
+        <div class="form-group">
+          <label for="register-email" data-i18n="email">Địa chỉ Email</label>
+          <input type="email" id="register-email" class="form-control" placeholder="vi-du@email.com..." data-i18n-placeholder="register_email_placeholder" required autocomplete="email">
+        </div>
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <div style="flex: 1;">
+            <label for="register-gender" style="display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;" data-i18n="gender">Giới tính</label>
+            <select id="register-gender" class="form-control" required style="cursor:pointer; height:38px;">
+              <option value="male" data-i18n="gender_male">Nam</option>
+              <option value="female" data-i18n="gender_female">Nữ</option>
+              <option value="other" data-i18n="gender_other">Khác</option>
+            </select>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">Hoàn thành:</span>
-            <span class="stat-value" id="stat-completed" style="color: var(--accent-green)">0</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">Còn lại:</span>
-            <span class="stat-value" id="stat-left" style="color: var(--accent-orange)">0</span>
+          <div style="flex: 1;">
+            <label for="register-dob" style="display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;" data-i18n="dob">Ngày sinh</label>
+            <input type="date" id="register-dob" class="form-control" required style="height:38px;">
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Overall Stats Donut Chart -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>Tổng quan</span>
-      </div>
-      <div class="panel-content">
-        <div class="chart-container" id="overall-stats-container">
-          <svg class="chart-svg" id="overall-stats-svg"></svg>
+        <div class="form-group">
+          <label for="register-password" data-i18n="password">Mật khẩu</label>
+          <input type="password" id="register-password" class="form-control" placeholder="Mật khẩu bảo mật..." data-i18n-placeholder="register_password_placeholder" required autocomplete="new-password">
         </div>
+        <div class="form-group">
+          <label for="register-confirm-password" data-i18n="confirm_password">Xác nhận mật khẩu</label>
+          <input type="password" id="register-confirm-password" class="form-control" placeholder="Nhập lại mật khẩu..." data-i18n-placeholder="register_confirm_password_placeholder" required autocomplete="new-password">
+        </div>
+        <div id="register-error" class="auth-error-msg" style="display: none;"></div>
+        <button type="submit" class="btn btn-primary auth-submit-btn" data-i18n="register_submit">Đăng ký tài khoản</button>
+      </form>
+      <div class="auth-toggle-link" id="register-toggle-container">
+        Đã có tài khoản? <a href="#" id="btn-goto-login">Đăng nhập</a>
       </div>
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- Dashboard layout -->
-  <section class="dashboard-grid">
-    <!-- Main Column: Tracker Sheet & Line Chart -->
-    <div class="main-column">
-      <!-- Habit sheet grid -->
+<!-- Main Tracker Dashboard Container (Hidden until logged in) -->
+<div id="dashboard-container" style="display: none;">
+  <div id="app" class="fade-in">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand" style="flex-shrink: 0;">
+        <span>📅</span>
+        <h1 style="display: inline-flex; align-items: center; gap: 8px;">
+          <span data-i18n="app_title">Lịch Trình</span> 
+          <span id="current-month-display" class="text-xs text-muted font-bold">- JANUARY 2026 -</span>
+        </h1>
+      </div>
+      
+      <!-- Sub-tabs for Tracker and Profile views -->
+      <div class="header-tabs" style="display: flex; gap: 8px; margin-left: 20px; flex: 1;">
+        <button class="btn tab-btn active" id="tab-tracker" data-i18n="tab_tracker" style="padding: 6px 12px; font-size: 13px;">📅 Lịch Trình</button>
+        <button class="btn tab-btn" id="tab-profile" data-i18n="tab_profile" style="padding: 6px 12px; font-size: 13px;">👤 Cá Nhân</button>
+      </div>
+      
+      <div class="header-actions">
+        <!-- User Greeting and Logout -->
+        <div class="user-greeting-box">
+          <span style="font-size:13px; font-weight:600;"><span id="greeting-label-prefix">Xin chào,</span> <span id="user-display-name">Thành viên</span> 👋</span>
+        </div>
+
+        <button class="btn btn-icon" id="btn-prev-month" title="Tháng trước" data-i18n-title="prev_month">◀</button>
+        <button class="btn btn-icon" id="btn-next-month" title="Tháng sau" data-i18n-title="next_month">▶</button>
+        
+        <!-- Language Selector -->
+        <select id="select-lang" class="btn" title="Chọn ngôn ngữ / Select Language" style="padding: 6px 10px; font-size:13px; font-weight:600;">
+          <option value="vi">🇻🇳 Tiếng Việt</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+
+        <button class="btn" id="btn-toggle-theme" title="Chuyển đổi giao diện sáng/tối" data-i18n-title="btn_theme_title" data-i18n="btn_theme">☕ Giao diện</button>
+        <button class="btn" id="btn-backup-json" title="Tải file sao lưu dữ liệu (.json)" data-i18n-title="btn_backup_title" data-i18n="btn_backup">💾 Sao lưu</button>
+        <button class="btn" id="btn-restore-json" title="Nhập dữ liệu từ file sao lưu (.json)" data-i18n-title="btn_restore_title" data-i18n="btn_restore">📂 Khôi phục</button>
+        <input type="file" id="input-restore-file" accept=".json" style="display: none;">
+        <button class="btn btn-primary" id="btn-manage-habits" data-i18n="btn_manage">⚙️ Cấu hình</button>
+        <button class="btn btn-danger" id="btn-reset-data" title="Xóa dữ liệu thói quen của tháng hiện tại" data-i18n-title="btn_reset_title" data-i18n="btn_reset">🗑️ Xóa</button>
+        <button class="btn btn-danger" id="btn-logout" title="Đăng xuất khỏi tài khoản" data-i18n-title="btn_logout_title" data-i18n="btn_logout">🚪 Đăng xuất</button>
+      </div>
+    </header>
+
+    <div id="view-tracker" class="tab-view active" style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- Widgets row (Top row) -->
+    <section class="widgets-row">
+      <!-- Calendar Settings -->
       <div class="panel">
         <div class="panel-header">
-          <span>Bảng Theo Dõi Thói Quen (Lịch Trình Chi Tiết)</span>
+          <span data-i18n="panel_calendar_settings">Cài đặt lịch</span>
         </div>
-        <div class="panel-content" style="padding: 0;">
-          <div class="spreadsheet-container">
-            <table class="sheet-table">
+        <div class="panel-content calendar-settings-content">
+          <div class="setting-group">
+            <label for="select-year" data-i18n="label_year">Năm</label>
+            <select id="select-year">
+              <option value="2025">2025</option>
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <label for="select-month" data-i18n="label_month">Tháng</label>
+            <select id="select-month">
+              <option value="0">Tháng 1</option>
+              <option value="1">Tháng 2</option>
+              <option value="2">Tháng 3</option>
+              <option value="3">Tháng 4</option>
+              <option value="4">Tháng 5</option>
+              <option value="5">Tháng 6</option>
+              <option value="6">Tháng 7</option>
+              <option value="7">Tháng 8</option>
+              <option value="8">Tháng 9</option>
+              <option value="9">Tháng 10</option>
+              <option value="10">Tháng 11</option>
+              <option value="11">Tháng 12</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Progress Chart -->
+      <div class="panel">
+        <div class="panel-header">
+          <span data-i18n="panel_daily_progress">Tiến độ hàng ngày</span>
+        </div>
+        <div class="panel-content">
+          <div class="chart-container" id="daily-progress-container">
+            <svg class="chart-svg" id="daily-progress-svg"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Weekly Progress Chart -->
+      <div class="panel">
+        <div class="panel-header">
+          <span data-i18n="panel_weekly_progress">Tiến độ hàng tuần</span>
+        </div>
+        <div class="panel-content">
+          <div class="chart-container" id="weekly-progress-container">
+            <svg class="chart-svg" id="weekly-progress-svg"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goal stats values -->
+      <div class="panel">
+        <div class="panel-header">
+          <span data-i18n="panel_goals_stats">Thống kê mục tiêu</span>
+        </div>
+        <div class="panel-content">
+          <div class="stats-summary">
+            <div class="stat-item">
+              <span class="stat-label" data-i18n="stat_label_goal">Mục tiêu tổng:</span>
+              <span class="stat-value" id="stat-goal">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label" data-i18n="stat_label_completed">Hoàn thành:</span>
+              <span class="stat-value" id="stat-completed" style="color: var(--accent-green)">0</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label" data-i18n="stat_label_left">Còn lại:</span>
+              <span class="stat-value" id="stat-left" style="color: var(--accent-orange)">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall Stats Donut Chart -->
+      <div class="panel">
+        <div class="panel-header">
+          <span data-i18n="panel_overall_stats">Tổng quan</span>
+        </div>
+        <div class="panel-content">
+          <div class="chart-container" id="overall-stats-container">
+            <svg class="chart-svg" id="overall-stats-svg"></svg>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard layout -->
+    <section class="dashboard-grid">
+      <!-- Main Column: Tracker Sheet & Line Chart & Diary -->
+      <div class="main-column">
+        <!-- Habit sheet grid -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_spreadsheet">Bảng Theo Dõi Thói Quen (Lịch Trình Chi Tiết)</span>
+          </div>
+          <div class="panel-content" style="padding: 0;">
+            <div class="spreadsheet-container">
+              <table class="sheet-table">
+                <thead>
+                  <tr id="habit-grid-week-header">
+                    <!-- Generated by JS -->
+                  </tr>
+                  <tr id="habit-grid-header">
+                    <!-- Generated by JS -->
+                  </tr>
+                </thead>
+                <tbody id="habit-grid-body">
+                  <!-- Generated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mood & Motivation correlation line chart -->
+        <div class="panel trend-panel">
+          <div class="panel-header">
+            <span data-i18n="panel_trend">Biểu Đồ Xu Hướng Trạng Thế Tinh Thần (Mood & Motivation)</span>
+          </div>
+          <div class="panel-content">
+            <div class="trend-chart-container">
+              <svg class="chart-svg" id="trend-chart-svg"></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Daily Journal Reflections -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_journal">Nhật Ký Suy Nghĩ Hàng Ngày (Daily Reflections)</span>
+          </div>
+          <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <label for="select-journal-day" data-i18n="label_journal_day" style="font-size:13px; font-weight:600; color:var(--text-muted);">Xem ngày:</label>
+                <select id="select-journal-day" style="font-family:var(--font-body); font-size:13px; padding:4px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color-dark); background-color:var(--bg-panel); color:var(--text-main); outline:none; cursor:pointer;">
+                  <!-- Options filled by JS -->
+                </select>
+              </div>
+              <span id="journal-save-status" style="font-size:11px; color:var(--accent-green); font-weight:600; display:none; transition: all 0.2s;">✓ Đã lưu tự động</span>
+            </div>
+            <textarea id="textarea-journal" class="form-control" rows="4" placeholder="Hôm nay lịch trình của bạn thế nào?..." data-i18n-placeholder="journal_placeholder" style="resize:vertical; min-height:80px; font-family:var(--font-body); font-size:14px; line-height:1.6;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Column: Analysis Table & Leaderboard & Goals -->
+      <div class="sidebar-column">
+        <!-- Analysis Table -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_analysis">Phân tích chi tiết</span>
+          </div>
+          <div class="panel-content" style="padding: 0;">
+            <table class="analysis-table">
               <thead>
-                <!-- Weeks group header row -->
-                <tr id="habit-grid-week-header">
-                  <!-- Generated by JS -->
-                </tr>
-                <!-- Days header row (Mon, Tue / 1, 2, 3...) -->
-                <tr id="habit-grid-header">
-                  <!-- Generated by JS -->
+                <tr>
+                  <th class="col-align-left" data-i18n="th_habit">Thói quen</th>
+                  <th data-i18n="th_goal">Mục tiêu</th>
+                  <th data-i18n="th_actual">Đạt</th>
+                  <th data-i18n="th_left">Còn</th>
+                  <th data-i18n="th_streak">Chuỗi 🔥</th>
+                  <th class="col-progress-bar-cell" data-i18n="th_progress">Tiến độ</th>
+                  <th>%</th>
                 </tr>
               </thead>
-              <tbody id="habit-grid-body">
+              <tbody id="analysis-table-body">
                 <!-- Generated by JS -->
               </tbody>
             </table>
           </div>
         </div>
-      </div>
 
-      <!-- Mood & Motivation correlation line chart -->
-      <div class="panel trend-panel">
-        <div class="panel-header">
-          <span>Biểu Đồ Xu Hướng Trạng Thái Tinh Thần (Mood & Motivation)</span>
-        </div>
-        <div class="panel-content">
-          <div class="trend-chart-container">
-            <svg class="chart-svg" id="trend-chart-svg"></svg>
+        <!-- Monthly Goals checklist -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_monthly_goals">Mục tiêu trong tháng</span>
+            <span id="goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Sidebar Column: Analysis Table & Leaderboard -->
-    <div class="sidebar-column">
-      <!-- Analysis Table -->
-      <div class="panel">
-        <div class="panel-header">
-          <span>Phân tích chi tiết</span>
-        </div>
-        <div class="panel-content" style="padding: 0;">
-          <table class="analysis-table">
-            <thead>
-              <tr>
-                <th class="col-align-left">Thói quen</th>
-                <th>Mục tiêu</th>
-                <th>Đạt</th>
-                <th>Còn</th>
-                <th class="col-progress-bar-cell">Tiến độ</th>
-                <th>%</th>
-              </tr>
-            </thead>
-            <tbody id="analysis-table-body">
+          <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Form to add goal -->
+            <form id="form-add-goal" style="display:flex; gap:6px;">
+              <input type="text" id="input-new-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tháng..." data-i18n-placeholder="goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
+              <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
+            </form>
+            <!-- Goals List container -->
+            <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
               <!-- Generated by JS -->
-            </tbody>
-          </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top 10 Daily Habit -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_leaderboard">Top Thói Quen Hàng Đầu</span>
+          </div>
+          <div class="panel-content">
+            <div class="leaderboard-list" id="leaderboard-list">
+              <!-- Generated by JS -->
+            </div>
+          </div>
         </div>
       </div>
+    </section>
+    </div> <!-- Close view-tracker -->
 
-      <!-- Top 10 Daily Habit -->
-      <div class="panel">
-        <div class="panel-header">
-          <span>Top Thói Quen Hàng Đầu</span>
+    <div id="view-profile" class="tab-view" style="display: none;">
+      <div class="profile-layout fade-in">
+        <!-- Top Row: Account Card & Profile Actions Card -->
+        <div class="profile-top-row">
+          <!-- Left side: Account Banner Card -->
+          <div class="panel profile-panel-left">
+            <div class="panel-header">
+              <span data-i18n="profile_title_banner">Trạng thái tài khoản</span>
+            </div>
+            <div class="panel-content profile-banner-content">
+              <div class="profile-avatar-frame">
+                <span id="profile-avatar-display">👤</span>
+              </div>
+              <div class="profile-meta-info">
+                <span class="profile-badge-tag">USER ACCOUNT</span>
+                <h2 id="profile-fullname-display" class="profile-large-name">Nguyễn Đăng Lê Hoàng</h2>
+                <p class="profile-handles">
+                  <span id="profile-username-handle">@ndlhoangndl</span> • <span id="profile-email-handle">ndlhoangndl@gmail.com</span>
+                </p>
+                <div class="profile-bio-box">
+                  <p id="profile-bio-display">Đây là không gian dành riêng cho bạn. Nơi lưu giữ những thông tin cá nhân cơ bản và định hình trải nghiệm lịch trình của bạn.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right side: Custom Actions Card -->
+          <div class="panel profile-panel-right">
+            <div class="panel-header">
+              <span data-i18n="profile_title_settings">Settings & Actions</span>
+            </div>
+            <div class="panel-content profile-actions-content">
+              <h3 class="profile-settings-title" data-i18n="profile_custom_title">Tuỳ chỉnh hồ sơ</h3>
+              <div class="profile-buttons-list">
+                <button class="btn btn-profile-action" id="btn-edit-profile-trigger">
+                  <span>📝</span> <span data-i18n="profile_btn_update_info">Cập nhật thông tin cơ bản</span>
+                </button>
+                <button class="btn btn-profile-action" id="btn-edit-password-trigger">
+                  <span>🔑</span> <span data-i18n="profile_btn_change_password">Đổi mật khẩu</span>
+                </button>
+                <button class="btn btn-profile-action btn-danger-action" id="btn-profile-logout">
+                  <span>🚪</span> <span data-i18n="profile_btn_logout">Đăng xuất khỏi hệ thống</span>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="panel-content">
-          <div class="leaderboard-list" id="leaderboard-list">
-            <!-- Generated by JS -->
+
+        <!-- Bottom Row: Overview Cards Grid -->
+        <div class="profile-overview-section">
+          <h4 class="profile-overview-title" data-i18n="profile_overview_details">Overview Details</h4>
+          <div class="profile-grid">
+            <!-- Card 1: Account -->
+            <div class="profile-grid-card">
+              <div class="profile-card-header">
+                <span>👤</span> <span data-i18n="profile_card_account">ACCOUNT</span>
+              </div>
+              <div class="profile-card-value" id="profile-card-val-username">ndlhoangndl</div>
+            </div>
+            <!-- Card 2: Email -->
+            <div class="profile-grid-card">
+              <div class="profile-card-header">
+                <span>✉️</span> <span data-i18n="profile_card_email">EMAIL</span>
+              </div>
+              <div class="profile-card-value" id="profile-card-val-email">ndlhoangndl@gmail.com</div>
+            </div>
+            <!-- Card 3: Gender -->
+            <div class="profile-grid-card">
+              <div class="profile-card-header">
+                <span>💚</span> <span data-i18n="profile_card_gender">GIỚI TÍNH</span>
+              </div>
+              <div class="profile-card-value" id="profile-card-val-gender">Nam</div>
+            </div>
+            <!-- Card 4: Country -->
+            <div class="profile-grid-card">
+              <div class="profile-card-header">
+                <span>🌐</span> <span data-i18n="profile_card_country">QUỐC GIA</span>
+              </div>
+              <div class="profile-card-value" id="profile-card-val-country">Vietnam</div>
+            </div>
+            <!-- Card 5: Day of Birth -->
+            <div class="profile-grid-card">
+              <div class="profile-card-header">
+                <span>📅</span> <span data-i18n="profile_card_dob">NGÀY SINH</span>
+              </div>
+              <div class="profile-card-value" id="profile-card-val-dob">1998-05-15</div>
+            </div>
+            <!-- Card 6: Role -->
+            <div class="profile-grid-card">
+              <div class="profile-card-header">
+                <span>🛡️</span> <span data-i18n="profile_card_role">VAI TRÒ HỆ THỐNG</span>
+              </div>
+              <div class="profile-card-value" id="profile-card-val-role">USER</div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </div>
 
 <!-- Modal: Quản lý thói quen -->
 <div class="modal" id="modal-manage-habits">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Quản lý thói quen</h3>
+      <h3 data-i18n="modal_manage_title">Quản lý thói quen</h3>
       <button class="btn btn-icon" id="modal-close-btn" style="border:none; background:transparent; font-size:16px;">✕</button>
     </div>
     <div class="modal-body">
-      <!-- Add new habit form -->
       <form id="form-add-habit">
         <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 16px;">
           <div style="width: 70px;">
-            <label for="input-new-habit-emoji" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;">Icon/Emoji</label>
+            <label for="input-new-habit-emoji" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;" data-i18n="modal_label_emoji">Icon/Emoji</label>
             <input type="text" class="form-control" id="input-new-habit-emoji" placeholder="🎯" value="🎯" maxlength="4" style="text-align: center;">
           </div>
           <div style="flex: 1;">
-            <label for="input-new-habit-name" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;">Tên thói quen mới</label>
-            <input type="text" class="form-control" id="input-new-habit-name" placeholder="Ví dụ: Đọc sách 30 phút..." required>
+            <label for="input-new-habit-name" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;" data-i18n="modal_label_name">Tên thói quen mới</label>
+            <input type="text" class="form-control" id="input-new-habit-name" placeholder="Ví dụ: Đọc sách 30 phút..." data-i18n-placeholder="modal_input_placeholder" required>
           </div>
-          <button type="submit" class="btn btn-primary" style="height: 38px;">Thêm</button>
+          <button type="submit" class="btn btn-primary" style="height: 38px;" data-i18n="modal_btn_add">Thêm</button>
         </div>
       </form>
 
       <!-- Habit list editor (Reorder/Edit/Delete) -->
-      <label style="font-size: 13px; font-weight:600; color:var(--text-muted);">Danh sách hiện có (Có thể sắp xếp & chỉnh sửa):</label>
+      <label style="font-size: 13px; font-weight:600; color:var(--text-muted);" data-i18n="modal_list_label">Danh sách hiện có (Có thể sắp xếp & chỉnh sửa):</label>
       <div class="modal-habit-list" id="modal-habit-list-container">
         <!-- Generated by JS -->
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-primary" id="modal-save-btn">Lưu cấu hình</button>
+      <button class="btn btn-primary" id="modal-save-btn" data-i18n="modal_btn_save">Lưu cấu hình</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Xác nhận / Confirm (Giữa màn hình) -->
+<div class="modal" id="modal-confirm" style="z-index: 1100;">
+  <div class="modal-content" style="max-width: 400px; text-align: center;">
+    <div class="modal-header" style="justify-content: center;">
+      <h3 id="confirm-title" data-i18n="modal_confirm_title">Xác nhận</h3>
+    </div>
+    <div class="modal-body" style="padding: 24px 20px;">
+      <p id="confirm-message" style="font-size: 14px; font-weight: 500; line-height: 1.6; color: var(--text-main);"></p>
+    </div>
+    <div class="modal-footer" style="justify-content: center; gap: 16px; padding: 12px 24px;">
+      <button class="btn" id="confirm-btn-no" style="min-width: 100px;">Không</button>
+      <button class="btn btn-primary" id="confirm-btn-yes" style="min-width: 100px; background-color: #a94442; border-color: #903a3a; color: white;">Có</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Cập nhật thông tin cơ bản -->
+<div class="modal" id="modal-edit-profile">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3 data-i18n="modal_edit_profile_title">Cập nhật thông tin cá nhân</h3>
+      <button class="btn btn-icon modal-close-trigger" style="border:none; background:transparent; font-size:16px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-edit-profile">
+        <div class="form-group">
+          <label for="edit-profile-fullname" data-i18n="fullname">Họ và tên</label>
+          <input type="text" id="edit-profile-fullname" class="form-control" required autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="edit-profile-email" data-i18n="email">Địa chỉ Email</label>
+          <input type="email" id="edit-profile-email" class="form-control" required autocomplete="email">
+        </div>
+        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+          <div style="flex: 1;">
+            <label for="edit-profile-gender" style="display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;" data-i18n="gender">Giới tính</label>
+            <select id="edit-profile-gender" class="form-control" style="cursor:pointer; height:38px;">
+              <option value="male" data-i18n="gender_male">Nam</option>
+              <option value="female" data-i18n="gender_female">Nữ</option>
+              <option value="other" data-i18n="gender_other">Khác</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label for="edit-profile-dob" style="display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;" data-i18n="dob">Ngày sinh</label>
+            <input type="date" id="edit-profile-dob" class="form-control" style="height:38px;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="edit-profile-country" data-i18n="profile_card_country">Quốc gia</label>
+          <input type="text" id="edit-profile-country" class="form-control" autocomplete="country">
+        </div>
+        <div class="form-group">
+          <label for="edit-profile-bio" data-i18n="profile_label_bio">Giới thiệu bản thân (Bio)</label>
+          <textarea id="edit-profile-bio" class="form-control" rows="3" style="resize: vertical; font-family:var(--font-body); font-size:13px;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; height:38px; margin-top:8px;" data-i18n="modal_btn_save">Lưu thay đổi</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Đổi mật khẩu -->
+<div class="modal" id="modal-edit-password">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3 data-i18n="modal_edit_password_title">Đổi mật khẩu bảo mật</h3>
+      <button class="btn btn-icon modal-close-trigger" style="border:none; background:transparent; font-size:16px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="form-edit-password">
+        <div class="form-group">
+          <label for="edit-password-old" data-i18n="password_old">Mật khẩu cũ</label>
+          <input type="password" id="edit-password-old" class="form-control" placeholder="Nhập mật khẩu hiện tại..." data-i18n-placeholder="password_old_placeholder" required autocomplete="current-password">
+        </div>
+        <div class="form-group">
+          <label for="edit-password-new" data-i18n="password_new">Mật khẩu mới</label>
+          <input type="password" id="edit-password-new" class="form-control" placeholder="Nhập mật khẩu mới..." data-i18n-placeholder="password_new_placeholder" required autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label for="edit-password-confirm" data-i18n="confirm_password">Xác nhận mật khẩu mới</label>
+          <input type="password" id="edit-password-confirm" class="form-control" placeholder="Nhập lại mật khẩu mới..." data-i18n-placeholder="register_confirm_password_placeholder" required autocomplete="new-password">
+        </div>
+        <div id="edit-password-error" class="auth-error-msg" style="display: none;"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; height:38px; margin-top:8px;" data-i18n="modal_btn_save">Cập nhật mật khẩu</button>
+      </form>
     </div>
   </div>
 </div>
