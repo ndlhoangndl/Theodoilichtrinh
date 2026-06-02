@@ -28,7 +28,13 @@
         </div>
         <div class="form-group">
           <label for="login-password" data-i18n="password">Mật khẩu</label>
-          <input type="password" id="login-password" class="form-control" placeholder="Nhập mật khẩu..." data-i18n-placeholder="login_password_placeholder" required autocomplete="current-password">
+          <div class="password-input-container">
+            <input type="password" id="login-password" class="form-control" placeholder="Nhập mật khẩu..." data-i18n-placeholder="login_password_placeholder" required autocomplete="current-password">
+            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
         </div>
         <div id="login-error" class="auth-error-msg" style="display: none;"></div>
         <button type="submit" class="btn btn-primary auth-submit-btn" data-i18n="login_submit">Đăng nhập</button>
@@ -70,11 +76,23 @@
         </div>
         <div class="form-group">
           <label for="register-password" data-i18n="password">Mật khẩu</label>
-          <input type="password" id="register-password" class="form-control" placeholder="Mật khẩu bảo mật..." data-i18n-placeholder="register_password_placeholder" required autocomplete="new-password">
+          <div class="password-input-container">
+            <input type="password" id="register-password" class="form-control" placeholder="Mật khẩu bảo mật..." data-i18n-placeholder="register_password_placeholder" required autocomplete="new-password">
+            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
         </div>
         <div class="form-group">
           <label for="register-confirm-password" data-i18n="confirm_password">Xác nhận mật khẩu</label>
-          <input type="password" id="register-confirm-password" class="form-control" placeholder="Nhập lại mật khẩu..." data-i18n-placeholder="register_confirm_password_placeholder" required autocomplete="new-password">
+          <div class="password-input-container">
+            <input type="password" id="register-confirm-password" class="form-control" placeholder="Nhập lại mật khẩu..." data-i18n-placeholder="register_confirm_password_placeholder" required autocomplete="new-password">
+            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
         </div>
         <div id="register-error" class="auth-error-msg" style="display: none;"></div>
         <button type="submit" class="btn btn-primary auth-submit-btn" data-i18n="register_submit">Đăng ký tài khoản</button>
@@ -99,20 +117,14 @@
         </h1>
       </div>
       
-      <!-- Sub-tabs for Tracker and Profile views -->
-      <div class="header-tabs" style="display: flex; gap: 8px; margin-left: 20px; flex: 1;">
-        <button class="btn tab-btn active" id="tab-tracker" data-i18n="tab_tracker" style="padding: 6px 12px; font-size: 13px;">📅 Lịch Trình</button>
-        <button class="btn tab-btn" id="tab-profile" data-i18n="tab_profile" style="padding: 6px 12px; font-size: 13px;">👤 Cá Nhân</button>
-      </div>
+      <!-- Spacer for alignment -->
+      <div style="flex: 1;"></div>
       
       <div class="header-actions">
         <!-- User Greeting and Logout -->
         <div class="user-greeting-box">
           <span style="font-size:13px; font-weight:600;"><span id="greeting-label-prefix">Xin chào,</span> <span id="user-display-name">Thành viên</span> 👋</span>
         </div>
-
-        <button class="btn btn-icon" id="btn-prev-month" title="Tháng trước" data-i18n-title="prev_month">◀</button>
-        <button class="btn btn-icon" id="btn-next-month" title="Tháng sau" data-i18n-title="next_month">▶</button>
         
         <!-- Language Selector -->
         <select id="select-lang" class="btn" title="Chọn ngôn ngữ / Select Language" style="padding: 6px 10px; font-size:13px; font-weight:600;">
@@ -120,234 +132,261 @@
           <option value="en">🇬🇧 English</option>
         </select>
 
-        <button class="btn" id="btn-toggle-theme" title="Chuyển đổi giao diện sáng/tối" data-i18n-title="btn_theme_title" data-i18n="btn_theme">☕ Giao diện</button>
-        <button class="btn" id="btn-backup-json" title="Tải file sao lưu dữ liệu (.json)" data-i18n-title="btn_backup_title" data-i18n="btn_backup">💾 Sao lưu</button>
-        <button class="btn" id="btn-restore-json" title="Nhập dữ liệu từ file sao lưu (.json)" data-i18n-title="btn_restore_title" data-i18n="btn_restore">📂 Khôi phục</button>
+        <button class="btn" id="btn-toggle-theme" title="Chuyển đổi giao diện sáng/tối" data-i18n-title="btn_theme_title" data-i18n="btn_theme">☀️ Sáng (Cappuccino)</button>
+        
+        <!-- Actions Dropdown Menu -->
+        <div class="menu-dropdown" id="menu-dropdown">
+          <button class="btn" id="btn-menu-trigger" title="Chức năng mở rộng / Menu" style="padding: 6px 12px; font-size:13px; font-weight:600; display: flex; align-items: center; gap: 4px;">
+            🛠️ <span data-i18n="menu_trigger">Menu</span> ▾
+          </button>
+          <div class="menu-dropdown-content" id="menu-dropdown-content">
+            <button class="menu-item active" id="menu-tab-tracker" data-i18n="tab_tracker">📅 Lịch Trình</button>
+            <button class="menu-item" id="menu-tab-stats" data-i18n="tab_stats">📊 Thống Kê</button>
+            <button class="menu-item" id="menu-tab-profile" data-i18n="tab_profile">👤 Cá Nhân</button>
+            <div class="menu-divider"></div>
+            <button class="menu-item" id="btn-manage-habits" data-i18n="btn_manage">⚙️ Cấu hình</button>
+            <button class="menu-item" id="btn-backup-json" title="Tải file sao lưu dữ liệu (.json)" data-i18n-title="btn_backup_title" data-i18n="btn_backup">💾 Sao lưu</button>
+            <button class="menu-item" id="btn-restore-json" title="Nhập dữ liệu từ file sao lưu (.json)" data-i18n-title="btn_restore_title" data-i18n="btn_restore">📂 Khôi phục</button>
+            <div class="menu-divider"></div>
+            <button class="menu-item btn-danger-text" id="btn-reset-data" title="Xóa dữ liệu thói quen của tháng hiện tại" data-i18n-title="btn_reset_title" data-i18n="btn_reset">🗑️ Xóa</button>
+            <button class="menu-item btn-danger-text" id="btn-logout" title="Đăng xuất khỏi tài khoản" data-i18n-title="btn_logout_title" data-i18n="btn_logout">🚪 Đăng xuất</button>
+          </div>
+        </div>
+
         <input type="file" id="input-restore-file" accept=".json" style="display: none;">
-        <button class="btn btn-primary" id="btn-manage-habits" data-i18n="btn_manage">⚙️ Cấu hình</button>
-        <button class="btn btn-danger" id="btn-reset-data" title="Xóa dữ liệu thói quen của tháng hiện tại" data-i18n-title="btn_reset_title" data-i18n="btn_reset">🗑️ Xóa</button>
-        <button class="btn btn-danger" id="btn-logout" title="Đăng xuất khỏi tài khoản" data-i18n-title="btn_logout_title" data-i18n="btn_logout">🚪 Đăng xuất</button>
       </div>
     </header>
 
+    <!-- Main Tracker View Tab (Lịch Trình) -->
     <div id="view-tracker" class="tab-view active" style="display: flex; flex-direction: column; gap: 20px;">
-    <!-- Widgets row (Top row) -->
-    <section class="widgets-row">
-      <!-- Calendar Settings -->
-      <div class="panel">
-        <div class="panel-header">
-          <span data-i18n="panel_calendar_settings">Cài đặt lịch</span>
-        </div>
-        <div class="panel-content calendar-settings-content">
-          <div class="setting-group">
-            <label for="select-year" data-i18n="label_year">Năm</label>
-            <select id="select-year">
-              <option value="2025">2025</option>
-              <option value="2026" selected>2026</option>
-              <option value="2027">2027</option>
-              <option value="2028">2028</option>
-            </select>
-          </div>
-          <div class="setting-group">
-            <label for="select-month" data-i18n="label_month">Tháng</label>
-            <select id="select-month">
-              <option value="0">Tháng 1</option>
-              <option value="1">Tháng 2</option>
-              <option value="2">Tháng 3</option>
-              <option value="3">Tháng 4</option>
-              <option value="4">Tháng 5</option>
-              <option value="5">Tháng 6</option>
-              <option value="6">Tháng 7</option>
-              <option value="7">Tháng 8</option>
-              <option value="8">Tháng 9</option>
-              <option value="9">Tháng 10</option>
-              <option value="10">Tháng 11</option>
-              <option value="11">Tháng 12</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- Daily Progress Chart -->
-      <div class="panel">
-        <div class="panel-header">
-          <span data-i18n="panel_daily_progress">Tiến độ hàng ngày</span>
-        </div>
-        <div class="panel-content">
-          <div class="chart-container" id="daily-progress-container">
-            <svg class="chart-svg" id="daily-progress-svg"></svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Weekly Progress Chart -->
-      <div class="panel">
-        <div class="panel-header">
-          <span data-i18n="panel_weekly_progress">Tiến độ hàng tuần</span>
-        </div>
-        <div class="panel-content">
-          <div class="chart-container" id="weekly-progress-container">
-            <svg class="chart-svg" id="weekly-progress-svg"></svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- Goal stats values -->
-      <div class="panel">
-        <div class="panel-header">
-          <span data-i18n="panel_goals_stats">Thống kê mục tiêu</span>
-        </div>
-        <div class="panel-content">
-          <div class="stats-summary">
-            <div class="stat-item">
-              <span class="stat-label" data-i18n="stat_label_goal">Mục tiêu tổng:</span>
-              <span class="stat-value" id="stat-goal">0</span>
+      <section class="dashboard-grid">
+        <!-- Main Column: Habit Sheet & Reflections -->
+        <div class="main-column">
+          <!-- Habit sheet grid -->
+          <div class="panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
+              <span data-i18n="panel_spreadsheet">Bảng Theo Dõi Thói Quen (Lịch Trình Chi Tiết)</span>
+              
+              <!-- Compact Calendar Selectors -->
+              <div style="display: flex; gap: 12px; align-items: center; flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <label for="select-year" style="font-size: 12px; font-weight:600; color:var(--text-light); text-transform: uppercase;" data-i18n="label_year">Năm</label>
+                  <select id="select-year" style="font-size: 12px; padding: 4px 8px; border-radius: var(--radius-sm); border: none; background: rgba(255,255,255,0.2); color: var(--text-light); font-weight: 600; outline: none; cursor: pointer;">
+                    <option value="2025" style="color:var(--text-main); background:var(--bg-panel);">2025</option>
+                    <option value="2026" selected style="color:var(--text-main); background:var(--bg-panel);">2026</option>
+                    <option value="2027" style="color:var(--text-main); background:var(--bg-panel);">2027</option>
+                    <option value="2028" style="color:var(--text-main); background:var(--bg-panel);">2028</option>
+                  </select>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <label for="select-month" style="font-size: 12px; font-weight:600; color:var(--text-light); text-transform: uppercase;" data-i18n="label_month">Tháng</label>
+                  <select id="select-month" style="font-size: 12px; padding: 4px 8px; border-radius: var(--radius-sm); border: none; background: rgba(255,255,255,0.2); color: var(--text-light); font-weight: 600; outline: none; cursor: pointer;">
+                    <option value="0" style="color:var(--text-main); background:var(--bg-panel);">Tháng 1</option>
+                    <option value="1" style="color:var(--text-main); background:var(--bg-panel);">Tháng 2</option>
+                    <option value="2" style="color:var(--text-main); background:var(--bg-panel);">Tháng 3</option>
+                    <option value="3" style="color:var(--text-main); background:var(--bg-panel);">Tháng 4</option>
+                    <option value="4" style="color:var(--text-main); background:var(--bg-panel);">Tháng 5</option>
+                    <option value="5" style="color:var(--text-main); background:var(--bg-panel);">Tháng 6</option>
+                    <option value="6" style="color:var(--text-main); background:var(--bg-panel);">Tháng 7</option>
+                    <option value="7" style="color:var(--text-main); background:var(--bg-panel);">Tháng 8</option>
+                    <option value="8" style="color:var(--text-main); background:var(--bg-panel);">Tháng 9</option>
+                    <option value="9" style="color:var(--text-main); background:var(--bg-panel);">Tháng 10</option>
+                    <option value="10" style="color:var(--text-main); background:var(--bg-panel);">Tháng 11</option>
+                    <option value="11" style="color:var(--text-main); background:var(--bg-panel);">Tháng 12</option>
+                  </select>
+                </div>
+                
+                <!-- Quick Navigation Arrows -->
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <button type="button" class="btn btn-icon" id="btn-prev-month" title="Tháng trước" data-i18n-title="prev_month" style="padding: 4px; font-size: 11px; background: rgba(255,255,255,0.2) !important; border: none !important; color: var(--text-light) !important; cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; height: 24px; width: 24px;">◀</button>
+                  <button type="button" class="btn btn-icon" id="btn-next-month" title="Tháng sau" data-i18n-title="next_month" style="padding: 4px; font-size: 11px; background: rgba(255,255,255,0.2) !important; border: none !important; color: var(--text-light) !important; cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; height: 24px; width: 24px;">▶</button>
+                </div>
+              </div>
             </div>
-            <div class="stat-item">
-              <span class="stat-label" data-i18n="stat_label_completed">Hoàn thành:</span>
-              <span class="stat-value" id="stat-completed" style="color: var(--accent-green)">0</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label" data-i18n="stat_label_left">Còn lại:</span>
-              <span class="stat-value" id="stat-left" style="color: var(--accent-orange)">0</span>
+            <div class="panel-content" style="padding: 0;">
+              <div class="spreadsheet-container">
+                <table class="sheet-table">
+                  <thead>
+                    <tr id="habit-grid-week-header">
+                      <!-- Generated by JS -->
+                    </tr>
+                    <tr id="habit-grid-header">
+                      <!-- Generated by JS -->
+                    </tr>
+                  </thead>
+                  <tbody id="habit-grid-body">
+                    <!-- Generated by JS -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Overall Stats Donut Chart -->
-      <div class="panel">
-        <div class="panel-header">
-          <span data-i18n="panel_overall_stats">Tổng quan</span>
-        </div>
-        <div class="panel-content">
-          <div class="chart-container" id="overall-stats-container">
-            <svg class="chart-svg" id="overall-stats-svg"></svg>
+          <!-- Daily Journal Reflections -->
+          <div class="panel">
+            <div class="panel-header">
+              <span data-i18n="panel_journal">Nhật Ký Suy Nghĩ Hàng Ngày (Daily Reflections)</span>
+            </div>
+            <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <label for="select-journal-day" data-i18n="label_journal_day" style="font-size:13px; font-weight:600; color:var(--text-muted);">Xem ngày:</label>
+                  <select id="select-journal-day" style="font-family:var(--font-body); font-size:13px; padding:4px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color-dark); background-color:var(--bg-panel); color:var(--text-main); outline:none; cursor:pointer;">
+                    <!-- Options filled by JS -->
+                  </select>
+                </div>
+                <span id="journal-save-status" style="font-size:11px; color:var(--accent-green); font-weight:600; display:none; transition: all 0.2s;">✓ Đã lưu tự động</span>
+              </div>
+              <textarea id="textarea-journal" class="form-control" rows="4" placeholder="Hôm nay lịch trình của bạn thế nào?..." data-i18n-placeholder="journal_placeholder" style="resize:vertical; min-height:80px; font-family:var(--font-body); font-size:14px; line-height:1.6;"></textarea>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Dashboard layout -->
-    <section class="dashboard-grid">
-      <!-- Main Column: Tracker Sheet & Line Chart & Diary -->
-      <div class="main-column">
-        <!-- Habit sheet grid -->
+        <!-- Sidebar Column: Goals & Leaderboard -->
+        <div class="sidebar-column">
+          <!-- Monthly Goals checklist -->
+          <div class="panel">
+            <div class="panel-header">
+              <span data-i18n="panel_monthly_goals">Mục tiêu trong tháng</span>
+              <span id="goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
+            </div>
+            <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Form to add goal -->
+              <form id="form-add-goal" style="display:flex; gap:6px;">
+                <input type="text" id="input-new-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tháng..." data-i18n-placeholder="goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
+                <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
+              </form>
+              <!-- Goals List container -->
+              <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Top 10 Daily Habit -->
+          <div class="panel">
+            <div class="panel-header">
+              <span data-i18n="panel_leaderboard">Top Thói Quen Hàng Đầu</span>
+            </div>
+            <div class="panel-content">
+              <div class="leaderboard-list" id="leaderboard-list">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Statistics View Tab (Thống Kê) -->
+    <div id="view-stats" class="tab-view" style="display: none; flex-direction: column; gap: 20px;">
+      <!-- Widgets row (Top stats summary cards) -->
+      <section class="widgets-row">
+        <!-- Daily Progress Chart -->
         <div class="panel">
           <div class="panel-header">
-            <span data-i18n="panel_spreadsheet">Bảng Theo Dõi Thói Quen (Lịch Trình Chi Tiết)</span>
+            <span data-i18n="panel_daily_progress">Tiến độ hàng ngày</span>
           </div>
-          <div class="panel-content" style="padding: 0;">
-            <div class="spreadsheet-container">
-              <table class="sheet-table">
+          <div class="panel-content">
+            <div class="chart-container" id="daily-progress-container">
+              <svg class="chart-svg" id="daily-progress-svg"></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Progress Chart -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_weekly_progress">Tiến độ hàng tuần</span>
+          </div>
+          <div class="panel-content">
+            <div class="chart-container" id="weekly-progress-container">
+              <svg class="chart-svg" id="weekly-progress-svg"></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goal Stats summary -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_goals_stats">Thống kê mục tiêu</span>
+          </div>
+          <div class="panel-content">
+            <div class="stats-summary">
+              <div class="stat-item">
+                <span class="stat-label" data-i18n="stat_label_goal">Mục tiêu tổng:</span>
+                <span class="stat-value" id="stat-goal">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label" data-i18n="stat_label_completed">Hoàn thành:</span>
+                <span class="stat-value" id="stat-completed" style="color: var(--accent-green)">0</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label" data-i18n="stat_label_left">Còn lại:</span>
+                <span class="stat-value" id="stat-left" style="color: var(--accent-orange)">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Stats Donut Chart -->
+        <div class="panel">
+          <div class="panel-header">
+            <span data-i18n="panel_overall_stats">Tổng quan</span>
+          </div>
+          <div class="panel-content">
+            <div class="chart-container" id="overall-stats-container">
+              <svg class="chart-svg" id="overall-stats-svg"></svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <!-- Main Column: Mood & Motivation Correlation -->
+        <div class="main-column">
+          <!-- Mood & Motivation correlation line chart -->
+          <div class="panel trend-panel">
+            <div class="panel-header">
+              <span data-i18n="panel_trend">Biểu Đồ Xu Hướng Trạng Thái Tinh Thần (Mood & Motivation)</span>
+            </div>
+            <div class="panel-content">
+              <div class="trend-chart-container">
+                <svg class="chart-svg" id="trend-chart-svg"></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar Column: Detailed Performance Analysis -->
+        <div class="sidebar-column">
+          <!-- Analysis Table -->
+          <div class="panel">
+            <div class="panel-header">
+              <span data-i18n="panel_analysis">Phân tích chi tiết</span>
+            </div>
+            <div class="panel-content" style="padding: 0;">
+              <table class="analysis-table">
                 <thead>
-                  <tr id="habit-grid-week-header">
-                    <!-- Generated by JS -->
-                  </tr>
-                  <tr id="habit-grid-header">
-                    <!-- Generated by JS -->
+                  <tr>
+                    <th class="col-align-left" data-i18n="th_habit">Thói quen</th>
+                    <th data-i18n="th_goal">Mục tiêu</th>
+                    <th data-i18n="th_actual">Đạt</th>
+                    <th data-i18n="th_left">Còn</th>
+                    <th data-i18n="th_streak">Chuỗi 🔥</th>
+                    <th class="col-progress-bar-cell" data-i18n="th_progress">Tiến độ</th>
+                    <th>%</th>
                   </tr>
                 </thead>
-                <tbody id="habit-grid-body">
+                <tbody id="analysis-table-body">
                   <!-- Generated by JS -->
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-
-        <!-- Mood & Motivation correlation line chart -->
-        <div class="panel trend-panel">
-          <div class="panel-header">
-            <span data-i18n="panel_trend">Biểu Đồ Xu Hướng Trạng Thế Tinh Thần (Mood & Motivation)</span>
-          </div>
-          <div class="panel-content">
-            <div class="trend-chart-container">
-              <svg class="chart-svg" id="trend-chart-svg"></svg>
-            </div>
-          </div>
-        </div>
-
-        <!-- Daily Journal Reflections -->
-        <div class="panel">
-          <div class="panel-header">
-            <span data-i18n="panel_journal">Nhật Ký Suy Nghĩ Hàng Ngày (Daily Reflections)</span>
-          </div>
-          <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-              <div style="display:flex; align-items:center; gap:8px;">
-                <label for="select-journal-day" data-i18n="label_journal_day" style="font-size:13px; font-weight:600; color:var(--text-muted);">Xem ngày:</label>
-                <select id="select-journal-day" style="font-family:var(--font-body); font-size:13px; padding:4px 8px; border-radius:var(--radius-sm); border:1px solid var(--border-color-dark); background-color:var(--bg-panel); color:var(--text-main); outline:none; cursor:pointer;">
-                  <!-- Options filled by JS -->
-                </select>
-              </div>
-              <span id="journal-save-status" style="font-size:11px; color:var(--accent-green); font-weight:600; display:none; transition: all 0.2s;">✓ Đã lưu tự động</span>
-            </div>
-            <textarea id="textarea-journal" class="form-control" rows="4" placeholder="Hôm nay lịch trình của bạn thế nào?..." data-i18n-placeholder="journal_placeholder" style="resize:vertical; min-height:80px; font-family:var(--font-body); font-size:14px; line-height:1.6;"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Sidebar Column: Analysis Table & Leaderboard & Goals -->
-      <div class="sidebar-column">
-        <!-- Analysis Table -->
-        <div class="panel">
-          <div class="panel-header">
-            <span data-i18n="panel_analysis">Phân tích chi tiết</span>
-          </div>
-          <div class="panel-content" style="padding: 0;">
-            <table class="analysis-table">
-              <thead>
-                <tr>
-                  <th class="col-align-left" data-i18n="th_habit">Thói quen</th>
-                  <th data-i18n="th_goal">Mục tiêu</th>
-                  <th data-i18n="th_actual">Đạt</th>
-                  <th data-i18n="th_left">Còn</th>
-                  <th data-i18n="th_streak">Chuỗi 🔥</th>
-                  <th class="col-progress-bar-cell" data-i18n="th_progress">Tiến độ</th>
-                  <th>%</th>
-                </tr>
-              </thead>
-              <tbody id="analysis-table-body">
-                <!-- Generated by JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Monthly Goals checklist -->
-        <div class="panel">
-          <div class="panel-header">
-            <span data-i18n="panel_monthly_goals">Mục tiêu trong tháng</span>
-            <span id="goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
-          </div>
-          <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
-            <!-- Form to add goal -->
-            <form id="form-add-goal" style="display:flex; gap:6px;">
-              <input type="text" id="input-new-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tháng..." data-i18n-placeholder="goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
-              <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
-            </form>
-            <!-- Goals List container -->
-            <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
-              <!-- Generated by JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Top 10 Daily Habit -->
-        <div class="panel">
-          <div class="panel-header">
-            <span data-i18n="panel_leaderboard">Top Thói Quen Hàng Đầu</span>
-          </div>
-          <div class="panel-content">
-            <div class="leaderboard-list" id="leaderboard-list">
-              <!-- Generated by JS -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    </div> <!-- Close view-tracker -->
+      </section>
+    </div> <!-- Close view-stats -->
 
     <div id="view-profile" class="tab-view" style="display: none;">
       <div class="profile-layout fade-in">
@@ -539,7 +578,7 @@
           <label for="edit-profile-bio" data-i18n="profile_label_bio">Giới thiệu bản thân (Bio)</label>
           <textarea id="edit-profile-bio" class="form-control" rows="3" style="resize: vertical; font-family:var(--font-body); font-size:13px;"></textarea>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; height:38px; margin-top:8px;" data-i18n="modal_btn_save">Lưu thay đổi</button>
+        <button type="submit" class="btn btn-primary" style="display: flex !important; margin: 20px auto 0 auto !important; min-width: 160px; height:38px; justify-content: center; align-items: center;" data-i18n="modal_btn_update">Cập nhật</button>
       </form>
     </div>
   </div>
@@ -556,18 +595,36 @@
       <form id="form-edit-password">
         <div class="form-group">
           <label for="edit-password-old" data-i18n="password_old">Mật khẩu cũ</label>
-          <input type="password" id="edit-password-old" class="form-control" placeholder="Nhập mật khẩu hiện tại..." data-i18n-placeholder="password_old_placeholder" required autocomplete="current-password">
+          <div class="password-input-container">
+            <input type="password" id="edit-password-old" class="form-control" placeholder="Nhập mật khẩu hiện tại..." data-i18n-placeholder="password_old_placeholder" required autocomplete="current-password">
+            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
         </div>
         <div class="form-group">
           <label for="edit-password-new" data-i18n="password_new">Mật khẩu mới</label>
-          <input type="password" id="edit-password-new" class="form-control" placeholder="Nhập mật khẩu mới..." data-i18n-placeholder="password_new_placeholder" required autocomplete="new-password">
+          <div class="password-input-container">
+            <input type="password" id="edit-password-new" class="form-control" placeholder="Nhập mật khẩu mới..." data-i18n-placeholder="password_new_placeholder" required autocomplete="new-password">
+            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
         </div>
         <div class="form-group">
           <label for="edit-password-confirm" data-i18n="confirm_password">Xác nhận mật khẩu mới</label>
-          <input type="password" id="edit-password-confirm" class="form-control" placeholder="Nhập lại mật khẩu mới..." data-i18n-placeholder="register_confirm_password_placeholder" required autocomplete="new-password">
+          <div class="password-input-container">
+            <input type="password" id="edit-password-confirm" class="form-control" placeholder="Nhập lại mật khẩu mới..." data-i18n-placeholder="register_confirm_password_placeholder" required autocomplete="new-password">
+            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </button>
+          </div>
         </div>
         <div id="edit-password-error" class="auth-error-msg" style="display: none;"></div>
-        <button type="submit" class="btn btn-primary" style="width: 100%; height:38px; margin-top:8px;" data-i18n="modal_btn_save">Cập nhật mật khẩu</button>
+        <button type="submit" class="btn btn-primary" style="display: flex !important; margin: 20px auto 0 auto !important; min-width: 180px; height:38px; justify-content: center; align-items: center;" data-i18n="modal_btn_change_password">Cập nhật mật khẩu</button>
       </form>
     </div>
   </div>

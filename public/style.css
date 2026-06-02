@@ -1237,7 +1237,122 @@ body.dark-theme .btn-profile-action.btn-danger-action:hover {
   text-overflow: ellipsis;
 }
 
+/* Password Visibility Toggle */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
 
+.password-input-container .form-control {
+  padding-right: 40px;
+}
 
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  transition: color var(--transition);
+  user-select: none;
+}
 
+.password-toggle-btn:hover {
+  color: var(--text-main);
+}
+
+/* Actions Menu Dropdown */
+.menu-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.menu-dropdown-content {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-color-dark);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  display: none;
+  flex-direction: column;
+  min-width: 170px;
+  z-index: 1000;
+  overflow: hidden;
+  padding: 6px 0;
+}
+
+.menu-dropdown.active .menu-dropdown-content {
+  display: flex;
+}
+
+.menu-item {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  padding: 10px 16px;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+.menu-item:hover {
+  background-color: var(--bg-widget);
+}
+
+.menu-item.active {
+  background-color: var(--bg-selected);
+  color: var(--accent-brown);
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 6px 0;
+}
+
+.menu-item.btn-danger-text {
+  color: #c94a47;
+}
+
+.menu-item.btn-danger-text:hover {
+  background-color: rgba(201, 74, 71, 0.08);
+}
+
+/* Drag and Drop visual feedback */
+.modal-habit-item.dragging {
+  opacity: 0.5;
+  border: 1px dashed var(--accent-brown) !important;
+  background-color: var(--bg-selected) !important;
+}
+
+.modal-habit-item.drag-over-top {
+  border-top: 2px solid var(--accent-brown) !important;
+}
+
+.modal-habit-item.drag-over-bottom {
+  border-bottom: 2px solid var(--accent-brown) !important;
+}
+
+/* Custom Emoji Picker Hover Style */
+.emoji-picker-item-btn:hover {
+  background-color: var(--bg-selected) !important;
+  transform: scale(1.2);
+}
 
