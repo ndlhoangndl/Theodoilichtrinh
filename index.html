@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/webstorm-icon-logo.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch Trình Tracker - Habit Tracker Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div id="app" class="fade-in">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand">
+      <span>📅</span>
+      <h1>Lịch Trình</h1>
+      <span class="text-xs text-muted font-bold" id="current-month-display">- JANUARY 2026 -</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-icon" id="btn-prev-month" title="Tháng trước">◀</button>
+      <button class="btn btn-icon" id="btn-next-month" title="Tháng sau">▶</button>
+      <button class="btn btn-primary" id="btn-manage-habits">
+        ⚙️ Quản lý thói quen
+      </button>
+      <button class="btn" id="btn-seed-data" title="Nạp dữ liệu mẫu để hiển thị biểu đồ đẹp hơn">
+        💡 Dữ liệu mẫu
+      </button>
+      <button class="btn btn-danger" id="btn-reset-data" title="Xóa toàn bộ dữ liệu">
+        🗑️ Xóa dữ liệu
+      </button>
+    </div>
+  </header>
+
+  <!-- Widgets row (Top row) -->
+  <section class="widgets-row">
+    <!-- Calendar Settings -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Cài đặt lịch</span>
+      </div>
+      <div class="panel-content calendar-settings-content">
+        <div class="setting-group">
+          <label for="select-year">Năm</label>
+          <select id="select-year">
+            <option value="2025">2025</option>
+            <option value="2026" selected>2026</option>
+            <option value="2027">2027</option>
+            <option value="2028">2028</option>
+          </select>
+        </div>
+        <div class="setting-group">
+          <label for="select-month">Tháng</label>
+          <select id="select-month">
+            <option value="0">Tháng 1</option>
+            <option value="1">Tháng 2</option>
+            <option value="2">Tháng 3</option>
+            <option value="3">Tháng 4</option>
+            <option value="4">Tháng 5</option>
+            <option value="5">Tháng 6</option>
+            <option value="6">Tháng 7</option>
+            <option value="7">Tháng 8</option>
+            <option value="8">Tháng 9</option>
+            <option value="9">Tháng 10</option>
+            <option value="10">Tháng 11</option>
+            <option value="11">Tháng 12</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Progress Chart -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Tiến độ hàng ngày</span>
+      </div>
+      <div class="panel-content">
+        <div class="chart-container" id="daily-progress-container">
+          <svg class="chart-svg" id="daily-progress-svg"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Progress Chart -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Tiến độ hàng tuần</span>
+      </div>
+      <div class="panel-content">
+        <div class="chart-container" id="weekly-progress-container">
+          <svg class="chart-svg" id="weekly-progress-svg"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Goal stats values -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Thống kê mục tiêu</span>
+      </div>
+      <div class="panel-content">
+        <div class="stats-summary">
+          <div class="stat-item">
+            <span class="stat-label">Mục tiêu tổng:</span>
+            <span class="stat-value" id="stat-goal">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Hoàn thành:</span>
+            <span class="stat-value" id="stat-completed" style="color: var(--accent-green)">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Còn lại:</span>
+            <span class="stat-value" id="stat-left" style="color: var(--accent-orange)">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overall Stats Donut Chart -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>Tổng quan</span>
+      </div>
+      <div class="panel-content">
+        <div class="chart-container" id="overall-stats-container">
+          <svg class="chart-svg" id="overall-stats-svg"></svg>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard layout -->
+  <section class="dashboard-grid">
+    <!-- Main Column: Tracker Sheet & Line Chart -->
+    <div class="main-column">
+      <!-- Habit sheet grid -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Bảng Theo Dõi Thói Quen (Lịch Trình Chi Tiết)</span>
+        </div>
+        <div class="panel-content" style="padding: 0;">
+          <div class="spreadsheet-container">
+            <table class="sheet-table">
+              <thead>
+                <!-- Weeks group header row -->
+                <tr id="habit-grid-week-header">
+                  <!-- Generated by JS -->
+                </tr>
+                <!-- Days header row (Mon, Tue / 1, 2, 3...) -->
+                <tr id="habit-grid-header">
+                  <!-- Generated by JS -->
+                </tr>
+              </thead>
+              <tbody id="habit-grid-body">
+                <!-- Generated by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mood & Motivation correlation line chart -->
+      <div class="panel trend-panel">
+        <div class="panel-header">
+          <span>Biểu Đồ Xu Hướng Trạng Thái Tinh Thần (Mood & Motivation)</span>
+        </div>
+        <div class="panel-content">
+          <div class="trend-chart-container">
+            <svg class="chart-svg" id="trend-chart-svg"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Column: Analysis Table & Leaderboard -->
+    <div class="sidebar-column">
+      <!-- Analysis Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Phân tích chi tiết</span>
+        </div>
+        <div class="panel-content" style="padding: 0;">
+          <table class="analysis-table">
+            <thead>
+              <tr>
+                <th class="col-align-left">Thói quen</th>
+                <th>Mục tiêu</th>
+                <th>Đạt</th>
+                <th>Còn</th>
+                <th class="col-progress-bar-cell">Tiến độ</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody id="analysis-table-body">
+              <!-- Generated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Top 10 Daily Habit -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Top Thói Quen Hàng Đầu</span>
+        </div>
+        <div class="panel-content">
+          <div class="leaderboard-list" id="leaderboard-list">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Modal: Quản lý thói quen -->
+<div class="modal" id="modal-manage-habits">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Quản lý thói quen</h3>
+      <button class="btn btn-icon" id="modal-close-btn" style="border:none; background:transparent; font-size:16px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Add new habit form -->
+      <form id="form-add-habit">
+        <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 16px;">
+          <div style="width: 70px;">
+            <label for="input-new-habit-emoji" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;">Icon/Emoji</label>
+            <input type="text" class="form-control" id="input-new-habit-emoji" placeholder="🎯" value="🎯" maxlength="4" style="text-align: center;">
+          </div>
+          <div style="flex: 1;">
+            <label for="input-new-habit-name" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;">Tên thói quen mới</label>
+            <input type="text" class="form-control" id="input-new-habit-name" placeholder="Ví dụ: Đọc sách 30 phút..." required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="height: 38px;">Thêm</button>
+        </div>
+      </form>
+
+      <!-- Habit list editor (Reorder/Edit/Delete) -->
+      <label style="font-size: 13px; font-weight:600; color:var(--text-muted);">Danh sách hiện có (Có thể sắp xếp & chỉnh sửa):</label>
+      <div class="modal-habit-list" id="modal-habit-list-container">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" id="modal-save-btn">Lưu cấu hình</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
