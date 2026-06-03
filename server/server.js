@@ -14,6 +14,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health check and root route
+app.get('/healthz', (req, res) => res.status(200).send('OK'));
+app.get('/', (req, res) => res.status(200).send('Server is running'));
+
 // Connect to MongoDB Atlas and Seed default admin
 connectDB();
 
