@@ -232,3 +232,17 @@ export function loadRecord(username: string, year: number, month: number, habits
   saveRecord(username, year, month, record);
   return record;
 }
+
+// Sync habits from server and save to local storage (No-op as data is kept local)
+export async function syncHabitsFromServer(username: string): Promise<void> {
+  // Pure local storage mode
+  void username;
+}
+
+// Sync record from server and save to local storage (No-op as data is kept local)
+export async function syncRecordFromServer(username: string, year: number, month: number): Promise<void> {
+  // Pure local storage mode
+  void username;
+  void year;
+  void month;
+}

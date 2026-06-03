@@ -10,6 +10,9 @@ import { initConfirmOverlay } from './modules/common/confirm';
 import { initGarden } from './modules/tracker/garden';
 import { initMonthlyReview } from './modules/tracker/review';
 import { getCurrentSession } from './services/storage';
+import { initAdmin, renderAdminPage } from './modules/admin/admin';
+import { initUserChat, refreshUserChat } from './modules/chat/userChat';
+import { initAdminChat, refreshAdminChat } from './modules/chat/adminChat';
 import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
@@ -35,6 +38,9 @@ function initApp(): void {
   initGarden();
   initJournalPrompts();
   initMonthlyReview();
+  initAdmin();
+  initUserChat();
+  initAdminChat();
 
   // Toggle Actions Menu Dropdown
   const btnMenuTrigger = document.getElementById('btn-menu-trigger');
@@ -73,15 +79,28 @@ function initApp(): void {
     if (authContainer) authContainer.style.display = 'none';
     if (dashboardContainer) dashboardContainer.style.display = 'block';
 
+    const menuTabAdmin = document.getElementById('menu-tab-admin');
+    if (menuTabAdmin) {
+      menuTabAdmin.style.display = sessionUser.role === 'ADMIN' ? 'block' : 'none';
+    }
+
     initializeState();
     translateUI();
     setupJournalPanel();
     renderAll();
+    refreshUserChat();
+    refreshAdminChat();
   } else {
     state.currentUser = null;
     if (authContainer) authContainer.style.display = 'flex';
     if (dashboardContainer) dashboardContainer.style.display = 'none';
+    
+    const menuTabAdmin = document.getElementById('menu-tab-admin');
+    if (menuTabAdmin) menuTabAdmin.style.display = 'none';
+
     translateUI();
+    refreshUserChat();
+    refreshAdminChat();
   }
 
   // Bind Language Selector dropdown
@@ -121,27 +140,34 @@ function initApp(): void {
   const menuTabTracker = document.getElementById('menu-tab-tracker');
   const menuTabStats = document.getElementById('menu-tab-stats');
   const menuTabProfile = document.getElementById('menu-tab-profile');
+  const menuTabAdmin = document.getElementById('menu-tab-admin');
+  
   const viewTracker = document.getElementById('view-tracker');
   const viewStats = document.getElementById('view-stats');
   const viewProfile = document.getElementById('view-profile');
+  const viewAdmin = document.getElementById('view-admin');
 
-  if (menuTabTracker && menuTabStats && menuTabProfile && viewTracker && viewStats && viewProfile) {
+  if (menuTabTracker && menuTabStats && menuTabProfile && menuTabAdmin && viewTracker && viewStats && viewProfile && viewAdmin) {
     menuTabTracker.addEventListener('click', () => {
       menuTabTracker.classList.add('active');
       menuTabStats.classList.remove('active');
       menuTabProfile.classList.remove('active');
+      menuTabAdmin.classList.remove('active');
       viewTracker.style.display = 'flex';
       viewStats.style.display = 'none';
       viewProfile.style.display = 'none';
+      viewAdmin.style.display = 'none';
     });
 
     menuTabStats.addEventListener('click', () => {
       menuTabStats.classList.add('active');
       menuTabTracker.classList.remove('active');
       menuTabProfile.classList.remove('active');
+      menuTabAdmin.classList.remove('active');
       viewTracker.style.display = 'none';
       viewStats.style.display = 'flex';
       viewProfile.style.display = 'none';
+      viewAdmin.style.display = 'none';
 
       // Re-trigger graphs draw on tab show
       if (state.currentUser && state.currentRecord) {
@@ -157,10 +183,24 @@ function initApp(): void {
       menuTabProfile.classList.add('active');
       menuTabTracker.classList.remove('active');
       menuTabStats.classList.remove('active');
+      menuTabAdmin.classList.remove('active');
       viewTracker.style.display = 'none';
       viewStats.style.display = 'none';
       viewProfile.style.display = 'block';
+      viewAdmin.style.display = 'none';
       renderProfilePage();
+    });
+
+    menuTabAdmin.addEventListener('click', () => {
+      menuTabAdmin.classList.add('active');
+      menuTabTracker.classList.remove('active');
+      menuTabStats.classList.remove('active');
+      menuTabProfile.classList.remove('active');
+      viewTracker.style.display = 'none';
+      viewStats.style.display = 'none';
+      viewProfile.style.display = 'none';
+      viewAdmin.style.display = 'flex';
+      renderAdminPage();
     });
   }
 }

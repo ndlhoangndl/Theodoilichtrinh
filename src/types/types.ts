@@ -1,4 +1,5 @@
 export interface User {
+  id?: string;
   username: string;
   passwordHash: string; // Stored simply for mock auth purposes
   email: string;

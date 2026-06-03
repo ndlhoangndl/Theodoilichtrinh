@@ -1,10 +1,13 @@
 import { User } from '../../types/types';
-import { verifyUser, createSession, saveUser } from '../../services/storage';
+import { createSession, syncHabitsFromServer, syncRecordFromServer } from '../../services/storage';
 import { state } from '../common/state';
 import { TRANSLATIONS, translateUI } from '../common/translations';
 import { logoutUser } from '../profile/profile';
 import { initializeState, renderAll } from '../tracker/tracker';
 import { setupJournalPanel } from '../journal/journal';
+import { apiLogin, apiRegister, setToken, apiForgotPassword, apiResetPassword } from '../../services/api';
+import { refreshUserChat } from '../chat/userChat';
+import { refreshAdminChat } from '../chat/adminChat';
 
 // Bind Authentication View Forms and State Switching
 export function initAuth(): void {
@@ -51,7 +54,7 @@ export function initAuth(): void {
   const loginError = document.getElementById('login-error') as HTMLElement;
 
   if (formLogin) {
-    formLogin.addEventListener('submit', (e) => {
+    formLogin.addEventListener('submit', async (e) => {
       e.preventDefault();
       const uInput = (document.getElementById('login-username') as HTMLInputElement).value.trim();
       const pInput = (document.getElementById('login-password') as HTMLInputElement).value;
@@ -64,11 +67,16 @@ export function initAuth(): void {
         return;
       }
 
-      const verified = verifyUser(uInput, pInput);
-
-      if (verified) {
-        createSession(verified);
-        state.currentUser = verified;
+      try {
+        const result = await apiLogin(uInput, pInput);
+        setToken(result.token);
+        
+        createSession(result.user);
+        state.currentUser = result.user;
+        
+        // Sync user habits and records from server
+        await syncHabitsFromServer(result.user.username);
+        await syncRecordFromServer(result.user.username, state.currentYear, state.currentMonth);
         
         formLogin.reset();
         if (loginError) loginError.style.display = 'none';
@@ -80,9 +88,13 @@ export function initAuth(): void {
         translateUI();
         setupJournalPanel();
         renderAll();
-      } else {
+        refreshUserChat();
+        refreshAdminChat();
+      } catch (err: any) {
         if (loginError) {
-          loginError.textContent = TRANSLATIONS[state.currentLang].alert_wrong_login;
+          loginError.textContent = state.currentLang === 'vi'
+            ? 'Tên đăng nhập hoặc mật khẩu không chính xác!'
+            : 'Incorrect username or password!';
           loginError.style.display = 'block';
         }
       }
@@ -94,7 +106,7 @@ export function initAuth(): void {
   const registerError = document.getElementById('register-error') as HTMLElement;
 
   if (formRegister) {
-    formRegister.addEventListener('submit', (e) => {
+    formRegister.addEventListener('submit', async (e) => {
       e.preventDefault();
       const usernameVal = (document.getElementById('register-username') as HTMLInputElement).value.trim();
       const fullnameVal = (document.getElementById('register-fullname') as HTMLInputElement).value.trim();
@@ -140,9 +152,8 @@ export function initAuth(): void {
         role: 'USER'
       };
 
-      const success = saveUser(newUser);
-
-      if (success) {
+      try {
+        await apiRegister(newUser);
         formRegister.reset();
         if (registerError) registerError.style.display = 'none';
 
@@ -161,9 +172,9 @@ export function initAuth(): void {
         alert(state.currentLang === 'vi'
           ? 'Đăng ký thành công! Hãy đăng nhập để bắt đầu.'
           : 'Registration successful! Please log in to start.');
-      } else {
+      } catch (err: any) {
         if (registerError) {
-          registerError.textContent = TRANSLATIONS[state.currentLang].alert_username_taken;
+          registerError.textContent = err.message || TRANSLATIONS[state.currentLang].alert_username_taken;
           registerError.style.display = 'block';
         }
       }
@@ -175,6 +186,99 @@ export function initAuth(): void {
   if (btnLogout) {
     btnLogout.addEventListener('click', () => {
       logoutUser();
+    });
+  }
+
+  // Toggle to Forgot Password view
+  const btnGotoForgot = document.getElementById('btn-goto-forgot');
+  const forgotView = document.getElementById('auth-forgot-password-view') as HTMLElement;
+  const btnGotoLoginFromForgot = document.getElementById('btn-goto-login-from-forgot');
+
+  if (btnGotoForgot && forgotView && loginView) {
+    btnGotoForgot.addEventListener('click', (e) => {
+      e.preventDefault();
+      loginView.style.display = 'none';
+      forgotView.style.display = 'block';
+      
+      // Reset forgot views to step 1
+      const formRequest = document.getElementById('form-forgot-request') as HTMLFormElement;
+      const formReset = document.getElementById('form-forgot-reset') as HTMLFormElement;
+      if (formRequest) formRequest.style.display = 'block';
+      if (formReset) formReset.style.display = 'none';
+      
+      const reqError = document.getElementById('forgot-request-error');
+      if (reqError) reqError.style.display = 'none';
+      const resetError = document.getElementById('forgot-reset-error');
+      if (resetError) resetError.style.display = 'none';
+    });
+  }
+
+  if (btnGotoLoginFromForgot && forgotView && loginView) {
+    btnGotoLoginFromForgot.addEventListener('click', (e) => {
+      e.preventDefault();
+      forgotView.style.display = 'none';
+      loginView.style.display = 'block';
+    });
+  }
+
+  // Handle forgot password request form (Step 1)
+  const formForgotRequest = document.getElementById('form-forgot-request') as HTMLFormElement;
+  const forgotRequestError = document.getElementById('forgot-request-error');
+  if (formForgotRequest) {
+    formForgotRequest.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const emailInput = (document.getElementById('forgot-email') as HTMLInputElement).value.trim();
+      if (!emailInput) return;
+
+      try {
+        if (forgotRequestError) forgotRequestError.style.display = 'none';
+        
+        await apiForgotPassword(emailInput);
+        
+        // Show step 2 form
+        const formReset = document.getElementById('form-forgot-reset') as HTMLFormElement;
+        formForgotRequest.style.display = 'none';
+        if (formReset) {
+          formReset.style.display = 'block';
+          formReset.reset();
+        }
+      } catch (err: any) {
+        if (forgotRequestError) {
+          forgotRequestError.textContent = err.message || (state.currentLang === 'vi' ? 'Lỗi khi gửi yêu cầu.' : 'Error sending request.');
+          forgotRequestError.style.display = 'block';
+        }
+      }
+    });
+  }
+
+  // Handle forgot password reset form (Step 2)
+  const formForgotReset = document.getElementById('form-forgot-reset') as HTMLFormElement;
+  const forgotResetError = document.getElementById('forgot-reset-error');
+  if (formForgotReset) {
+    formForgotReset.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const emailInput = (document.getElementById('forgot-email') as HTMLInputElement).value.trim();
+      const codeInput = (document.getElementById('forgot-code') as HTMLInputElement).value.trim();
+      const newPasswordInput = (document.getElementById('forgot-new-password') as HTMLInputElement).value;
+
+      if (!emailInput || !codeInput || !newPasswordInput) return;
+
+      try {
+        if (forgotResetError) forgotResetError.style.display = 'none';
+        
+        const result = await apiResetPassword(emailInput, codeInput, newPasswordInput);
+        
+        alert(result.message || (state.currentLang === 'vi' ? 'Đặt lại mật khẩu thành công!' : 'Password reset successful!'));
+        
+        // Show login view
+        if (forgotView) forgotView.style.display = 'none';
+        if (loginView) loginView.style.display = 'block';
+      } catch (err: any) {
+        if (forgotResetError) {
+          forgotResetError.textContent = err.message || (state.currentLang === 'vi' ? 'Lỗi xác nhận.' : 'Verification error.');
+          forgotResetError.style.display = 'block';
+        }
+      }
     });
   }
 }

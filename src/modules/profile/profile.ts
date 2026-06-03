@@ -3,6 +3,9 @@ import { state } from '../common/state';
 import { TRANSLATIONS, translateUI } from '../common/translations';
 import { showConfirm } from '../common/confirm';
 import { renderAll } from '../tracker/tracker';
+import { apiUpdateProfile, apiChangePassword } from '../../services/api';
+import { refreshUserChat } from '../chat/userChat';
+import { refreshAdminChat } from '../chat/adminChat';
 
 // Render Profile Page details (SONICLE layout)
 export function renderProfilePage(): void {
@@ -85,6 +88,9 @@ export async function logoutUser(): Promise<void> {
     if (viewTracker) viewTracker.style.display = 'flex';
     if (viewStats) viewStats.style.display = 'none';
     if (viewProfile) viewProfile.style.display = 'none';
+
+    refreshUserChat();
+    refreshAdminChat();
   }
 }
 
@@ -138,20 +144,26 @@ export function initProfile(): void {
 
         state.currentUser.fullName = inputFullname.value.trim();
         state.currentUser.email = inputEmail.value.trim();
-        state.currentUser.gender = inputGender.value;
-        state.currentUser.dob = inputDob.value;
-        state.currentUser.country = inputCountry.value.trim() || 'Vietnam';
-        state.currentUser.bio = inputBio.value.trim();
-
         // Update database
-        updateUser(state.currentUser);
-        createSession(state.currentUser); // update active session
-
-        renderProfilePage();
-        translateUI();
-        renderAll();
-        modalEditProfile.classList.remove('active');
-        alert(TRANSLATIONS[state.currentLang].alert_profile_saved);
+        apiUpdateProfile({
+          fullName: inputFullname.value.trim(),
+          email: inputEmail.value.trim(),
+          gender: inputGender.value,
+          dob: inputDob.value,
+          country: inputCountry.value.trim() || 'Vietnam',
+          bio: inputBio.value.trim()
+        }).then(res => {
+          state.currentUser = res.user;
+          updateUser(state.currentUser);
+          createSession(state.currentUser); // update active session
+          renderProfilePage();
+          translateUI();
+          renderAll();
+          modalEditProfile.classList.remove('active');
+          alert(TRANSLATIONS[state.currentLang].alert_profile_saved);
+        }).catch(err => {
+          alert(state.currentLang === 'vi' ? 'Không thể cập nhật hồ sơ: ' + err.message : 'Could not update profile: ' + err.message);
+        });
       });
     }
   }
@@ -188,14 +200,6 @@ export function initProfile(): void {
         const confirmPass = (document.getElementById('edit-password-confirm') as HTMLInputElement).value;
         const errEl = document.getElementById('edit-password-error');
 
-        if (state.currentUser.passwordHash !== oldPass) {
-          if (errEl) {
-            errEl.textContent = TRANSLATIONS[state.currentLang].alert_password_wrong;
-            errEl.style.display = 'block';
-          }
-          return;
-        }
-
         if (newPass !== confirmPass) {
           if (errEl) {
             errEl.textContent = TRANSLATIONS[state.currentLang].alert_password_mismatch;
@@ -204,12 +208,19 @@ export function initProfile(): void {
           return;
         }
 
-        state.currentUser.passwordHash = newPass;
-        updateUser(state.currentUser);
-        createSession(state.currentUser);
-
-        modalEditPassword.classList.remove('active');
-        alert(TRANSLATIONS[state.currentLang].alert_password_changed);
+        apiChangePassword(oldPass, newPass).then(() => {
+          state.currentUser!.passwordHash = newPass;
+          updateUser(state.currentUser!);
+          createSession(state.currentUser!);
+ 
+          modalEditPassword.classList.remove('active');
+          alert(TRANSLATIONS[state.currentLang].alert_password_changed);
+        }).catch(() => {
+          if (errEl) {
+            errEl.textContent = state.currentLang === 'vi' ? 'Mật khẩu cũ không chính xác!' : 'Incorrect old password!';
+            errEl.style.display = 'block';
+          }
+        });
       });
     }
   }

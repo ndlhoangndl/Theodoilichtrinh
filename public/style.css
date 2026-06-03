@@ -1692,5 +1692,318 @@ body.dark-theme .btn-profile-action.btn-danger-action:hover {
   margin-top: 4px;
 }
 
+/* ========================================== */
+/*           MESSAGING SYSTEM STYLES          */
+/* ========================================== */
+
+/* Floating Chat Bubble Container */
+#user-chat-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  font-family: inherit;
+}
+
+#chat-bubble-trigger {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-brown, #6d4c41);
+  color: #fff;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease;
+  position: relative;
+}
+
+#chat-bubble-trigger:hover {
+  transform: scale(1.1);
+  background: #5d4037;
+}
+
+#chat-unread-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #a94442;
+  color: #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-panel, #fff);
+}
+
+/* User Chat Card */
+#user-chat-card {
+  position: absolute;
+  bottom: 72px;
+  right: 0;
+  width: 350px;
+  height: 480px;
+  border-radius: var(--radius-md, 12px);
+  background: var(--bg-panel, rgba(255,255,255,0.95));
+  border: 1px solid var(--border-color, #eee);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform-origin: bottom right;
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+#user-chat-card.active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+#user-chat-header {
+  padding: 12px 16px;
+  background: var(--bg-widget, #efebe9);
+  border-bottom: 1px solid var(--border-color, #eee);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  color: var(--text-main, #3e2723);
+  font-size: 14px;
+}
+
+#user-chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(0,0,0,0.02);
+}
+
+#user-chat-input-area {
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-color, #eee);
+  background: var(--bg-panel);
+  display: flex;
+  gap: 8px;
+}
+
+/* Messages styling */
+.chat-message {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-word;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-message.sent {
+  align-self: flex-end;
+  background: var(--accent-brown, #6d4c41);
+  color: #fff;
+  border-bottom-right-radius: 2px;
+}
+
+.chat-message.received {
+  align-self: flex-start;
+  background: var(--bg-widget, #efebe9);
+  color: var(--text-main);
+  border-bottom-left-radius: 2px;
+  border: 1px solid var(--border-color);
+}
+
+.chat-message-time {
+  font-size: 9px;
+  color: rgba(255,255,255,0.7);
+  text-align: right;
+  margin-top: 4px;
+}
+
+.chat-message.received .chat-message-time {
+  color: var(--text-muted);
+}
+
+/* Admin Support Panel splits */
+.admin-support-layout {
+  display: flex;
+  height: 550px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.admin-support-sidebar {
+  width: 250px;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  background: rgba(0,0,0,0.01);
+  flex-shrink: 0;
+}
+
+.admin-support-sidebar-header {
+  padding: 12px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.admin-support-threads {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.admin-support-thread-item {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-support-thread-item:hover {
+  background: var(--bg-widget);
+}
+
+.admin-support-thread-item.active {
+  background: var(--bg-widget);
+  border-left: 4px solid var(--accent-brown);
+}
+
+.admin-thread-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-brown);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.admin-thread-info {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-thread-name {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-thread-preview {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-thread-badge {
+  background: #a94442;
+  color: #fff;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Chat window on the right */
+.admin-support-chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-support-chat-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(0,0,0,0.01);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.admin-support-chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(0,0,0,0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-support-chat-input {
+  padding: 12px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  display: flex;
+  gap: 10px;
+}
+
+/* Tab Bar inside Admin Panel */
+.admin-tab-bar {
+  display: flex;
+  gap: 8px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-tab-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 16px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab-btn:hover {
+  background: var(--bg-widget);
+  color: var(--text-main);
+}
+
+.admin-tab-btn.active {
+  background: var(--accent-brown);
+  border-color: var(--accent-brown);
+  color: #fff;
+}
+
 
 

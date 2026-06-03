@@ -108,6 +108,9 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     alert_profile_saved: 'Cập nhật thông tin cá nhân thành công!',
     alert_password_changed: 'Đổi mật khẩu thành công!',
     alert_password_wrong: 'Mật khẩu cũ không chính xác.',
+    tab_admin: '🔑 Quản Trị Admin',
+    admin_panel_title: 'Bảng Quản Trị Hệ Thống - Lịch Trình Tracker',
+    admin_panel_desc: 'Danh sách toàn bộ thành viên hệ thống và tiến độ thực tế (MongoDB Atlas Real-time):',
 
     // Greeting
     greeting_prefix: 'Xin chào,',
@@ -271,6 +274,9 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     alert_profile_saved: 'Profile updated successfully!',
     alert_password_changed: 'Password updated successfully!',
     alert_password_wrong: 'Incorrect current password.',
+    tab_admin: '🔑 Admin Dashboard',
+    admin_panel_title: 'System Administration Dashboard - Lịch Trình Tracker',
+    admin_panel_desc: 'List of all system members and their real-time statistics (MongoDB Atlas):',
 
     // Greeting
     greeting_prefix: 'Welcome,',
