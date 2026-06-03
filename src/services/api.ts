@@ -127,8 +127,8 @@ export async function apiResetPassword(email: string, code: string, newPassword:
   });
 }
 
-export async function apiGetChatHistory(partnerId: string): Promise<any[]> {
-  return request(`/messages/history/${partnerId}`);
+export async function apiGetChatHistory(partnerId: string, markAsRead: boolean = false): Promise<any[]> {
+  return request(`/messages/history/${partnerId}?markAsRead=${markAsRead}`);
 }
 
 export async function apiSendMessage(content: string, receiverId?: string): Promise<any> {

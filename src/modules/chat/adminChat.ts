@@ -182,7 +182,7 @@ function renderThreadsList(threads: any[]): void {
 }
 
 function loadHistoryForUser(userId: string, shouldScroll: boolean): void {
-  apiGetChatHistory(userId)
+  apiGetChatHistory(userId, true)
     .then(messages => {
       if (selectedUserId !== userId) return; // Guard against race conditions
       renderAdminChatMessages(messages);

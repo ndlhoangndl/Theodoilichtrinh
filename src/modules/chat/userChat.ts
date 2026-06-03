@@ -80,6 +80,8 @@ function openChat(): void {
     badge.textContent = '0';
   }
 
+  apiMarkAsRead('admin').catch(err => console.error('Failed to mark messages as read:', err));
+
   loadHistoryAndStartPolling();
 }
 
@@ -106,7 +108,7 @@ function loadHistoryAndStartPolling(): void {
 }
 
 function fetchHistory(shouldScroll: boolean): void {
-  apiGetChatHistory('admin')
+  apiGetChatHistory('admin', true)
     .then(messages => {
       renderChatMessages(messages);
       if (shouldScroll) {
@@ -177,7 +179,7 @@ function startUnreadBadgeCheck(): void {
 function checkUnread(): void {
   if (!state.currentUser || state.currentUser.role !== 'USER') return;
 
-  apiGetChatHistory('admin')
+  apiGetChatHistory('admin', false)
     .then(messages => {
       const card = document.getElementById('user-chat-card');
       const isChatOpen = card && card.classList.contains('active');
