@@ -1,4 +1,4 @@
-import { User, Habit, MonthRecord } from '../types';
+import { User, Habit, MonthRecord } from '../../types/types';
 
 export const state = {
   currentUser: null as User | null,
@@ -6,7 +6,8 @@ export const state = {
   currentYear: 2026,
   currentMonth: 0, // 0 = Jan
   currentRecord: null as MonthRecord | null,
-  currentLang: 'vi' as 'vi' | 'en'
+  currentLang: 'vi' as 'vi' | 'en',
+  currentGoalWeek: 0
 };
 
 // Default list of seed habits

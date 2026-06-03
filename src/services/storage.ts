@@ -1,5 +1,5 @@
-import { User, Habit, MonthRecord } from './types';
-import { getDaysInMonth } from './calendar';
+import { User, Habit, MonthRecord } from '../types/types';
+import { getDaysInMonth } from '../utils/calendar';
 
 // Local Storage Global Keys
 const KEY_USERS = 'LICHTRINH_USERS';
@@ -195,6 +195,16 @@ export function loadRecord(username: string, year: number, month: number, habits
         record.goals = [];
       }
 
+      // Weekly goals array validation
+      if (!record.weeklyGoals) {
+        record.weeklyGoals = [];
+      }
+
+      // Watered days array validation for the Habit Garden
+      if (!record.wateredDays) {
+        record.wateredDays = [];
+      }
+
       return record;
     } catch (e) {
       console.error(`Error parsing MonthRecord for ${username}`, e);
@@ -214,7 +224,9 @@ export function loadRecord(username: string, year: number, month: number, habits
     mood: new Array(daysCount).fill(0),
     motivation: new Array(daysCount).fill(0),
     diary: new Array(daysCount).fill(''),
-    goals: []
+    goals: [],
+    weeklyGoals: [],
+    wateredDays: []
   };
   
   saveRecord(username, year, month, record);

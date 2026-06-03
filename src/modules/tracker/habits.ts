@@ -1,7 +1,7 @@
-import { state } from './state';
-import { TRANSLATIONS } from './translations';
-import { showConfirm } from './confirm';
-import { saveHabits, loadRecord } from '../storage';
+import { state } from '../common/state';
+import { TRANSLATIONS } from '../common/translations';
+import { showConfirm } from '../common/confirm';
+import { saveHabits, loadRecord } from '../../services/storage';
 import { renderAll } from './tracker';
 
 let activeEmojiPicker: HTMLElement | null = null;

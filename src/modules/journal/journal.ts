@@ -1,7 +1,7 @@
-import { state, WEEK_DAYS_VN, WEEK_DAYS_EN } from './state';
-import { TRANSLATIONS } from './translations';
-import { getDaysInMonth, getDayOfWeek } from '../calendar';
-import { saveRecord } from '../storage';
+import { state, WEEK_DAYS_VN, WEEK_DAYS_EN } from '../common/state';
+import { TRANSLATIONS } from '../common/translations';
+import { getDaysInMonth, getDayOfWeek } from '../../utils/calendar';
+import { saveRecord } from '../../services/storage';
 
 export function setupJournalPanel(): void {
   if (!state.currentUser || !state.currentRecord) return;
@@ -82,4 +82,52 @@ export function setupJournalPanel(): void {
       }
     });
   }
+}
+
+export function initJournalPrompts(): void {
+  const container = document.getElementById('journal-prompts-container');
+  if (!container) return;
+
+  const prompts = {
+    gratitude: {
+      vi: `- Hôm nay tôi biết ơn vì:\n1. \n2. \n3. `,
+      en: `- Today I am grateful for:\n1. \n2. \n3. `
+    },
+    lesson: {
+      vi: `- Bài học lớn nhất hôm nay:\n- Cách tôi sẽ cải thiện:\n- Việc cần rút kinh nghiệm:\n`,
+      en: `- Biggest lesson today:\n- How I will improve:\n- Things to learn from:\n`
+    },
+    success: {
+      vi: `- Những thành tựu/niềm vui hôm nay:\n1. \n2. `,
+      en: `- Accomplishments/wins today:\n1. \n2. `
+    },
+    plan: {
+      vi: `- 3 việc quan trọng nhất ngày mai:\n1. \n2. \n3. `,
+      en: `- 3 most important tasks for tomorrow:\n1. \n2. \n3. `
+    }
+  };
+
+  container.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement;
+    const button = target.closest('.prompt-chip') as HTMLButtonElement | null;
+    if (!button) return;
+
+    const type = button.getAttribute('data-prompt') as keyof typeof prompts;
+    const promptObj = prompts[type];
+    if (!promptObj) return;
+
+    const textarea = document.getElementById('textarea-journal') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const text = state.currentLang === 'vi' ? promptObj.vi : promptObj.en;
+    const currentVal = textarea.value;
+    textarea.value = currentVal ? `${currentVal}\n\n${text}` : text;
+    
+    // Focus the textarea and set cursor at end
+    textarea.focus();
+    textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+
+    // Trigger the input event to trigger auto-saving
+    textarea.dispatchEvent(new Event('input'));
+  });
 }

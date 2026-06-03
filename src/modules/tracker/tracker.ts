@@ -1,18 +1,21 @@
-import { state, WEEK_DAYS_VN, WEEK_DAYS_EN } from './state';
-import { HabitStats, MonthRecord } from '../types';
-import { MONTH_NAMES, getDaysInMonth, getDayOfWeek } from '../calendar';
-import { loadHabits, loadRecord, loadSelectedDate, saveSelectedDate, saveRecord, saveHabits } from '../storage';
+import { state, WEEK_DAYS_VN, WEEK_DAYS_EN } from '../common/state';
+import { HabitStats, MonthRecord, Habit } from '../../types/types';
+import { MONTH_NAMES, getDaysInMonth, getDayOfWeek } from '../../utils/calendar';
+import { loadHabits, loadRecord, loadSelectedDate, saveSelectedDate, saveRecord, saveHabits } from '../../services/storage';
 import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
   drawOverallDonutChart,
   drawMoodMotivationTrendChart
-} from '../charts';
-import { triggerConfetti } from '../confetti';
-import { showConfirm } from './confirm';
-import { renderGoalsList } from './goals';
-import { setupJournalPanel } from './journal';
-import { TRANSLATIONS, translateUI } from './translations';
+} from '../../services/charts';
+import { triggerConfetti } from '../../utils/confetti';
+import { showConfirm } from '../common/confirm';
+import { renderGoalsList, renderWeeklyGoalsWeekSelect, renderWeeklyGoalsList } from '../goals/goals';
+import { renderGarden } from './garden';
+import { renderCoachInsights } from './coach';
+import { renderMemoryBook } from './review';
+import { setupJournalPanel } from '../journal/journal';
+import { TRANSLATIONS, translateUI } from '../common/translations';
 
 // Initialize State
 export function initializeState(): void {
@@ -26,53 +29,93 @@ export function initializeState(): void {
   state.currentRecord = loadRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.habits);
 }
 
-// Helper: Calculate Streak metrics for a checklist
-export function calculateStreak(checks: boolean[]): { currentStreak: number; maxStreak: number } {
+// Helper: Calculate Streak metrics for a checklist, dynamically traversing month boundaries
+export function calculateStreak(
+  habitId: string,
+  checks: boolean[],
+  username: string,
+  startYear: number,
+  startMonth: number,
+  habits: Habit[]
+): { currentStreak: number; maxStreak: number } {
   const today = new Date();
   const daysCount = checks.length;
   
-  // 1. Calculate Max Streak
-  let maxStreak = 0;
+  // 1. Calculate Local Max Streak in active month checks
+  let localMaxStreak = 0;
   let runningStreak = 0;
   for (let i = 0; i < daysCount; i++) {
     if (checks[i]) {
       runningStreak++;
-      if (runningStreak > maxStreak) {
-        maxStreak = runningStreak;
+      if (runningStreak > localMaxStreak) {
+        localMaxStreak = runningStreak;
       }
     } else {
       runningStreak = 0;
     }
   }
 
-  // 2. Calculate Current Streak
-  let startIndex = daysCount - 1;
-  const isCurrentMonth = today.getFullYear() === state.currentYear && today.getMonth() === state.currentMonth;
-  
-  if (isCurrentMonth) {
-    startIndex = Math.min(daysCount - 1, today.getDate() - 1);
+  // 2. Calculate Current Streak across month boundaries
+  let currentStreak = 0;
+  const isCurrentMonth = today.getFullYear() === startYear && today.getMonth() === startMonth;
+  let startDay = isCurrentMonth ? today.getDate() : getDaysInMonth(startYear, startMonth);
+
+  // Cache loaded records to avoid loading them repeatedly
+  const recordCache: Record<string, MonthRecord> = {};
+  const getRecord = (y: number, m: number): MonthRecord | null => {
+    const key = `${y}_${m}`;
+    if (recordCache[key] !== undefined) return recordCache[key];
+    const rec = loadRecord(username, y, m, habits);
+    recordCache[key] = rec;
+    return rec;
+  };
+
+  const isChecked = (y: number, m: number, d: number): boolean => {
+    const rec = getRecord(y, m);
+    if (!rec) return false;
+    const checksArr = rec.checks[habitId];
+    return !!(checksArr && checksArr[d - 1]);
+  };
+
+  let traceYear = startYear;
+  let traceMonth = startMonth;
+  let traceDay = startDay;
+
+  let isTodayChecked = isChecked(traceYear, traceMonth, traceDay);
+  let isYesterdayChecked = false;
+
+  if (!isTodayChecked && isCurrentMonth) {
+    const yesterdayDate = new Date(today);
+    yesterdayDate.setDate(today.getDate() - 1);
+    
+    isYesterdayChecked = isChecked(yesterdayDate.getFullYear(), yesterdayDate.getMonth(), yesterdayDate.getDate());
+    if (isYesterdayChecked) {
+      traceYear = yesterdayDate.getFullYear();
+      traceMonth = yesterdayDate.getMonth();
+      traceDay = yesterdayDate.getDate();
+    }
   }
 
-  let currentStreak = 0;
-  
-  if (startIndex >= 0) {
-    // If today is checked or yesterday is checked, we trace back. Otherwise streak is 0.
-    const isTodayChecked = checks[startIndex];
-    const isYesterdayChecked = startIndex > 0 ? checks[startIndex - 1] : false;
-    
-    if (isTodayChecked || isYesterdayChecked) {
-      // Trace back from the latest checked day
-      const startTrace = isTodayChecked ? startIndex : startIndex - 1;
-      for (let i = startTrace; i >= 0; i--) {
-        if (checks[i]) {
-          currentStreak++;
-        } else {
-          break;
+  if (isTodayChecked || isYesterdayChecked) {
+    while (true) {
+      if (isChecked(traceYear, traceMonth, traceDay)) {
+        currentStreak++;
+        traceDay--;
+        if (traceDay < 1) {
+          traceMonth--;
+          if (traceMonth < 0) {
+            traceMonth = 11;
+            traceYear--;
+          }
+          traceDay = getDaysInMonth(traceYear, traceMonth);
         }
+      } else {
+        break;
       }
     }
   }
 
+  const maxStreak = Math.max(localMaxStreak, currentStreak);
   return { currentStreak, maxStreak };
 }
 
@@ -101,7 +144,14 @@ export function calculateStats(): {
     const progress = goal > 0 ? Math.round((actual / goal) * 100) : 0;
     totalCompleted += actual;
 
-    const { currentStreak, maxStreak } = calculateStreak(checks);
+    const { currentStreak, maxStreak } = calculateStreak(
+      h.id,
+      checks,
+      state.currentUser!.username,
+      state.currentYear,
+      state.currentMonth,
+      state.habits
+    );
 
     return {
       id: h.id,
@@ -190,6 +240,12 @@ export function renderAll(): void {
     }
   }
 
+  // Sync calendar selectors with state
+  const selectYear = document.getElementById('select-year') as HTMLSelectElement;
+  const selectMonth = document.getElementById('select-month') as HTMLSelectElement;
+  if (selectYear) selectYear.value = state.currentYear.toString();
+  if (selectMonth) selectMonth.value = state.currentMonth.toString();
+
   // Render stats labels
   const elGoal = document.getElementById('stat-goal');
   const elCompleted = document.getElementById('stat-completed');
@@ -211,11 +267,24 @@ export function renderAll(): void {
   // Render Monthly Goals list
   renderGoalsList();
 
+  // Render Weekly Goals list
+  renderWeeklyGoalsWeekSelect();
+  renderWeeklyGoalsList();
+
+  // Render Habit Garden
+  renderGarden();
+
   // Draw Charts
   drawDailyProgressChart(stats.dailyCompletionRates);
   drawWeeklyProgressChart(stats.weeklyCompletionRates);
   drawOverallDonutChart(stats.completionRate, stats.totalCompleted, stats.totalLeft);
   drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
+
+  // Render AI Coach Insights
+  renderCoachInsights();
+
+  // Render Monthly Memory Book
+  renderMemoryBook();
 }
 
 // Render dynamic spreadsheet check tables
@@ -305,9 +374,14 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
         const isWeekend = (dayOfWeekIdx === 0 || dayOfWeekIdx === 6);
         const cellClass = isWeekend ? 'cell-checkbox weekend' : 'cell-checkbox';
         
+        const noteText = (state.currentRecord!.notes && state.currentRecord!.notes[h.id] && state.currentRecord!.notes[h.id][d]) || '';
+        const noteIndicator = noteText ? `<div class="note-indicator"></div>` : '';
+        const titleText = noteText ? `title="${state.currentLang === 'vi' ? 'Ghi chú' : 'Note'}: ${noteText.replace(/"/g, '&quot;')}"` : '';
+
         html += `
-          <td class="${cellClass}" data-habit="${h.id}" data-day="${d}">
+          <td class="${cellClass}" data-habit="${h.id}" data-day="${d}" ${titleText}>
             <input type="checkbox" class="habit-checkbox" ${isChecked ? 'checked' : ''}>
+            ${noteIndicator}
           </td>
         `;
       }
@@ -322,7 +396,7 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
     for (let d = 0; d < daysCount; d++) {
       const rating = state.currentRecord.mood[d] || 0;
       html += `
-        <td>
+        <td class="cell-mental-state">
           <select class="select-mental select-mood" data-day="${d}">
             <option value="0">-</option>
             ${Array.from({ length: 10 }, (_, i) => i + 1).map(num => `
@@ -341,7 +415,7 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
     for (let d = 0; d < daysCount; d++) {
       const rating = state.currentRecord.motivation[d] || 0;
       html += `
-        <td>
+        <td class="cell-mental-state">
           <select class="select-mental select-motivation" data-day="${d}">
             <option value="0">-</option>
             ${Array.from({ length: 10 }, (_, i) => i + 1).map(num => `
@@ -399,6 +473,18 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
         drawDailyProgressChart(updatedStats.dailyCompletionRates);
         drawWeeklyProgressChart(updatedStats.weeklyCompletionRates);
         drawOverallDonutChart(updatedStats.completionRate, updatedStats.totalCompleted, updatedStats.totalLeft);
+        renderGarden();
+      });
+
+      cell.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!state.currentUser || !state.currentRecord) return;
+        const habitId = cell.getAttribute('data-habit') || '';
+        const day = parseInt(cell.getAttribute('data-day') || '0');
+        const habitObj = state.habits.find(h => h.id === habitId);
+        if (!habitObj) return;
+        openHabitNoteModal(habitId, day, habitObj);
       });
     });
 
@@ -586,6 +672,129 @@ export function importBackup(file: File): void {
   reader.readAsText(file);
 }
 
+export function exportToCSV(): void {
+  if (!state.currentUser || !state.currentRecord) return;
+  
+  const username = state.currentUser.username;
+  const fullName = state.currentUser.fullName || username;
+  const year = state.currentYear;
+  const month = state.currentMonth;
+  const daysCount = getDaysInMonth(year, month);
+  
+  const monthName = state.currentLang === 'vi' 
+    ? `Tháng ${month + 1}` 
+    : MONTH_NAMES[month];
+
+  let csv = '';
+
+  // 1. Title Meta
+  csv += `BÁO CÁO LỊCH TRÌNH - ${monthName.toUpperCase()} / ${year}\n`;
+  csv += `Người dùng,${fullName} (${username})\n`;
+  csv += `Ngày xuất báo cáo,${new Date().toLocaleDateString()}\n\n`;
+
+  // 2. Main Matrix Header
+  csv += `Thói quen / Ngày,`;
+  for (let d = 1; d <= daysCount; d++) {
+    csv += `${d},`;
+  }
+  csv += `Đạt %,Chuỗi hiện tại\n`;
+
+  // 3. Habits rows
+  state.habits.forEach(h => {
+    csv += `"${h.name.replace(/"/g, '""')}",`;
+    const checks = state.currentRecord!.checks[h.id] || new Array(daysCount).fill(false);
+    
+    for (let d = 0; d < daysCount; d++) {
+      const note = (state.currentRecord!.notes && state.currentRecord!.notes[h.id] && state.currentRecord!.notes[h.id][d]) || '';
+      const checkVal = checks[d] ? 'x' : '';
+      const cellVal = note ? `"${checkVal} (${note.replace(/"/g, '""')})"` : checkVal;
+      csv += `${cellVal},`;
+    }
+    
+    const actual = checks.filter(c => c).length;
+    const progress = Math.round((actual / daysCount) * 100);
+    const { currentStreak } = calculateStreak(h.id, checks, username, year, month, state.habits);
+    csv += `${progress}%,${currentStreak}\n`;
+  });
+
+  // 4. Mood row
+  csv += `Tâm trạng (Mood),`;
+  for (let d = 0; d < daysCount; d++) {
+    const mVal = state.currentRecord!.mood[d] || 0;
+    csv += mVal > 0 ? `${mVal},` : ',';
+  }
+  csv += `,\n`;
+
+  // 5. Motivation row
+  csv += `Động lực (Motivation),`;
+  for (let d = 0; d < daysCount; d++) {
+    const motVal = state.currentRecord!.motivation[d] || 0;
+    csv += motVal > 0 ? `${motVal},` : ',';
+  }
+  csv += `,\n`;
+
+  // 6. Diary Reflections row
+  csv += `Nhật ký (Reflections),`;
+  for (let d = 0; d < daysCount; d++) {
+    const diaryText = state.currentRecord!.diary[d] || '';
+    csv += `"${diaryText.replace(/"/g, '""')}",`;
+  }
+  csv += `,\n\n`;
+
+  // 7. Monthly Goals Section
+  csv += `MỤC TIÊU TRONG THÁNG\n`;
+  const mGoals = state.currentRecord!.goals || [];
+  if (mGoals.length === 0) {
+    csv += `Chưa đặt mục tiêu tháng,\n`;
+  } else {
+    mGoals.forEach(g => {
+      const status = g.completed 
+        ? (state.currentLang === 'vi' ? 'Hoàn thành' : 'Completed')
+        : (state.currentLang === 'vi' ? 'Chưa hoàn thành' : 'Pending');
+      csv += `"${g.text.replace(/"/g, '""')}",[${status}]\n`;
+    });
+  }
+  csv += `\n`;
+
+  // 8. Weekly Goals Section
+  csv += `MỤC TIÊU TRONG TUẦN\n`;
+  const wGoals = state.currentRecord!.weeklyGoals || [];
+  const weekLabel = state.currentLang === 'vi' ? 'Tuần' : 'Week';
+  
+  const daysInMonth = getDaysInMonth(year, month);
+  const weeksCount = daysInMonth > 28 ? 5 : 4;
+
+  for (let w = 0; w < weeksCount; w++) {
+    csv += `${weekLabel} ${w + 1}:\n`;
+    const filtered = wGoals.filter(g => g.weekIndex === w);
+    if (filtered.length === 0) {
+      csv += `,Chưa đặt mục tiêu tuần\n`;
+    } else {
+      filtered.forEach(g => {
+        const status = g.completed 
+          ? (state.currentLang === 'vi' ? 'Hoàn thành' : 'Completed')
+          : (state.currentLang === 'vi' ? 'Chưa hoàn thành' : 'Pending');
+        csv += `,"${g.text.replace(/"/g, '""')}",[${status}]\n`;
+      });
+    }
+  }
+
+  // Prepend UTF-8 BOM to prevent Vietnamese Mojibake in Windows Excel
+  const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  
+  const safeMonthName = monthName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const filename = `bao_cao_lich_trinh_${safeMonthName}_${year}.csv`;
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 export function initTracker(): void {
   // Bind calendar selector select elements
   const selectYear = document.getElementById('select-year') as HTMLSelectElement;
@@ -678,6 +887,8 @@ export function initTracker(): void {
         state.currentRecord.motivation = new Array(daysCount).fill(0);
         state.currentRecord.diary = new Array(daysCount).fill('');
         state.currentRecord.goals = [];
+        state.currentRecord.weeklyGoals = [];
+        state.currentRecord.wateredDays = [];
 
         saveRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.currentRecord);
 
@@ -710,6 +921,14 @@ export function initTracker(): void {
     });
   }
 
+  // Excel Export button click trigger
+  const btnExportExcel = document.getElementById('btn-export-excel');
+  if (btnExportExcel) {
+    btnExportExcel.addEventListener('click', () => {
+      exportToCSV();
+    });
+  }
+
   // Redraw graph plots on window resizes
   window.addEventListener('resize', () => {
     if (state.currentUser && state.currentRecord) {
@@ -720,4 +939,57 @@ export function initTracker(): void {
       drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
     }
   });
+}
+
+export function openHabitNoteModal(habitId: string, day: number, habitObj: Habit): void {
+  const modal = document.getElementById('modal-habit-note') as HTMLElement;
+  const label = document.getElementById('habit-note-context-label');
+  const textarea = document.getElementById('textarea-habit-note') as HTMLTextAreaElement;
+  const btnClose = modal?.querySelector('.modal-close-trigger');
+  const btnCancel = modal?.querySelector('.btn-close-note');
+  const btnSave = modal?.querySelector('.btn-save-note');
+
+  if (!modal || !label || !textarea || !btnSave) return;
+
+  const dayNum = day + 1;
+  const emoji = habitObj.emoji;
+  const name = habitObj.name;
+  label.textContent = state.currentLang === 'vi' 
+    ? `${emoji} ${name} - Ngày ${dayNum}` 
+    : `${emoji} ${name} - Day ${dayNum}`;
+
+  if (!state.currentRecord!.notes) {
+    state.currentRecord!.notes = {};
+  }
+  if (!state.currentRecord!.notes[habitId]) {
+    state.currentRecord!.notes[habitId] = new Array(getDaysInMonth(state.currentYear, state.currentMonth)).fill('');
+  }
+  textarea.value = state.currentRecord!.notes[habitId][day] || '';
+
+  modal.classList.add('active');
+
+  const handleSave = () => {
+    if (!state.currentUser || !state.currentRecord) return;
+    const noteText = textarea.value.trim();
+    state.currentRecord.notes![habitId][day] = noteText;
+    saveRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.currentRecord);
+    modal.classList.remove('active');
+    renderAll();
+    cleanup();
+  };
+
+  const handleClose = () => {
+    modal.classList.remove('active');
+    cleanup();
+  };
+
+  const cleanup = () => {
+    btnSave.removeEventListener('click', handleSave);
+    if (btnClose) btnClose.removeEventListener('click', handleClose);
+    if (btnCancel) btnCancel.removeEventListener('click', handleClose);
+  };
+
+  btnSave.addEventListener('click', handleSave);
+  if (btnClose) btnClose.addEventListener('click', handleClose);
+  if (btnCancel) btnCancel.addEventListener('click', handleClose);
 }

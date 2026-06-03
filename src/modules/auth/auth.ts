@@ -1,10 +1,10 @@
-import { User } from '../types';
-import { verifyUser, createSession, saveUser } from '../storage';
-import { state } from './state';
-import { TRANSLATIONS, translateUI } from './translations';
-import { logoutUser } from './profile';
-import { initializeState, renderAll } from './tracker';
-import { setupJournalPanel } from './journal';
+import { User } from '../../types/types';
+import { verifyUser, createSession, saveUser } from '../../services/storage';
+import { state } from '../common/state';
+import { TRANSLATIONS, translateUI } from '../common/translations';
+import { logoutUser } from '../profile/profile';
+import { initializeState, renderAll } from '../tracker/tracker';
+import { setupJournalPanel } from '../journal/journal';
 
 // Bind Authentication View Forms and State Switching
 export function initAuth(): void {
@@ -143,21 +143,24 @@ export function initAuth(): void {
       const success = saveUser(newUser);
 
       if (success) {
-        createSession(newUser);
-        state.currentUser = newUser;
-        
         formRegister.reset();
         if (registerError) registerError.style.display = 'none';
 
-        authContainer.style.display = 'none';
-        dashboardContainer.style.display = 'block';
+        // Redirect back to login view
+        registerView.style.display = 'none';
+        loginView.style.display = 'block';
 
-        initializeState();
-        translateUI();
-        setupJournalPanel();
-        renderAll();
-        
-        alert(`${state.currentUser.fullName}! ${TRANSLATIONS[state.currentLang].alert_register_success}`);
+        // Pre-fill username in login form
+        const loginUsername = document.getElementById('login-username') as HTMLInputElement;
+        if (loginUsername) {
+          loginUsername.value = usernameVal;
+          const loginPassword = document.getElementById('login-password') as HTMLInputElement;
+          if (loginPassword) loginPassword.focus();
+        }
+
+        alert(state.currentLang === 'vi'
+          ? 'Đăng ký thành công! Hãy đăng nhập để bắt đầu.'
+          : 'Registration successful! Please log in to start.');
       } else {
         if (registerError) {
           registerError.textContent = TRANSLATIONS[state.currentLang].alert_username_taken;

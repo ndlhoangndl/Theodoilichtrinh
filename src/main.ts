@@ -1,19 +1,21 @@
-import { state } from './modules/state';
-import { translateUI } from './modules/translations';
-import { initAuth, setupPasswordToggles } from './modules/auth';
-import { initProfile, renderProfilePage } from './modules/profile';
-import { setupJournalPanel } from './modules/journal';
-import { initGoals } from './modules/goals';
-import { initHabits } from './modules/habits';
-import { initTracker, initializeState, renderAll, calculateStats } from './modules/tracker';
-import { initConfirmOverlay } from './modules/confirm';
-import { getCurrentSession } from './storage';
+import { state } from './modules/common/state';
+import { translateUI } from './modules/common/translations';
+import { initAuth, setupPasswordToggles } from './modules/auth/auth';
+import { initProfile, renderProfilePage } from './modules/profile/profile';
+import { setupJournalPanel, initJournalPrompts } from './modules/journal/journal';
+import { initGoals } from './modules/goals/goals';
+import { initHabits } from './modules/tracker/habits';
+import { initTracker, initializeState, renderAll, calculateStats } from './modules/tracker/tracker';
+import { initConfirmOverlay } from './modules/common/confirm';
+import { initGarden } from './modules/tracker/garden';
+import { initMonthlyReview } from './modules/tracker/review';
+import { getCurrentSession } from './services/storage';
 import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
   drawOverallDonutChart,
   drawMoodMotivationTrendChart
-} from './charts';
+} from './services/charts';
 
 function initApp(): void {
   // Load language preference
@@ -30,6 +32,9 @@ function initApp(): void {
   initHabits();
   initTracker();
   initConfirmOverlay();
+  initGarden();
+  initJournalPrompts();
+  initMonthlyReview();
 
   // Toggle Actions Menu Dropdown
   const btnMenuTrigger = document.getElementById('btn-menu-trigger');

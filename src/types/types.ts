@@ -27,7 +27,20 @@ export interface MonthRecord {
   // Array of reflections/notes (or empty strings if unset) for each day of the month
   diary: string[];
   // Checklist for custom monthly targets
-  goals: { id: string; text: string; completed: boolean }[];
+  goals: { id: string; text: string; completed: boolean; pinned?: boolean }[];
+  // Checklist for custom weekly targets
+  weeklyGoals?: { id: string; weekIndex: number; text: string; completed: boolean; pinned?: boolean }[];
+  // Tracked days of the month when the user watered the plant
+  wateredDays?: number[];
+  // Optional monthly reflection review data
+  monthlyReview?: {
+    q1: string;
+    q2: string;
+    q3: string;
+    completedAt: string;
+  };
+  // Optional daily habit notes
+  notes?: Record<string, string[]>;
 }
 
 export interface HabitStats {

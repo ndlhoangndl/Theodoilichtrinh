@@ -1,8 +1,8 @@
-import { updateUser, createSession, clearSession } from '../storage';
-import { state } from './state';
-import { TRANSLATIONS, translateUI } from './translations';
-import { showConfirm } from './confirm';
-import { renderAll } from './tracker';
+import { updateUser, createSession, clearSession } from '../../services/storage';
+import { state } from '../common/state';
+import { TRANSLATIONS, translateUI } from '../common/translations';
+import { showConfirm } from '../common/confirm';
+import { renderAll } from '../tracker/tracker';
 
 // Render Profile Page details (SONICLE layout)
 export function renderProfilePage(): void {

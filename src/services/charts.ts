@@ -1,5 +1,5 @@
-import { MonthRecord } from './types';
-import { getDaysInMonth } from './calendar';
+import { MonthRecord } from '../types/types';
+import { getDaysInMonth } from '../utils/calendar';
 
 // Draw Daily Progress SVG Bar Chart
 export function drawDailyProgressChart(rates: number[]): void {

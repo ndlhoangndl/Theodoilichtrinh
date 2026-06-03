@@ -147,6 +147,7 @@
             <button class="menu-item" id="btn-manage-habits" data-i18n="btn_manage">⚙️ Cấu hình</button>
             <button class="menu-item" id="btn-backup-json" title="Tải file sao lưu dữ liệu (.json)" data-i18n-title="btn_backup_title" data-i18n="btn_backup">💾 Sao lưu</button>
             <button class="menu-item" id="btn-restore-json" title="Nhập dữ liệu từ file sao lưu (.json)" data-i18n-title="btn_restore_title" data-i18n="btn_restore">📂 Khôi phục</button>
+            <button class="menu-item" id="btn-export-excel" title="Tải báo cáo lịch trình tháng hiện tại dưới dạng file CSV" data-i18n-title="btn_export_excel_title" data-i18n="btn_export_excel">📊 Xuất Excel (CSV)</button>
             <div class="menu-divider"></div>
             <button class="menu-item btn-danger-text" id="btn-reset-data" title="Xóa dữ liệu thói quen của tháng hiện tại" data-i18n-title="btn_reset_title" data-i18n="btn_reset">🗑️ Xóa</button>
             <button class="menu-item btn-danger-text" id="btn-logout" title="Đăng xuất khỏi tài khoản" data-i18n-title="btn_logout_title" data-i18n="btn_logout">🚪 Đăng xuất</button>
@@ -237,6 +238,13 @@
                 </div>
                 <span id="journal-save-status" style="font-size:11px; color:var(--accent-green); font-weight:600; display:none; transition: all 0.2s;">✓ Đã lưu tự động</span>
               </div>
+              <!-- Quick Prompt Template Chips -->
+              <div id="journal-prompts-container" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom: 2px;">
+                <button type="button" class="btn prompt-chip" data-prompt="gratitude" style="font-size: 11px; padding: 3px 10px; border-radius: 12px; height: auto; background: var(--bg-widget); border: 1px solid var(--border-color-dark); color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; box-shadow: none;">🙏 <span data-i18n="prompt_gratitude">Biết ơn</span></button>
+                <button type="button" class="btn prompt-chip" data-prompt="lesson" style="font-size: 11px; padding: 3px 10px; border-radius: 12px; height: auto; background: var(--bg-widget); border: 1px solid var(--border-color-dark); color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; box-shadow: none;">📖 <span data-i18n="prompt_lesson">Bài học</span></button>
+                <button type="button" class="btn prompt-chip" data-prompt="success" style="font-size: 11px; padding: 3px 10px; border-radius: 12px; height: auto; background: var(--bg-widget); border: 1px solid var(--border-color-dark); color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; box-shadow: none;">🏆 <span data-i18n="prompt_success">Thành tựu</span></button>
+                <button type="button" class="btn prompt-chip" data-prompt="plan" style="font-size: 11px; padding: 3px 10px; border-radius: 12px; height: auto; background: var(--bg-widget); border: 1px solid var(--border-color-dark); color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; box-shadow: none;">📅 <span data-i18n="prompt_plan">Ngày mai</span></button>
+              </div>
               <textarea id="textarea-journal" class="form-control" rows="4" placeholder="Hôm nay lịch trình của bạn thế nào?..." data-i18n-placeholder="journal_placeholder" style="resize:vertical; min-height:80px; font-family:var(--font-body); font-size:14px; line-height:1.6;"></textarea>
             </div>
           </div>
@@ -244,6 +252,27 @@
 
         <!-- Sidebar Column: Goals & Leaderboard -->
         <div class="sidebar-column">
+          <!-- Habit Garden Panel -->
+          <div class="panel" id="panel-habit-garden">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <span data-i18n="panel_habit_garden">Khu Vườn Thói Quen</span>
+              <span id="garden-growth-percent" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-orange); color:var(--text-light); padding:2px 6px; border-radius:10px;">...</span>
+            </div>
+            <div class="panel-content" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; min-height:180px; position:relative; overflow:hidden;">
+              <!-- Visual Plant SVG container -->
+              <div id="garden-plant-container" style="width:100%; height:130px; display:flex; align-items:center; justify-content:center; position:relative;">
+                <!-- Generated dynamically by JS -->
+              </div>
+              <!-- Action & Status -->
+              <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:100%;">
+                <div id="garden-status-text" style="font-size:12px; font-weight:600; color:var(--text-muted); text-align:center; min-height:18px;">...</div>
+                <button type="button" class="btn btn-primary" id="btn-water-plant" disabled style="width:100%; max-width:160px; padding:6px 12px; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer;">
+                  💧 <span data-i18n="btn_water_plant">Tưới nước</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Monthly Goals checklist -->
           <div class="panel">
             <div class="panel-header">
@@ -258,6 +287,30 @@
               </form>
               <!-- Goals List container -->
               <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Weekly Goals checklist -->
+          <div class="panel">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <span data-i18n="panel_weekly_goals">Mục tiêu trong tuần</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <select id="select-goal-week" style="font-size: 11px; padding: 3px 6px; border-radius: var(--radius-sm); border: none; background: rgba(255,255,255,0.2); color: var(--text-light); font-weight: 600; outline: none; cursor: pointer;">
+                  <!-- Options generated dynamically by JS -->
+                </select>
+                <span id="weekly-goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
+              </div>
+            </div>
+            <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
+              <!-- Form to add weekly goal -->
+              <form id="form-add-weekly-goal" style="display:flex; gap:6px;">
+                <input type="text" id="input-new-weekly-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tuần..." data-i18n-placeholder="weekly_goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
+                <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
+              </form>
+              <!-- Weekly Goals List container -->
+              <div id="weekly-goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
                 <!-- Generated by JS -->
               </div>
             </div>
@@ -353,6 +406,40 @@
             <div class="panel-content">
               <div class="trend-chart-container">
                 <svg class="chart-svg" id="trend-chart-svg"></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Habit Coach Panel -->
+          <div class="panel coach-panel" style="margin-top: 20px;">
+            <div class="panel-header">
+              <span data-i18n="panel_coach">🤖 Trợ Lý Phân Tích Thói Quen (AI Habit Coach)</span>
+            </div>
+            <div class="panel-content">
+              <div class="coach-container">
+                <div class="coach-header">
+                  <div class="coach-avatar">🤖</div>
+                  <div class="coach-welcome">
+                    <h4 id="coach-greeting">Chào bạn, tôi là trợ lý Lịch Trình.</h4>
+                    <p id="coach-intro">Dưới đây là một số phân tích và đề xuất giúp bạn tối ưu hóa lịch trình của mình:</p>
+                  </div>
+                </div>
+                <div class="coach-insights-grid" id="coach-insights-list">
+                  <!-- Dynamic Insights -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Memory Book / Monthly Review Panel -->
+          <div class="panel memory-panel" style="margin-top: 20px;">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span data-i18n="panel_memory_book">📖 Cuốn Sách Kỷ Niệm (Monthly Reviews)</span>
+              <button class="btn btn-sm" id="btn-open-monthly-review" style="font-size: 11px; padding: 4px 10px; height: auto;">✍️ Viết Nhìn Lại</button>
+            </div>
+            <div class="panel-content">
+              <div class="memory-cards-grid" id="memory-cards-list">
+                <!-- Polaroid cards generated by JS -->
               </div>
             </div>
           </div>
@@ -626,6 +713,67 @@
         <div id="edit-password-error" class="auth-error-msg" style="display: none;"></div>
         <button type="submit" class="btn btn-primary" style="display: flex !important; margin: 20px auto 0 auto !important; min-width: 180px; height:38px; justify-content: center; align-items: center;" data-i18n="modal_btn_change_password">Cập nhật mật khẩu</button>
       </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nhìn lại tháng (Monthly Review Memory Book) -->
+<div class="modal" id="modal-monthly-review">
+  <div class="modal-content" style="max-width: 550px;">
+    <div class="modal-header">
+      <h3 id="monthly-review-title" data-i18n="modal_review_title">✍️ Nhìn Lại Tháng</h3>
+      <button class="modal-close-trigger" style="border:none; background:transparent; font-size:16px; cursor:pointer; color:var(--text-muted);">✕</button>
+    </div>
+    <div class="modal-body" style="padding: 20px 24px;">
+      <div id="review-step-1" class="review-step">
+        <h4 id="review-step-1-title" data-i18n="review_step_1_title" style="margin-bottom: 12px; color: var(--text-main); font-family: var(--font-title); font-weight: 700; font-size:14px;">Bước 1: Điểm số & Số liệu tháng qua</h4>
+        <div class="review-stats-summary" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+          <!-- Stats populated by JS -->
+        </div>
+        <button type="button" class="btn btn-next-step" style="width: 100%; height:38px; display:flex; justify-content:center; align-items:center; font-weight:700;" data-i18n="btn_next">Tiếp theo ➡️</button>
+      </div>
+      
+      <div id="review-step-2" class="review-step" style="display: none;">
+        <h4 id="review-step-2-title" data-i18n="review_step_2_title" style="margin-bottom: 12px; color: var(--text-main); font-family: var(--font-title); font-weight: 700; font-size:14px;">Bước 2: Phản tư & Nhìn nhận</h4>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label for="review-q1" id="label-q1" data-i18n="review_label_q1" style="display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">1. Điều bạn tự hào nhất trong tháng qua?</label>
+          <textarea id="review-q1" class="form-control" rows="3" placeholder="Ví dụ: Duy trì thói quen đều đặn, rèn luyện được tính tự giác..."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label for="review-q2" id="label-q2" data-i18n="review_label_q2" style="display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">2. Bài học lớn nhất bạn rút ra được?</label>
+          <textarea id="review-q2" class="form-control" rows="3" placeholder="Ví dụ: Cần đi ngủ sớm hơn để có năng lượng tích cực cho sáng mai..."></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label for="review-q3" id="label-q3" data-i18n="review_label_q3" style="display:block; font-size:12px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">3. Bạn sẽ cải thiện điều gì vào tháng sau?</label>
+          <textarea id="review-q3" class="form-control" rows="3" placeholder="Ví dụ: Đặt lịch đi ngủ cố định từ 23:00 và đọc 5 trang sách..."></textarea>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="button" class="btn btn-prev-step" style="flex: 1; background: var(--bg-selected); color: var(--text-main); height:38px; display:flex; justify-content:center; align-items:center; font-weight:600;" data-i18n="btn_back">⬅️ Quay lại</button>
+          <button type="button" class="btn btn-save-review" style="flex: 1; height:38px; display:flex; justify-content:center; align-items:center; font-weight:700;" data-i18n="btn_save_memory">Lưu kỷ niệm 💾</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ghi chú thói quen (Habit Note Modal) -->
+<div class="modal" id="modal-habit-note">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-header">
+      <h3 id="habit-note-title" data-i18n="modal_note_title">📝 Ghi chú thói quen</h3>
+      <button class="modal-close-trigger" style="border:none; background:transparent; font-size:16px; cursor:pointer; color:var(--text-muted);">✕</button>
+    </div>
+    <div class="modal-body" style="padding: 16px 20px;">
+      <div style="margin-bottom: 12px; font-weight: 600; color: var(--text-main); font-size: 13px;" id="habit-note-context-label">
+        <!-- populated dynamically -->
+      </div>
+      <div class="form-group" style="margin-bottom: 16px;">
+        <textarea id="textarea-habit-note" class="form-control" rows="3" placeholder="Nhập ghi chú nhỏ cho ngày này (Ví dụ: Đọc chương 2, Chạy bộ 5km...)..." data-i18n-placeholder="note_placeholder" style="font-family:var(--font-body); font-size:13px; line-height:1.5; resize:vertical; min-height:60px;"></textarea>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-close-note" style="flex: 1; background: var(--bg-selected); color: var(--text-main); height:34px; font-size:12px; font-weight:600; display:flex; justify-content:center; align-items:center;" data-i18n="btn_cancel">Hủy</button>
+        <button type="button" class="btn btn-save-note" style="flex: 1; height:34px; font-size:12px; font-weight:700; display:flex; justify-content:center; align-items:center;" data-i18n="btn_save">Lưu</button>
+      </div>
     </div>
   </div>
 </div>
