@@ -92,9 +92,10 @@ export function initAuth(): void {
         refreshAdminChat();
       } catch (err: any) {
         if (loginError) {
-          loginError.textContent = state.currentLang === 'vi'
-            ? 'Tên đăng nhập hoặc mật khẩu không chính xác!'
-            : 'Incorrect username or password!';
+          const isNetworkError = err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('fetch'));
+          loginError.textContent = isNetworkError
+            ? (state.currentLang === 'vi' ? 'Không thể kết nối đến máy chủ. Vui lòng chạy server backend ở cổng 5000!' : 'Cannot connect to backend server. Please make sure the server is running on port 5000!')
+            : (err.message || (state.currentLang === 'vi' ? 'Tên đăng nhập hoặc mật khẩu không chính xác!' : 'Incorrect username or password!'));
           loginError.style.display = 'block';
         }
       }
