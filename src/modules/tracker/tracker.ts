@@ -437,15 +437,22 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
   const daysHeader = document.getElementById('habit-grid-header');
   if (daysHeader) {
     let html = '';
+    const today = new Date();
     for (let d = 1; d <= daysCount; d++) {
       const dayIdx = getDayOfWeek(state.currentYear, state.currentMonth, d);
       const dayName = dayNames[dayIdx];
       const isWeekend = (dayIdx === 0 || dayIdx === 6);
-      const cellClass = isWeekend ? 'col-day-header weekend' : 'col-day-header';
+      
+      const isToday = (today.getFullYear() === state.currentYear && today.getMonth() === state.currentMonth && today.getDate() === d);
+      const cellClass = isToday 
+        ? 'col-day-header today' 
+        : (isWeekend ? 'col-day-header weekend' : 'col-day-header');
       
       const hasJournal = state.currentRecord.diary && state.currentRecord.diary[d - 1] && state.currentRecord.diary[d - 1].trim() !== '';
       const tooltipJournal = state.currentLang === 'vi' ? 'Có nhật ký' : 'Diary notes exist';
-      const journalIndicator = hasJournal ? `<div style="font-size: 8px; color: var(--accent-orange); margin-top:-2px;" title="${tooltipJournal}">✏️</div>` : '';
+      const journalIndicator = hasJournal 
+        ? `<div style="font-size: 8px; color: ${isToday ? '#ffffff' : 'var(--accent-orange)'}; margin-top:-2px;" title="${tooltipJournal}">✏️</div>` 
+        : '';
       const headerTitle = state.currentLang === 'vi' ? 'Click để viết nhật ký ngày này' : 'Click to write diary for this day';
 
       html += `

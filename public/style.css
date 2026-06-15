@@ -438,6 +438,14 @@ body.dark-theme .btn-danger:hover {
   color: var(--accent-orange);
 }
 
+.col-day-header.today {
+  background-color: var(--accent-orange) !important;
+  color: #ffffff !important;
+  font-weight: bold;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(200, 128, 97, 0.3);
+}
+
 .week-group-header {
   font-size: 10px;
   text-transform: uppercase;
