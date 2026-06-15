@@ -1,0 +1,1112 @@
+/* Outlook-style Calendar CSS Layout */
+:root {
+  --outlook-bg: #111111;
+  --outlook-panel-bg: #1a1a1a;
+  --outlook-sidebar-bg: #181818;
+  --outlook-border: #292929;
+  --outlook-border-light: #333333;
+  --outlook-text-main: #ffffff;
+  --outlook-text-muted: #adadad;
+  --outlook-accent: #0078d4;
+  --outlook-accent-hover: #106ebe;
+  --outlook-accent-light: #2b3b4a;
+  --outlook-selected-bg: #292929;
+  --outlook-hover-bg: #222222;
+  
+  /* Category Colors */
+  --cat-calendar: #0078d4;
+  --cat-calendar-bg: rgba(0, 120, 212, 0.25);
+  
+  --cat-work: #107c41;
+  --cat-work-bg: rgba(16, 124, 65, 0.25);
+  
+  --cat-school: #b15d02;
+  --cat-school-bg: rgba(177, 93, 2, 0.25);
+  
+  --cat-personal: #8764b8;
+  --cat-personal-bg: rgba(135, 100, 184, 0.25);
+
+  --font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+body.light-theme-outlook {
+  --outlook-bg: #f3f3f3;
+  --outlook-panel-bg: #ffffff;
+  --outlook-sidebar-bg: #f9f9f9;
+  --outlook-border: #e0e0e0;
+  --outlook-border-light: #eaeaea;
+  --outlook-text-main: #242424;
+  --outlook-text-muted: #5c2d2d; /* custom coffee muted for theme contrast */
+  --outlook-text-muted: #616161;
+  --outlook-accent: #0078d4;
+  --outlook-selected-bg: #edebe9;
+  --outlook-hover-bg: #f3f2f1;
+  
+  --cat-calendar-bg: rgba(0, 120, 212, 0.15);
+  --cat-work-bg: rgba(16, 124, 65, 0.15);
+  --cat-school-bg: rgba(177, 93, 2, 0.15);
+  --cat-personal-bg: rgba(135, 100, 184, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--outlook-bg);
+  color: var(--outlook-text-main);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* App Header (Outlook Web top bar style) */
+.app-header {
+  height: 48px;
+  background-color: #0f172a;
+  border-bottom: 1px solid var(--outlook-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-icon {
+  font-size: 20px;
+}
+
+.brand-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-btn {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.header-btn:hover {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+/* Ribbon Menu Tabs */
+.ribbon-tabs {
+  height: 32px;
+  background-color: var(--outlook-panel-bg);
+  border-bottom: 1px solid var(--outlook-border);
+  display: flex;
+  align-items: flex-end;
+  padding-left: 16px;
+  flex-shrink: 0;
+}
+
+.ribbon-tab {
+  background: transparent;
+  border: none;
+  color: var(--outlook-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 16px;
+  cursor: pointer;
+  border-top-left-radius: var(--radius-sm);
+  border-top-right-radius: var(--radius-sm);
+  border-bottom: 2px solid transparent;
+}
+
+.ribbon-tab.active {
+  color: var(--outlook-text-main);
+  border-bottom: 2px solid var(--outlook-accent);
+  background-color: var(--outlook-hover-bg);
+}
+
+/* Toolbar actions panel (Ribbon commands) */
+.toolbar {
+  height: 44px;
+  background-color: var(--outlook-panel-bg);
+  border-bottom: 1px solid var(--outlook-border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  overflow: hidden;
+}
+
+.toolbar-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--outlook-text-main);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.toolbar-btn:hover {
+  background-color: var(--outlook-hover-bg);
+}
+
+.toolbar-btn.primary {
+  background-color: var(--outlook-accent);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.toolbar-btn.primary:hover {
+  background-color: var(--outlook-accent-hover);
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 18px;
+  background-color: var(--outlook-border);
+  margin: 0 4px;
+}
+
+.toolbar-btn.active {
+  background-color: var(--outlook-selected-bg);
+  font-weight: 600;
+}
+
+/* Main Split View (Sidebar + Calendar workspace) */
+.main-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar styling */
+.sidebar {
+  width: 250px;
+  background-color: var(--outlook-sidebar-bg);
+  border-right: 1px solid var(--outlook-border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+/* Mini Calendar Widget */
+.mini-calendar {
+  width: 100%;
+}
+
+.mini-calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.mini-calendar-month-year {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mini-calendar-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.mini-nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--outlook-text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.mini-nav-btn:hover {
+  background-color: var(--outlook-hover-bg);
+  color: var(--outlook-text-main);
+}
+
+.mini-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.mini-day-header {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--outlook-text-muted);
+  padding: 4px 0;
+}
+
+.mini-day-cell {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 0;
+  border-radius: 50%;
+  cursor: pointer;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: var(--outlook-text-main);
+}
+
+.mini-day-cell:hover {
+  background-color: var(--outlook-hover-bg);
+}
+
+.mini-day-cell.other-month {
+  color: var(--outlook-text-muted);
+  opacity: 0.4;
+}
+
+.mini-day-cell.active-focus {
+  background-color: var(--outlook-accent);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.mini-day-cell.today {
+  border: 1px solid var(--outlook-accent);
+}
+
+/* Category Checkboxes List */
+.sidebar-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--outlook-text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.category-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.category-checkbox {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--outlook-accent);
+  cursor: pointer;
+}
+
+.category-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-calendar { background-color: var(--cat-calendar); }
+.dot-work { background-color: var(--cat-work); }
+.dot-school { background-color: var(--cat-school); }
+.dot-personal { background-color: var(--cat-personal); }
+
+/* Main Calendar Workspace */
+.calendar-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: var(--outlook-panel-bg);
+}
+
+/* Workspace Header Row (Date Range & Navigation) */
+.workspace-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--outlook-border);
+}
+
+.date-nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.date-range-display {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.nav-arrows-group {
+  display: flex;
+  border: 1px solid var(--outlook-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.arrow-nav-btn {
+  background: transparent;
+  border: none;
+  color: var(--outlook-text-main);
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.arrow-nav-btn:hover {
+  background-color: var(--outlook-hover-bg);
+}
+
+.today-btn {
+  background-color: transparent;
+  border: 1px solid var(--outlook-border);
+  color: var(--outlook-text-main);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.today-btn:hover {
+  background-color: var(--outlook-hover-bg);
+}
+
+/* Calendar Main Grid Container */
+.calendar-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Grid Headers Row (Monday, Tuesday dates) */
+.grid-header-row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  border-bottom: 1px solid var(--outlook-border);
+  background-color: var(--outlook-panel-bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-empty-cell {
+  border-right: 1px solid var(--outlook-border);
+}
+
+.grid-day-headers {
+  display: grid;
+  /* columns N repeating dynamically set in JS */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+}
+
+.day-header-cell {
+  padding: 10px 4px;
+  text-align: center;
+  border-right: 1px solid var(--outlook-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-header-cell.today-header {
+  color: var(--outlook-accent);
+}
+
+.day-name-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--outlook-text-muted);
+}
+
+.day-date-lbl {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.day-header-cell.today-header .day-date-lbl {
+  background-color: var(--outlook-accent);
+  color: #ffffff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+/* Scrollable Time Grid */
+.grid-time-body {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  position: relative;
+}
+
+/* Time axis column */
+.time-axis-column {
+  border-right: 1px solid var(--outlook-border);
+  text-align: right;
+  padding-right: 8px;
+  font-size: 10px;
+  color: var(--outlook-text-muted);
+  user-select: none;
+}
+
+.hour-axis-cell {
+  height: 60px;
+  padding-top: 4px;
+  line-height: 1;
+}
+
+/* Event slot columns container */
+.grid-columns-container {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  position: relative;
+  height: 1440px; /* 24 hours * 60px */
+}
+
+/* Individual Day Column Grid (background horizontal lines) */
+.day-column-grid {
+  position: relative;
+  height: 100%;
+  border-right: 1px solid var(--outlook-border-light);
+}
+
+.day-column-grid:last-child {
+  border-right: none;
+}
+
+/* Draw grid background lines */
+.hour-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-bottom: 1px dashed var(--outlook-border-light);
+  pointer-events: none;
+}
+
+.hour-grid-line.solid {
+  border-bottom: 1px solid var(--outlook-border);
+}
+
+/* Calendar Event Card Widget */
+.event-card {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.2;
+  transition: transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+  z-index: 10;
+}
+
+.event-card:hover {
+  transform: scale(0.985);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.1);
+}
+
+.event-card-title {
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event-card-time {
+  font-size: 10px;
+  opacity: 0.85;
+}
+
+/* Event Category coloring */
+.event-calendar {
+  background-color: var(--cat-calendar-bg);
+  border-left: 3px solid var(--cat-calendar);
+  color: var(--outlook-text-main);
+}
+.event-work {
+  background-color: var(--cat-work-bg);
+  border-left: 3px solid var(--cat-work);
+  color: var(--outlook-text-main);
+}
+.event-school {
+  background-color: var(--cat-school-bg);
+  border-left: 3px solid var(--cat-school);
+  color: var(--outlook-text-main);
+}
+.event-personal {
+  background-color: var(--cat-personal-bg);
+  border-left: 3px solid var(--cat-personal);
+  color: var(--outlook-text-main);
+}
+
+/* Current Time Indicator line marker */
+.current-time-marker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ea4335; /* red line indicator */
+  z-index: 40;
+  pointer-events: none;
+}
+
+.current-time-marker::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ea4335;
+}
+
+/* Modal Dialog Styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+
+.modal.active {
+  display: flex;
+}
+
+.modal-content {
+  background-color: var(--outlook-panel-bg);
+  border: 1px solid var(--outlook-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--outlook-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--outlook-text-muted);
+  font-size: 16px;
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-btn:hover {
+  background-color: var(--outlook-hover-bg);
+  color: var(--outlook-text-main);
+}
+
+.modal-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--outlook-text-muted);
+}
+
+.form-control {
+  font-family: var(--font-family);
+  font-size: 13px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--outlook-border);
+  background-color: var(--outlook-bg);
+  color: var(--outlook-text-main);
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: var(--outlook-accent);
+}
+
+.form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.form-row > * {
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--outlook-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Event Detail Popover Overlay */
+.event-popover {
+  position: absolute;
+  background-color: var(--outlook-panel-bg);
+  border: 1px solid var(--outlook-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  padding: 16px;
+  z-index: 500;
+  width: 280px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.popover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.popover-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.popover-time {
+  font-size: 11px;
+  color: var(--outlook-text-muted);
+}
+
+.popover-desc {
+  font-size: 11px;
+  color: var(--outlook-text-main);
+  background-color: var(--outlook-bg);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  min-height: 40px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.popover-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.popover-btn {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid var(--outlook-border);
+  color: var(--outlook-text-main);
+}
+
+.popover-btn:hover {
+  background-color: var(--outlook-hover-bg);
+}
+
+.popover-btn.danger {
+  background-color: #a94442;
+  border-color: #903a3a;
+  color: white;
+}
+
+.popover-btn.danger:hover {
+  background-color: #903a3a;
+}
+
+/* Month view styles */
+.month-grid-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  flex: 1;
+  height: 100%;
+}
+
+.month-cell {
+  border-right: 1px solid var(--outlook-border-light);
+  border-bottom: 1px solid var(--outlook-border-light);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: hidden;
+  min-height: 100px;
+}
+
+.month-cell.other-month {
+  opacity: 0.35;
+}
+
+.month-cell-header {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  padding: 2px;
+}
+
+.month-cell.today .month-cell-header {
+  color: var(--outlook-accent);
+}
+
+.month-event-item {
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+/* Scrollbars */
+.calendar-scroll-container::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.calendar-scroll-container::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: var(--outlook-border-light);
+  border-radius: 4px;
+}
+
+.calendar-scroll-container::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--outlook-text-muted);
+}
+
+/* Search Input Styling in Toolbar */
+.toolbar-search {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--outlook-border);
+  background-color: var(--outlook-bg);
+  color: var(--outlook-text-main);
+  outline: none;
+  width: 180px;
+  margin-left: 8px;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.toolbar-search:focus {
+  border-color: var(--outlook-accent);
+  background-color: var(--outlook-panel-bg);
+}
+
+/* Event Resizing Handle and Drag States */
+.event-resize-handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: ns-resize;
+  background: transparent;
+  z-index: 15;
+}
+
+.event-card:hover .event-resize-handle {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+body.light-theme-outlook .event-card:hover .event-resize-handle {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.event-card.dragging {
+  opacity: 0.4 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.month-event-item.dragging {
+  opacity: 0.4 !important;
+}
+
+/* Drag Over visual highlights */
+.day-column-grid.drag-over {
+  background-color: var(--outlook-accent-light) !important;
+  opacity: 0.9;
+}
+
+.month-cell.drag-over {
+  background-color: var(--outlook-accent-light) !important;
+}
+
+body.light-theme-outlook {
+  --outlook-accent-light: rgba(0, 120, 212, 0.08);
+}
+
+/* Right Tasks Sidebar Layout */
+.tasks-sidebar {
+  width: 280px;
+  background-color: var(--outlook-sidebar-bg);
+  border-left: 1px solid var(--outlook-border);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  transition: width 0.2s ease, border-left-width 0.2s ease;
+  overflow: hidden;
+}
+
+.tasks-sidebar.collapsed {
+  width: 0px;
+  border-left: none;
+}
+
+.tasks-sidebar-header {
+  height: 48px;
+  border-bottom: 1px solid var(--outlook-border);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.tasks-sidebar-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.tasks-sidebar-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Quick Task Input */
+.task-input-container {
+  width: 100%;
+}
+
+.task-input-container input {
+  width: 100%;
+  height: 32px;
+  background-color: var(--outlook-hover-bg);
+  border: 1px solid var(--outlook-border);
+  color: var(--outlook-text-main);
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.task-input-container input:focus {
+  border-color: var(--outlook-accent);
+  background-color: var(--outlook-panel-bg);
+}
+
+/* Tasks list & Task cards */
+.task-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-item {
+  background-color: var(--outlook-panel-bg);
+  border: 1px solid var(--outlook-border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+
+.task-item:hover {
+  background-color: var(--outlook-hover-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.task-item.dragging {
+  opacity: 0.4;
+  cursor: grabbing;
+}
+
+.task-item-checkbox {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.task-item-content {
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.4;
+  word-break: break-word;
+  color: var(--outlook-text-main);
+  transition: color 0.2s, text-decoration 0.2s;
+}
+
+.task-item.completed .task-item-content {
+  text-decoration: line-through;
+  color: var(--outlook-text-muted);
+}
+
+.task-item-delete {
+  background: transparent;
+  border: none;
+  color: var(--outlook-text-muted);
+  cursor: pointer;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.task-item:hover .task-item-delete {
+  opacity: 1;
+}
+
+.task-item-delete:hover {
+  color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Day Weather Forecast display */
+.day-weather-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--outlook-text-muted);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.weather-icon-lbl {
+  font-size: 13px;
+}
+
+.weather-temp-lbl {
+  opacity: 0.85;
+}
+
+

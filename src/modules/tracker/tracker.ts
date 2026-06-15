@@ -330,6 +330,12 @@ export function calculateStats(): {
   };
 }
 
+// Render listeners system to allow other modules to hook into the master render process
+const renderListeners: (() => void)[] = [];
+export function registerRenderListener(listener: () => void) {
+  renderListeners.push(listener);
+}
+
 // Master Render Method
 export function renderAll(): void {
   if (!state.currentUser || !state.currentRecord) return;
@@ -391,6 +397,15 @@ export function renderAll(): void {
 
   // Render Monthly Memory Book
   renderMemoryBook();
+
+  // Call registered listeners
+  renderListeners.forEach(listener => {
+    try {
+      listener();
+    } catch (e) {
+      console.error('Render listener error:', e);
+    }
+  });
 }
 
 // Render dynamic spreadsheet check tables

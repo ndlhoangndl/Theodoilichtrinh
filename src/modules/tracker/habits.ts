@@ -2,7 +2,7 @@ import { state } from '../common/state';
 import { TRANSLATIONS } from '../common/translations';
 import { showConfirm } from '../common/confirm';
 import { saveHabits, loadRecord } from '../../services/storage';
-import { renderAll } from './tracker';
+import { renderAll, registerRenderListener } from './tracker';
 
 let activeEmojiPicker: HTMLElement | null = null;
 
@@ -240,34 +240,27 @@ export function renderManageHabitsList(): void {
 }
 
 export function initHabits(): void {
-  // Modal toggle bindings: Quản lý thói quen
-  const modal = document.getElementById('modal-manage-habits') as HTMLElement;
-  const btnOpenModal = document.getElementById('btn-manage-habits');
-  const btnCloseModal = document.getElementById('modal-close-btn');
+  // Register render listener so it updates automatically when state/calendar renders
+  registerRenderListener(renderManageHabitsList);
+
+  // Bindings for inline habits configuration panel
   const btnSaveModal = document.getElementById('modal-save-btn');
 
-  if (modal && btnOpenModal && btnCloseModal && btnSaveModal) {
-    btnOpenModal.addEventListener('click', () => {
-      renderManageHabitsList();
-      modal.classList.add('active');
-    });
-
-    btnCloseModal.addEventListener('click', () => {
-      modal.classList.remove('active');
-    });
-
-    window.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        modal.classList.remove('active');
-      }
-    });
-
+  if (btnSaveModal) {
     btnSaveModal.addEventListener('click', () => {
       if (!state.currentUser) return;
       saveHabits(state.currentUser.username, state.habits);
       state.currentRecord = loadRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.habits);
       renderAll();
-      modal.classList.remove('active');
+      
+      // Provide visual feedback for saving
+      const originalText = btnSaveModal.textContent || '';
+      btnSaveModal.textContent = state.currentLang === 'vi' ? '✓ Đã lưu thành công' : '✓ Saved successfully';
+      btnSaveModal.classList.add('btn-success');
+      setTimeout(() => {
+        btnSaveModal.textContent = originalText;
+        btnSaveModal.classList.remove('btn-success');
+      }, 2000);
     });
   }
 

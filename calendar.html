@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch Lớp Học (Outlook style) - Lịch Trình Tracker</title>
+  <link rel="stylesheet" href="/public/calendar.css">
+</head>
+<body>
+
+  <!-- Top Outlook Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <span class="brand-icon">📅</span>
+      <h1 class="brand-title">Outlook Calendar</h1>
+    </div>
+    
+    <div class="header-right">
+      <span id="user-greeting-display" style="font-size:12px; font-weight:600; color:#cbd5e1;"></span>
+      <a href="/index.html" class="header-btn">📅 Về trang chính (Lịch Trình)</a>
+      <button class="header-btn" id="outlook-theme-toggle">☀️ Sáng/Tối</button>
+    </div>
+  </header>
+
+  <!-- Ribbon Tabs Menu -->
+  <div class="ribbon-tabs">
+    <button class="ribbon-tab active">Home</button>
+    <button class="ribbon-tab">View</button>
+    <button class="ribbon-tab">Help</button>
+  </div>
+
+  <!-- Command Actions Toolbar -->
+  <div class="toolbar">
+    <button class="toolbar-btn primary" id="btn-new-event-toolbar">
+      ➕ New event
+    </button>
+    <input type="text" id="search-input" class="toolbar-search" placeholder="🔍 Tìm kiếm sự kiện..." autocomplete="off">
+    <div class="toolbar-divider"></div>
+    
+    <!-- View choices -->
+    <button class="toolbar-btn active" id="view-opt-week">Week</button>
+    <button class="toolbar-btn" id="view-opt-month">Month</button>
+    <div class="toolbar-divider"></div>
+    <button class="toolbar-btn" id="btn-toggle-tasks">☑️ Tasks</button>
+  </div>
+
+  <!-- Split Main Layout -->
+  <div class="main-layout">
+    
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+      
+      <!-- Mini Calendar widget -->
+      <div class="mini-calendar">
+        <div class="mini-calendar-header">
+          <span class="mini-calendar-month-year" id="mini-month-year">Tháng 6 2026</span>
+          <div class="mini-calendar-nav">
+            <button class="mini-nav-btn" id="mini-prev-month">◀</button>
+            <button class="mini-nav-btn" id="mini-next-month">▶</button>
+          </div>
+        </div>
+        <div class="mini-calendar-grid" id="mini-grid-container">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      
+      <div class="toolbar-divider" style="width:100%; height:1px; margin: 10px 0;"></div>
+      
+      <!-- Calendar Category Filters -->
+      <div>
+        <div class="sidebar-section-title">My calendars</div>
+        <div class="category-list">
+          <label class="category-item">
+            <input type="checkbox" class="category-checkbox" data-category="calendar" checked>
+            <span class="category-color-dot dot-calendar"></span>
+            <span>Calendar</span>
+          </label>
+          <label class="category-item">
+            <input type="checkbox" class="category-checkbox" data-category="work" checked>
+            <span class="category-color-dot dot-work"></span>
+            <span>Work</span>
+          </label>
+          <label class="category-item">
+            <input type="checkbox" class="category-checkbox" data-category="school" checked>
+            <span class="category-color-dot dot-school"></span>
+            <span>School</span>
+          </label>
+          <label class="category-item">
+            <input type="checkbox" class="category-checkbox" data-category="personal" checked>
+            <span class="category-color-dot dot-personal"></span>
+            <span>Personal</span>
+          </label>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Right Calendar Workspace -->
+    <main class="calendar-workspace">
+      
+      <!-- Workspace Date Controls row -->
+      <div class="workspace-header">
+        <div class="date-nav-controls">
+          <button class="today-btn" id="btn-nav-today">Today</button>
+          <div class="nav-arrows-group">
+            <button class="arrow-nav-btn" id="btn-nav-prev">◀</button>
+            <button class="arrow-nav-btn" id="btn-nav-next">▶</button>
+          </div>
+          <span class="date-range-display" id="date-range-display">June 15–21, 2026</span>
+        </div>
+      </div>
+
+      <!-- Main Scrollable Grid -->
+      <div class="calendar-scroll-container" id="calendar-scroll-container">
+        
+        <!-- Headers Row (Sticky) -->
+        <div class="grid-header-row">
+          <div class="header-empty-cell"></div>
+          <div class="grid-day-headers" id="grid-day-headers">
+            <!-- Day labels populated by JS -->
+          </div>
+        </div>
+        
+        <!-- Grid Body (Time layout + columns) -->
+        <div class="grid-time-body" id="grid-time-body">
+          
+          <!-- Time scale column -->
+          <div class="time-axis-column" id="time-axis-column">
+            <!-- Populated by JS (12 AM - 11 PM) -->
+          </div>
+          
+          <!-- Day columns container -->
+          <div class="grid-columns-container" id="grid-columns-container">
+            <!-- Event columns and line markers populated by JS -->
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- Right Sidebar for Tasks (To-Do List) -->
+    <aside class="tasks-sidebar" id="tasks-sidebar">
+      <div class="tasks-sidebar-header">
+        <h3 class="tasks-sidebar-title">To-Do / Công việc</h3>
+        <button class="close-btn" id="tasks-sidebar-close">✕</button>
+      </div>
+      
+      <div class="tasks-sidebar-body">
+        <!-- Add task form -->
+        <div class="task-input-container">
+          <input type="text" id="task-input-quick" placeholder="Thêm công việc cần làm..." autocomplete="off">
+        </div>
+        
+        <!-- Tasks list -->
+        <ul class="task-list" id="task-list-container">
+          <!-- Populated by JS -->
+        </ul>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Popover Details Panel (Floating Detail Bubble) -->
+  <div class="event-popover" id="event-popover">
+    <div class="popover-header">
+      <div class="popover-title" id="popover-title">Meeting Title</div>
+      <button class="close-btn" id="popover-close">✕</button>
+    </div>
+    <div class="popover-time" id="popover-time">Monday, June 15, 8:00 AM - 10:00 AM</div>
+    <div class="popover-desc" id="popover-desc">Details of the event go here.</div>
+    <div class="popover-footer">
+      <button class="popover-btn danger" id="popover-btn-delete">Delete</button>
+    </div>
+  </div>
+
+  <!-- Modal Event Editor Dialog -->
+  <div class="modal" id="modal-event-editor">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="editor-modal-title">New event</h3>
+        <button class="close-btn" id="editor-modal-close">✕</button>
+      </div>
+      <form id="form-event-editor">
+        <div class="modal-body">
+          
+          <div class="form-group">
+            <label class="form-label" for="evt-title">Tiêu đề</label>
+            <input type="text" class="form-control" id="evt-title" placeholder="Nhập tiêu đề sự kiện..." required autocomplete="off">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="evt-date">Ngày</label>
+              <input type="date" class="form-control" id="evt-date" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="evt-category">Loại sự kiện</label>
+              <select class="form-control" id="evt-category" required>
+                <option value="calendar">Calendar (Mặc định)</option>
+                <option value="work">Work (Công việc)</option>
+                <option value="school">School (Học tập)</option>
+                <option value="personal">Personal (Cá nhân)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="evt-start-time">Giờ bắt đầu</label>
+              <input type="time" class="form-control" id="evt-start-time" step="900" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="evt-end-time">Giờ kết thúc</label>
+              <input type="time" class="form-control" id="evt-end-time" step="900" required>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="evt-recurrence">Lặp lại</label>
+              <select class="form-control" id="evt-recurrence">
+                <option value="none">Không lặp lại (None)</option>
+                <option value="daily">Hàng ngày (Daily)</option>
+                <option value="weekly">Hàng tuần (Weekly)</option>
+                <option value="monthly">Hàng tháng (Monthly)</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="evt-description">Mô tả chi tiết</label>
+            <textarea class="form-control" id="evt-description" placeholder="Thêm mô tả hoặc địa điểm..." rows="3" style="resize: none;"></textarea>
+          </div>
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="popover-btn" id="editor-btn-cancel">Hủy</button>
+          <button type="submit" class="popover-btn" style="background-color:var(--outlook-accent); color:white; border-color:var(--outlook-accent);">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Script Modules -->
+  <script type="module" src="/src/calendar.ts"></script>
+</body>
+</html>

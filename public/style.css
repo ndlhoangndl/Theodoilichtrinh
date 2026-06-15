@@ -2005,5 +2005,180 @@ body.dark-theme .btn-profile-action.btn-danger-action:hover {
   color: #fff;
 }
 
+/* Inline Habit Configuration layout */
+.habit-config-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.habit-config-add-box {
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 20px;
+}
+
+@media (min-width: 992px) {
+  .habit-config-grid {
+    grid-template-columns: 1fr 1.5fr;
+    gap: 30px;
+  }
+  .habit-config-add-box {
+    border-bottom: none;
+    padding-bottom: 0;
+    border-right: 1px solid var(--border-color);
+    padding-right: 30px;
+  }
+}
+
+/* Habit Config Add Form */
+.habit-config-add-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.habit-config-add-form-inputs {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 10px !important;
+  flex: 2 !important;
+  min-width: 200px !important;
+}
+
+.habit-config-add-form-emoji {
+  width: 70px !important;
+  flex-shrink: 0 !important;
+}
+
+.habit-config-add-form-name {
+  flex: 1 !important;
+}
+
+.habit-config-add-form-btn {
+  height: 38px;
+  flex: 1;
+  min-width: 80px;
+}
+
+@media (max-width: 480px) {
+  .habit-config-add-form-inputs {
+    width: 100% !important;
+    flex: none !important;
+  }
+  .habit-config-add-form-btn {
+    width: 100% !important;
+    flex: none !important;
+  }
+}
+
+/* Header buttons group styling */
+.header-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 12px 16px !important;
+    gap: 8px !important;
+  }
+  
+  .brand {
+    justify-content: center !important;
+    width: 100% !important;
+    margin-bottom: 2px !important;
+  }
+  
+  .brand h1 {
+    font-size: 18px !important;
+    display: inline-flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 4px !important;
+  }
+  
+  .header-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+  }
+  
+  .user-greeting-box {
+    margin-right: 0 !important;
+    border-right: none !important;
+    padding-right: 0 !important;
+    margin-bottom: 2px !important;
+    justify-content: center !important;
+    width: 100% !important;
+  }
+
+  .header-buttons-group {
+    display: flex !important;
+    gap: 8px !important;
+    width: 100% !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important; /* Keep buttons on one line */
+  }
+
+  .header-buttons-group select,
+  .header-buttons-group button,
+  .header-buttons-group .menu-dropdown button {
+    font-size: 11px !important;
+    padding: 6px 8px !important;
+    height: 32px !important;
+    flex: 1 !important;
+    min-width: 0 !important; /* Allow shrinking */
+    justify-content: center !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Mobile optimizations for habit item list */
+@media (max-width: 576px) {
+  .modal-habit-item {
+    gap: 4px;
+    padding: 6px;
+  }
+  .modal-habit-name-input {
+    font-size: 13px;
+    padding: 4px 6px !important;
+  }
+  .modal-habit-item .btn-icon {
+    padding: 4px;
+    font-size: 10px;
+  }
+}
+
+/* Highlight pulse keyframes */
+.highlight-pulse {
+  animation: pulseHighlight 1.5s ease-in-out;
+}
+
+@keyframes pulseHighlight {
+  0% {
+    outline: 2px solid transparent;
+    box-shadow: var(--shadow-sm);
+  }
+  50% {
+    outline: 2px solid var(--accent-orange);
+    box-shadow: 0 0 15px var(--accent-orange);
+  }
+  100% {
+    outline: 2px solid transparent;
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+
+
+
 
 

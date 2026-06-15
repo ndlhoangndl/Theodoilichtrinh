@@ -174,32 +174,34 @@
           <span style="font-size:13px; font-weight:600;"><span id="greeting-label-prefix">Xin chào,</span> <span id="user-display-name">Thành viên</span> 👋</span>
         </div>
         
-        <!-- Language Selector -->
-        <select id="select-lang" class="btn" title="Chọn ngôn ngữ / Select Language" style="padding: 6px 10px; font-size:13px; font-weight:600;">
-          <option value="vi">🇻🇳 Tiếng Việt</option>
-          <option value="en">🇬🇧 English</option>
-        </select>
+        <div class="header-buttons-group">
+          <!-- Language Selector -->
+          <select id="select-lang" class="btn" title="Chọn ngôn ngữ / Select Language" style="padding: 6px 10px; font-size:13px; font-weight:600;">
+            <option value="vi">🇻🇳 Tiếng Việt</option>
+            <option value="en">🇬🇧 English</option>
+          </select>
 
-        <button class="btn" id="btn-toggle-theme" title="Chuyển đổi giao diện sáng/tối" data-i18n-title="btn_theme_title" data-i18n="btn_theme">☀️ Sáng (Cappuccino)</button>
-        
-        <!-- Actions Dropdown Menu -->
-        <div class="menu-dropdown" id="menu-dropdown">
-          <button class="btn" id="btn-menu-trigger" title="Chức năng mở rộng / Menu" style="padding: 6px 12px; font-size:13px; font-weight:600; display: flex; align-items: center; gap: 4px;">
-            🛠️ <span data-i18n="menu_trigger">Menu</span> ▾
-          </button>
-          <div class="menu-dropdown-content" id="menu-dropdown-content">
-            <button class="menu-item active" id="menu-tab-tracker" data-i18n="tab_tracker">📅 Lịch Trình</button>
-            <button class="menu-item" id="menu-tab-stats" data-i18n="tab_stats">📊 Thống Kê</button>
-            <button class="menu-item" id="menu-tab-profile" data-i18n="tab_profile">👤 Cá Nhân</button>
-            <button class="menu-item" id="menu-tab-admin" style="display: none;" data-i18n="tab_admin">🔑 Quản Trị Admin</button>
-            <div class="menu-divider"></div>
-            <button class="menu-item" id="btn-manage-habits" data-i18n="btn_manage">⚙️ Cấu hình</button>
-            <button class="menu-item" id="btn-backup-json" title="Tải file sao lưu dữ liệu (.json)" data-i18n-title="btn_backup_title" data-i18n="btn_backup">💾 Sao lưu</button>
-            <button class="menu-item" id="btn-restore-json" title="Nhập dữ liệu từ file sao lưu (.json)" data-i18n-title="btn_restore_title" data-i18n="btn_restore">📂 Khôi phục</button>
-            <button class="menu-item" id="btn-export-excel" title="Tải báo cáo lịch trình tháng hiện tại dưới dạng file CSV" data-i18n-title="btn_export_excel_title" data-i18n="btn_export_excel">📊 Xuất Excel (CSV)</button>
-            <div class="menu-divider"></div>
-            <button class="menu-item btn-danger-text" id="btn-reset-data" title="Xóa dữ liệu thói quen của tháng hiện tại" data-i18n-title="btn_reset_title" data-i18n="btn_reset">🗑️ Xóa</button>
-            <button class="menu-item btn-danger-text" id="btn-logout" title="Đăng xuất khỏi tài khoản" data-i18n-title="btn_logout_title" data-i18n="btn_logout">🚪 Đăng xuất</button>
+          <button class="btn" id="btn-toggle-theme" title="Chuyển đổi giao diện sáng/tối" data-i18n-title="btn_theme_title" data-i18n="btn_theme">☀️ Sáng (Cappuccino)</button>
+          
+          <!-- Actions Dropdown Menu -->
+          <div class="menu-dropdown" id="menu-dropdown">
+            <button class="btn" id="btn-menu-trigger" title="Chức năng mở rộng / Menu" style="padding: 6px 12px; font-size:13px; font-weight:600; display: flex; align-items: center; gap: 4px;">
+              🛠️ <span data-i18n="menu_trigger">Menu</span> ▾
+            </button>
+            <div class="menu-dropdown-content" id="menu-dropdown-content">
+              <button class="menu-item active" id="menu-tab-tracker" data-i18n="tab_tracker">📅 Lịch Trình</button>
+              <button class="menu-item" id="menu-tab-stats" data-i18n="tab_stats">📊 Thống Kê</button>
+              <button class="menu-item" id="menu-tab-profile" data-i18n="tab_profile">👤 Cá Nhân</button>
+              <button class="menu-item" id="menu-tab-admin" style="display: none;" data-i18n="tab_admin">🔑 Quản Trị Admin</button>
+              <a href="/calendar.html" class="menu-item" style="text-decoration: none; display: flex; align-items: center; gap: 4px; color: inherit;">📅 Lịch lớp học (Outlook)</a>
+              <div class="menu-divider"></div>
+              <button class="menu-item" id="btn-backup-json" title="Tải file sao lưu dữ liệu (.json)" data-i18n-title="btn_backup_title" data-i18n="btn_backup">💾 Sao lưu</button>
+              <button class="menu-item" id="btn-restore-json" title="Nhập dữ liệu từ file sao lưu (.json)" data-i18n-title="btn_restore_title" data-i18n="btn_restore">📂 Khôi phục</button>
+              <button class="menu-item" id="btn-export-excel" title="Tải báo cáo lịch trình tháng hiện tại dưới dạng file CSV" data-i18n-title="btn_export_excel_title" data-i18n="btn_export_excel">📊 Xuất Excel (CSV)</button>
+              <div class="menu-divider"></div>
+              <button class="menu-item btn-danger-text" id="btn-reset-data" title="Xóa dữ liệu thói quen của tháng hiện tại" data-i18n-title="btn_reset_title" data-i18n="btn_reset">🗑️ Xóa</button>
+              <button class="menu-item btn-danger-text" id="btn-logout" title="Đăng xuất khỏi tài khoản" data-i18n-title="btn_logout_title" data-i18n="btn_logout">🚪 Đăng xuất</button>
+            </div>
           </div>
         </div>
 
@@ -295,6 +297,47 @@
                 <button type="button" class="btn prompt-chip" data-prompt="plan" style="font-size: 11px; padding: 3px 10px; border-radius: 12px; height: auto; background: var(--bg-widget); border: 1px solid var(--border-color-dark); color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 600; box-shadow: none;">📅 <span data-i18n="prompt_plan">Ngày mai</span></button>
               </div>
               <textarea id="textarea-journal" class="form-control" rows="4" placeholder="Hôm nay lịch trình của bạn thế nào?..." data-i18n-placeholder="journal_placeholder" style="resize:vertical; min-height:80px; font-family:var(--font-body); font-size:14px; line-height:1.6;"></textarea>
+            </div>
+          </div>
+
+          <!-- Panel: Quản lý thói quen (Cấu hình) -->
+          <div class="panel" id="panel-manage-habits" style="scroll-margin-top: 20px;">
+            <div class="panel-header">
+              <span data-i18n="modal_manage_title">Quản lý thói quen</span>
+            </div>
+            <div class="panel-content" style="padding: 16px;">
+              <div class="habit-config-grid">
+                <!-- Left: Thêm thói quen mới -->
+                <div class="habit-config-add-box">
+                  <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);" data-i18n="add_habit_title">Thêm thói quen mới</h4>
+                  <form id="form-add-habit">
+                    <div class="habit-config-add-form">
+                      <div class="habit-config-add-form-inputs">
+                        <div class="habit-config-add-form-emoji">
+                          <label for="input-new-habit-emoji" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;" data-i18n="modal_label_emoji">Icon/Emoji</label>
+                          <input type="text" class="form-control" id="input-new-habit-emoji" placeholder="🎯" value="🎯" maxlength="4" style="text-align: center;">
+                        </div>
+                        <div class="habit-config-add-form-name">
+                          <label for="input-new-habit-name" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;" data-i18n="modal_label_name">Tên thói quen mới</label>
+                          <input type="text" class="form-control" id="input-new-habit-name" placeholder="Ví dụ: Đọc sách 30 phút..." data-i18n-placeholder="modal_input_placeholder" required>
+                        </div>
+                      </div>
+                      <button type="submit" class="btn btn-primary habit-config-add-form-btn" data-i18n="modal_btn_add">Thêm</button>
+                    </div>
+                  </form>
+                </div>
+                
+                <!-- Right: Danh sách thói quen hiện có -->
+                <div class="habit-config-list-box">
+                  <h4 style="margin-top: 0; margin-bottom: 12px; font-size: 13px; font-weight: 600; color: var(--text-main);" data-i18n="modal_list_label">Danh sách hiện có (Có thể sắp xếp & chỉnh sửa):</h4>
+                  <div class="modal-habit-list" id="modal-habit-list-container" style="max-height: 250px; overflow-y: auto;">
+                    <!-- Generated by JS -->
+                  </div>
+                  <div style="display: flex; justify-content: flex-end; margin-top: 16px;">
+                    <button class="btn btn-primary" id="modal-save-btn" data-i18n="modal_btn_save">Lưu cấu hình</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -693,39 +736,7 @@
       </div>
     </div>
 
-<!-- Modal: Quản lý thói quen -->
-<div class="modal" id="modal-manage-habits">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 data-i18n="modal_manage_title">Quản lý thói quen</h3>
-      <button class="btn btn-icon" id="modal-close-btn" style="border:none; background:transparent; font-size:16px;">✕</button>
-    </div>
-    <div class="modal-body">
-      <form id="form-add-habit">
-        <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 16px;">
-          <div style="width: 70px;">
-            <label for="input-new-habit-emoji" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;" data-i18n="modal_label_emoji">Icon/Emoji</label>
-            <input type="text" class="form-control" id="input-new-habit-emoji" placeholder="🎯" value="🎯" maxlength="4" style="text-align: center;">
-          </div>
-          <div style="flex: 1;">
-            <label for="input-new-habit-name" style="display:block; font-size:12px; margin-bottom:4px; font-weight:600;" data-i18n="modal_label_name">Tên thói quen mới</label>
-            <input type="text" class="form-control" id="input-new-habit-name" placeholder="Ví dụ: Đọc sách 30 phút..." data-i18n-placeholder="modal_input_placeholder" required>
-          </div>
-          <button type="submit" class="btn btn-primary" style="height: 38px;" data-i18n="modal_btn_add">Thêm</button>
-        </div>
-      </form>
-
-      <!-- Habit list editor (Reorder/Edit/Delete) -->
-      <label style="font-size: 13px; font-weight:600; color:var(--text-muted);" data-i18n="modal_list_label">Danh sách hiện có (Có thể sắp xếp & chỉnh sửa):</label>
-      <div class="modal-habit-list" id="modal-habit-list-container">
-        <!-- Generated by JS -->
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-primary" id="modal-save-btn" data-i18n="modal_btn_save">Lưu cấu hình</button>
-    </div>
-  </div>
-</div>
+<!-- Habit management modal removed since it's now inline -->
 
 <!-- Modal: Xác nhận / Confirm (Giữa màn hình) -->
 <div class="modal" id="modal-confirm" style="z-index: 1100;">
