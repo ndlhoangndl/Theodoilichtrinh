@@ -9,6 +9,7 @@ import { initTracker, initializeState, renderAll, calculateStats } from './modul
 import { initConfirmOverlay } from './modules/common/confirm';
 import { initGarden } from './modules/tracker/garden';
 import { initMonthlyReview } from './modules/tracker/review';
+import { initFocusMode } from './modules/tracker/focus';
 import { getCurrentSession } from './services/storage';
 import { initAdmin, renderAdminPage } from './modules/admin/admin';
 import { initUserChat, refreshUserChat } from './modules/chat/userChat';
@@ -41,6 +42,7 @@ function initApp(): void {
   initAdmin();
   initUserChat();
   initAdminChat();
+  initFocusMode();
 
   // Toggle Actions Menu Dropdown
   const btnMenuTrigger = document.getElementById('btn-menu-trigger');

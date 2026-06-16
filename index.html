@@ -175,6 +175,10 @@
         </div>
         
         <div class="header-buttons-group">
+          <button class="btn" id="btn-focus-mode" title="Chế độ tập trung Pomodoro Lofi" style="padding: 6px 12px; font-size:13px; font-weight:600; display: flex; align-items: center; gap: 4px;">
+            ⏱️ <span data-i18n="focus_mode_btn">Tập trung</span>
+          </button>
+          
           <!-- Language Selector -->
           <select id="select-lang" class="btn" title="Chọn ngôn ngữ / Select Language" style="padding: 6px 10px; font-size:13px; font-weight:600;">
             <option value="vi">🇻🇳 Tiếng Việt</option>
@@ -924,6 +928,36 @@
       <input type="text" id="input-user-chat" class="form-control" placeholder="Nhập tin nhắn..." required style="flex: 1;" autocomplete="off">
       <button type="submit" class="btn btn-primary" style="height: 38px;">Gửi</button>
     </form>
+  </div>
+</div>
+
+<!-- Focus Mode Overlay (Pomodoro + Lofi player) -->
+<div class="focus-overlay" id="focus-overlay" style="display: none;">
+  <div class="focus-container">
+    <button class="focus-close-btn" id="btn-exit-focus">✕ Thoát tập trung (Exit Focus)</button>
+    
+    <div class="focus-content">
+      <!-- Pomodoro Timer Block -->
+      <div class="pomodoro-box">
+        <div class="pomodoro-tabs">
+          <button class="pomo-tab active" data-time="25" data-phase="work">🍅 Focus</button>
+          <button class="pomo-tab" data-time="5" data-phase="short">☕ Break</button>
+          <button class="pomo-tab" data-time="15" data-phase="long">🚶 Long Break</button>
+        </div>
+        
+        <div class="timer-display" id="focus-timer-display">25:00</div>
+        
+        <div class="focus-task-section">
+          <input type="text" id="focus-task-input" placeholder="Mục tiêu tập trung của bạn hôm nay là gì?..." autocomplete="off">
+          <div id="focus-task-active" style="display: none;"></div>
+        </div>
+        
+        <div class="timer-controls">
+          <button class="btn-timer-ctrl" id="btn-timer-start">▶ Bắt đầu</button>
+          <button class="btn-timer-ctrl secondary" id="btn-timer-reset" style="display: none;">🔄 Cài lại</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

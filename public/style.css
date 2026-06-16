@@ -2185,6 +2185,220 @@ body.dark-theme .btn-profile-action.btn-danger-action:hover {
   }
 }
 
+/* Focus Mode Overlay */
+.focus-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle, #201815 0%, #0d0908 100%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(15px);
+  color: #f5eee8;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.focus-overlay.active {
+  opacity: 1;
+}
+
+.focus-container {
+  width: 100%;
+  max-width: 600px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  position: relative;
+}
+
+.focus-close-btn {
+  position: absolute;
+  top: -40px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f5eee8;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.focus-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #ff8b8b;
+}
+
+.focus-content {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* Pomodoro Timer Style */
+.pomodoro-box {
+  background: rgba(44, 36, 32, 0.5);
+  border: 1px solid rgba(200, 128, 97, 0.2);
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.pomodoro-tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 30px;
+}
+
+.pomo-tab {
+  background: transparent;
+  border: none;
+  color: #a47f63;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pomo-tab.active {
+  background: var(--accent-orange, #c88061);
+  color: #ffffff;
+}
+
+.timer-display {
+  font-size: 84px;
+  font-weight: 800;
+  font-family: monospace, sans-serif;
+  color: #ffffff;
+  letter-spacing: 2px;
+  margin: 10px 0;
+  text-shadow: 0 0 20px rgba(200, 128, 97, 0.4);
+}
+
+.focus-task-section {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.focus-task-section input {
+  width: 100%;
+  max-width: 400px;
+  height: 38px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(200, 128, 97, 0.3);
+  border-radius: 8px;
+  color: #ffffff;
+  text-align: center;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.focus-task-section input:focus {
+  border-color: var(--accent-orange, #c88061);
+}
+
+#focus-task-active {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--accent-orange, #c88061);
+  text-align: center;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-timer-ctrl {
+  background: var(--accent-orange, #c88061);
+  border: 1px solid var(--accent-orange, #c88061);
+  color: #ffffff;
+  padding: 10px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(200, 128, 97, 0.3);
+}
+
+.btn-timer-ctrl:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(200, 128, 97, 0.4);
+}
+
+.btn-timer-ctrl.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f5eee8;
+  box-shadow: none;
+}
+
+.btn-timer-ctrl.secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Lofi Player Style */
+.lofi-box {
+  background: rgba(44, 36, 32, 0.5);
+  border: 1px solid rgba(200, 128, 97, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.lofi-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.lofi-select {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(200, 128, 97, 0.3);
+  color: #f5eee8;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+}
+
+.lofi-iframe-wrapper {
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #000000;
+}
+
+
 
 
 
