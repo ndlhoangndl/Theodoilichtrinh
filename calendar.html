@@ -30,18 +30,57 @@
   </div>
 
   <!-- Command Actions Toolbar -->
-  <div class="toolbar">
-    <button class="toolbar-btn primary" id="btn-new-event-toolbar">
-      ➕ New event
-    </button>
-    <input type="text" id="search-input" class="toolbar-search" placeholder="🔍 Tìm kiếm sự kiện..." autocomplete="off">
-    <div class="toolbar-divider"></div>
-    
-    <!-- View choices -->
-    <button class="toolbar-btn active" id="view-opt-week">Week</button>
-    <button class="toolbar-btn" id="view-opt-month">Month</button>
-    <div class="toolbar-divider"></div>
-    <button class="toolbar-btn" id="btn-toggle-tasks">☑️ Tasks</button>
+  <div class="toolbar" style="display: flex; align-items: center; padding: 6px 16px; min-height: 46px;">
+    <!-- Home Toolbar Group -->
+    <div id="toolbar-group-home" class="toolbar-group" style="display: flex; align-items: center; gap: 8px; width: 100%;">
+      <button class="toolbar-btn primary" id="btn-new-event-toolbar">
+        ➕ New event
+      </button>
+      <input type="text" id="search-input" class="toolbar-search" placeholder="🔍 Tìm kiếm sự kiện..." autocomplete="off">
+      <div class="toolbar-divider"></div>
+      
+      <!-- View choices -->
+      <button class="toolbar-btn active" id="view-opt-week">Week</button>
+      <button class="toolbar-btn" id="view-opt-month">Month</button>
+      <div class="toolbar-divider"></div>
+      <button class="toolbar-btn" id="btn-toggle-tasks">☑️ Tasks</button>
+    </div>
+
+    <!-- View Toolbar Group (Hidden by default) -->
+    <div id="toolbar-group-view" class="toolbar-group" style="display: none; align-items: center; gap: 8px; width: 100%;">
+      <!-- Toggle Left Sidebar -->
+      <button class="toolbar-btn active" id="btn-toggle-sidebar">
+        📁 Toggle Sidebar
+      </button>
+      <div class="toolbar-divider"></div>
+      <!-- Toggle Category Filter Buttons -->
+      <button class="toolbar-btn active" id="btn-filter-work">💼 Work</button>
+      <button class="toolbar-btn active" id="btn-filter-school">📚 School</button>
+      <button class="toolbar-btn active" id="btn-filter-personal">👤 Personal</button>
+      <div class="toolbar-divider"></div>
+      <!-- Theme Switch Shortcut -->
+      <button class="toolbar-btn" id="btn-theme-shortcut">
+        🌓 Đổi giao diện (Theme)
+      </button>
+    </div>
+
+    <!-- Help Toolbar Group (Hidden by default) -->
+    <div id="toolbar-group-help" class="toolbar-group" style="display: none; align-items: center; gap: 8px; width: 100%;">
+      <!-- Open Guide Modal -->
+      <button class="toolbar-btn" id="btn-open-guide">
+        📖 Hướng dẫn nhanh (Quick Guide)
+      </button>
+      <div class="toolbar-divider"></div>
+      <!-- Contact Admin -->
+      <a href="/index.html" class="toolbar-btn" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
+        💬 Nhắn tin hỗ trợ (Contact Support)
+      </a>
+      <div class="toolbar-divider"></div>
+      <!-- Reset Calendar Events -->
+      <button class="toolbar-btn" id="btn-reset-events" style="color: #ef4444; font-weight: 600;">
+        🗑️ Reset dữ liệu lịch
+      </button>
+    </div>
   </div>
 
   <!-- Split Main Layout -->

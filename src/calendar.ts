@@ -9,6 +9,7 @@ import {
 import {
   CalendarTask,
   loadCalendarTasks,
+  saveCalendarTasks,
   addCalendarTask,
   toggleCalendarTask,
   deleteCalendarTask
@@ -284,6 +285,107 @@ function init() {
 
 // Bind event handlers
 function setupEventListeners() {
+  // Ribbon Tabs switching
+  const ribbonTabs = document.querySelectorAll('.ribbon-tab');
+  const toolbarGroups = document.querySelectorAll('.toolbar-group');
+  
+  ribbonTabs.forEach((tab, index) => {
+    tab.addEventListener('click', () => {
+      ribbonTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      
+      toolbarGroups.forEach((group, gIdx) => {
+        const grp = group as HTMLElement;
+        if (gIdx === index) {
+          grp.style.display = 'flex';
+        } else {
+          grp.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Toggle Sidebar
+  const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+  const sidebarEl = document.querySelector('.sidebar') as HTMLElement;
+  if (btnToggleSidebar && sidebarEl) {
+    btnToggleSidebar.addEventListener('click', () => {
+      const isHidden = sidebarEl.style.display === 'none';
+      sidebarEl.style.display = isHidden ? 'block' : 'none';
+      btnToggleSidebar.classList.toggle('active', !isHidden);
+    });
+  }
+
+  // View Category Filters
+  const filterBtns = [
+    { id: 'btn-filter-work', cat: 'work' },
+    { id: 'btn-filter-school', cat: 'school' },
+    { id: 'btn-filter-personal', cat: 'personal' }
+  ];
+  filterBtns.forEach(({ id, cat }) => {
+    const btn = document.getElementById(id);
+    const checkbox = document.querySelector(`.category-checkbox[data-category="${cat}"]`) as HTMLInputElement;
+    
+    if (btn && checkbox) {
+      btn.addEventListener('click', () => {
+        const isActive = btn.classList.toggle('active');
+        checkbox.checked = isActive;
+        
+        if (isActive) {
+          activeFilters.add(cat);
+        } else {
+          activeFilters.delete(cat);
+        }
+        renderMainGrid();
+      });
+      
+      checkbox.addEventListener('change', () => {
+        btn.classList.toggle('active', checkbox.checked);
+      });
+    }
+  });
+
+  // Theme Shortcut
+  const btnThemeShortcut = document.getElementById('btn-theme-shortcut');
+  if (btnThemeShortcut) {
+    btnThemeShortcut.addEventListener('click', () => {
+      if (themeToggle) {
+        themeToggle.click();
+      }
+    });
+  }
+
+  // Quick Guide Modal
+  const btnOpenGuide = document.getElementById('btn-open-guide');
+  if (btnOpenGuide) {
+    btnOpenGuide.addEventListener('click', () => {
+      showGuideModal();
+    });
+  }
+
+  // Reset Calendar Events and Tasks
+  const btnResetEvents = document.getElementById('btn-reset-events');
+  if (btnResetEvents) {
+    btnResetEvents.addEventListener('click', () => {
+      const isVi = localStorage.getItem('LICHTRINH_LANG') === 'vi' || document.documentElement.lang === 'vi';
+      const confirmMsg = isVi
+        ? 'CẢNH BÁO: Bạn có chắc chắn muốn XÓA TOÀN BỘ sự kiện và công việc? Hành động này không thể hoàn tác!'
+        : 'WARNING: Are you sure you want to DELETE ALL events and tasks? This action cannot be undone!';
+      
+      if (confirm(confirmMsg)) {
+        eventsList = [];
+        tasksList = [];
+        saveCalendarEvents(currentUser.username, []);
+        saveCalendarTasks(currentUser.username, []);
+        
+        renderAll();
+        renderTasksList();
+        
+        alert(isVi ? 'Đã xóa toàn bộ dữ liệu lịch!' : 'All calendar data has been cleared!');
+      }
+    });
+  }
+
   // Theme toggle
   if (themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -1346,6 +1448,55 @@ function openEventEditorModal(dateVal?: string, startTimeVal?: string, endTimeVa
 
 function closeEventEditorModal() {
   modalEventEditor.classList.remove('active');
+}
+
+function showGuideModal() {
+  let modal = document.getElementById('modal-quick-guide');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modal-quick-guide';
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 500px; background: var(--bg-panel); color: var(--text-main); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color);">
+        <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-color); padding-bottom:10px;">
+          <h3 class="modal-title" style="margin:0; font-size:15px; font-weight:700;">📖 Hướng dẫn sử dụng Outlook Calendar</h3>
+          <button class="close-btn" id="guide-modal-close" style="background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:16px;">✕</button>
+        </div>
+        <div class="modal-body" style="font-size: 13px; line-height: 1.6; padding: 15px 0;">
+          <h4 style="color: var(--outlook-accent); margin: 0 0 8px 0; font-weight:700;">🎯 Thao tác nhanh</h4>
+          <ul style="padding-left: 20px; margin: 0 0 16px 0; list-style-type: disc;">
+            <li><strong>Tạo sự kiện nhanh</strong>: Click đúp (Double-click) trực tiếp vào bất kỳ khung giờ nào trên lưới lịch tuần.</li>
+            <li><strong>Kéo & thả (Drag & Drop)</strong>: Nhấp và giữ sự kiện để di chuyển sang ngày khác hoặc thời gian khác một cách dễ dàng.</li>
+            <li><strong>Lọc lịch trình</strong>: Bật/Tắt các danh mục ở thanh bên để hiển thị các sự kiện mong muốn.</li>
+          </ul>
+          
+          <h4 style="color: var(--outlook-accent); margin: 0 0 8px 0; font-weight:700;">⌨️ Phím tắt (Shortcuts)</h4>
+          <div style="background: var(--bg-selected); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: monospace; display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; justify-content:space-between;"><span>Phím [N]</span> <span>Tạo sự kiện mới</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>Phím [T]</span> <span>Quay về ngày hôm nay</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>Phím [W]</span> <span>Xem chế độ tuần</span></div>
+            <div style="display:flex; justify-content:space-between;"><span>Phím [M]</span> <span>Xem chế độ tháng</span></div>
+          </div>
+        </div>
+        <div class="modal-footer" style="display:flex; justify-content:flex-end; border-top:1px solid var(--border-color); padding-top:10px;">
+          <button class="popover-btn" id="guide-modal-btn-close" style="background-color: var(--outlook-accent); color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size:12px; font-weight:600;">Đã hiểu (Got it)</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    
+    const closeBtn = modal.querySelector('#guide-modal-close');
+    const closeBtn2 = modal.querySelector('#guide-modal-btn-close');
+    
+    const closeModal = () => {
+      if (modal) modal.style.display = 'none';
+    };
+    
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (closeBtn2) closeBtn2.addEventListener('click', closeModal);
+  }
+  
+  modal.style.display = 'flex';
 }
 
 // Launch init on page load

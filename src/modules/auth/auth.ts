@@ -2,6 +2,7 @@ import { User } from '../../types/types';
 import { createSession, syncHabitsFromServer, syncRecordFromServer } from '../../services/storage';
 import { state } from '../common/state';
 import { TRANSLATIONS, translateUI } from '../common/translations';
+import { applyUserTheme } from '../../main';
 import { logoutUser } from '../profile/profile';
 import { initializeState, renderAll } from '../tracker/tracker';
 import { setupJournalPanel } from '../journal/journal';
@@ -67,6 +68,14 @@ export function initAuth(): void {
         return;
       }
 
+      const btnSubmit = formLogin.querySelector('button[type="submit"]') as HTMLButtonElement;
+      let originalText = '';
+      if (btnSubmit) {
+        originalText = btnSubmit.innerHTML;
+        btnSubmit.setAttribute('disabled', 'true');
+        btnSubmit.innerHTML = `<span class="spinner" style="width: 12px; height: 12px; border: 2px solid var(--text-light); border-top-color: transparent; border-radius: 50%; display: inline-block; animation: gemini-spin 1s linear infinite; margin-right: 6px; vertical-align: middle;"></span>${state.currentLang === 'vi' ? 'Đang xác thực...' : 'Authenticating...'}`;
+      }
+
       try {
         const result = await apiLogin(uInput, pInput);
         setToken(result.token);
@@ -74,9 +83,14 @@ export function initAuth(): void {
         createSession(result.user);
         state.currentUser = result.user;
         
-        // Sync user habits and records from server
-        await syncHabitsFromServer(result.user.username);
-        await syncRecordFromServer(result.user.username, state.currentYear, state.currentMonth);
+        // Parallelize loading screen transition and server data syncing
+        const loadingPromise = runLoadingTransition();
+        const syncPromise = Promise.all([
+          syncHabitsFromServer(result.user.username),
+          syncRecordFromServer(result.user.username, state.currentYear, state.currentMonth)
+        ]);
+
+        await Promise.all([loadingPromise, syncPromise]);
         
         formLogin.reset();
         if (loginError) loginError.style.display = 'none';
@@ -85,6 +99,13 @@ export function initAuth(): void {
         dashboardContainer.style.display = 'block';
         
         initializeState();
+        if (state.currentUser && state.currentUser.theme) {
+          applyUserTheme(state.currentUser.theme);
+          const selectTheme = document.getElementById('select-theme') as HTMLSelectElement;
+          if (selectTheme) {
+            selectTheme.value = state.currentUser.theme;
+          }
+        }
         translateUI();
         setupJournalPanel();
         renderAll();
@@ -97,6 +118,11 @@ export function initAuth(): void {
             ? (state.currentLang === 'vi' ? 'Không thể kết nối đến máy chủ. Vui lòng chạy server backend ở cổng 5000!' : 'Cannot connect to backend server. Please make sure the server is running on port 5000!')
             : (err.message || (state.currentLang === 'vi' ? 'Tên đăng nhập hoặc mật khẩu không chính xác!' : 'Incorrect username or password!'));
           loginError.style.display = 'block';
+        }
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.removeAttribute('disabled');
+          btnSubmit.innerHTML = originalText;
         }
       }
     });
@@ -133,9 +159,25 @@ export function initAuth(): void {
         return;
       }
 
-      if (usernameVal.includes(' ')) {
+      // Username validation: 4-20 characters, alphanumeric or underscore, no icons/emojis
+      const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
+      if (!usernameRegex.test(usernameVal)) {
         if (registerError) {
-          registerError.textContent = TRANSLATIONS[state.currentLang].alert_username_spaces;
+          registerError.textContent = state.currentLang === 'vi'
+            ? 'Tên đăng nhập phải dài từ 4 đến 20 ký tự, chỉ gồm chữ cái, chữ số, dấu gạch dưới và không chứa khoảng trắng/icon!'
+            : 'Username must be 4-20 characters, containing only letters, numbers, or underscores, with no spaces or icons!';
+          registerError.style.display = 'block';
+        }
+        return;
+      }
+
+      // Password validation: 6-30 characters, standard keyboard characters only, no icons/emojis
+      const passwordRegex = /^[\x21-\x7E]{6,30}$/;
+      if (!passwordRegex.test(passwordVal)) {
+        if (registerError) {
+          registerError.textContent = state.currentLang === 'vi'
+            ? 'Mật khẩu phải dài từ 6 đến 30 ký tự, chỉ chứa các ký tự bàn phím thông thường và không được dùng icon/hình ảnh!'
+            : 'Password must be 6-30 characters, containing only standard keyboard characters, and no icons/emojis!';
           registerError.style.display = 'block';
         }
         return;
@@ -152,6 +194,14 @@ export function initAuth(): void {
         bio: 'Đây là không gian dành riêng cho bạn. Nơi lưu giữ những thông tin cá nhân cơ bản và định hình trải nghiệm lịch trình của bạn.',
         role: 'USER'
       };
+
+      const btnSubmit = formRegister.querySelector('button[type="submit"]') as HTMLButtonElement;
+      let originalText = '';
+      if (btnSubmit) {
+        originalText = btnSubmit.innerHTML;
+        btnSubmit.setAttribute('disabled', 'true');
+        btnSubmit.innerHTML = `<span class="spinner" style="width: 12px; height: 12px; border: 2px solid var(--text-light); border-top-color: transparent; border-radius: 50%; display: inline-block; animation: gemini-spin 1s linear infinite; margin-right: 6px; vertical-align: middle;"></span>${state.currentLang === 'vi' ? 'Đang đăng ký...' : 'Registering...'}`;
+      }
 
       try {
         await apiRegister(newUser);
@@ -177,6 +227,11 @@ export function initAuth(): void {
         if (registerError) {
           registerError.textContent = err.message || TRANSLATIONS[state.currentLang].alert_username_taken;
           registerError.style.display = 'block';
+        }
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.removeAttribute('disabled');
+          btnSubmit.innerHTML = originalText;
         }
       }
     });
@@ -264,6 +319,18 @@ export function initAuth(): void {
 
       if (!emailInput || !codeInput || !newPasswordInput) return;
 
+      // Password validation: 6-30 characters, standard keyboard characters only, no icons/emojis
+      const passwordRegex = /^[\x21-\x7E]{6,30}$/;
+      if (!passwordRegex.test(newPasswordInput)) {
+        if (forgotResetError) {
+          forgotResetError.textContent = state.currentLang === 'vi'
+            ? 'Mật khẩu phải dài từ 6 đến 30 ký tự, chỉ chứa các ký tự bàn phím thông thường và không được dùng icon/hình ảnh!'
+            : 'Password must be 6-30 characters, containing only standard keyboard characters, and no icons/emojis!';
+          forgotResetError.style.display = 'block';
+        }
+        return;
+      }
+
       try {
         if (forgotResetError) forgotResetError.style.display = 'none';
         
@@ -306,5 +373,58 @@ export function setupPasswordToggles(): void {
         if (eyeClosed) (eyeClosed as HTMLElement).style.display = 'none';
       }
     });
+  });
+}
+
+function runLoadingTransition(): Promise<void> {
+  return new Promise((resolve) => {
+    const loadingOverlay = document.getElementById('auth-loading-overlay');
+    const loadingStatus = document.getElementById('loading-status-text');
+    const loadingProgress = document.getElementById('loading-progress-bar');
+
+    if (!loadingOverlay || !loadingStatus || !loadingProgress) {
+      resolve();
+      return;
+    }
+
+    // Initialize display and trigger transition
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.style.opacity = '0';
+    loadingProgress.style.width = '0%';
+    loadingStatus.textContent = state.currentLang === 'vi' ? 'Đang kết nối...' : 'Connecting...';
+
+    // Force reflow
+    void loadingOverlay.offsetWidth;
+    loadingOverlay.style.opacity = '1';
+
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.floor(Math.random() * 10) + 6; // increment by 6% - 15%
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        
+        loadingProgress.style.width = '100%';
+        loadingStatus.textContent = state.currentLang === 'vi' ? 'Sẵn sàng!' : 'Ready!';
+
+        // Wait for progress bar transition to complete
+        setTimeout(() => {
+          loadingOverlay.style.opacity = '0';
+          setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+            resolve();
+          }, 400); // matches CSS overlay fade-out transition
+        }, 300);
+      } else {
+        loadingProgress.style.width = `${progress}%`;
+        if (progress < 30) {
+          loadingStatus.textContent = state.currentLang === 'vi' ? 'Đang xác thực tài khoản...' : 'Verifying credentials...';
+        } else if (progress < 65) {
+          loadingStatus.textContent = state.currentLang === 'vi' ? 'Đang đồng bộ dữ liệu...' : 'Synchronizing habits...';
+        } else {
+          loadingStatus.textContent = state.currentLang === 'vi' ? 'Đang chuẩn bị không gian làm việc...' : 'Preparing workspace...';
+        }
+      }
+    }, 120); // updates every 120ms, overall duration ~1.2s - 1.5s
   });
 }

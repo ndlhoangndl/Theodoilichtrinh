@@ -13,6 +13,23 @@ export const register = async (req, res) => {
     }
 
     const trimmedUsername = username.trim().toLowerCase();
+
+    // Username validation: 4-20 characters, alphanumeric or underscore, no icons/emojis
+    const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
+    if (!usernameRegex.test(trimmedUsername)) {
+      return res.status(400).json({ 
+        message: 'Username must be 4-20 characters, containing only letters, numbers, or underscores, and no icons/special characters.' 
+      });
+    }
+
+    // Password validation: 6-30 characters, standard keyboard characters only, no icons/emojis
+    const passwordRegex = /^[\x21-\x7E]{6,30}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ 
+        message: 'Password must be 6-30 characters, containing only standard keyboard characters, and no icons.' 
+      });
+    }
+
     const existingUser = await User.findOne({ username: trimmedUsername });
     if (existingUser) {
       return res.status(400).json({ message: 'Username is already taken' });
@@ -78,6 +95,8 @@ export const login = async (req, res) => {
         dob: user.dob,
         country: user.country,
         bio: user.bio,
+        avatar: user.avatar || '',
+        theme: user.theme || 'default',
         role: user.role
       }
     });
@@ -90,7 +109,7 @@ export const login = async (req, res) => {
 // POST /api/auth/update-profile
 export const updateProfile = async (req, res) => {
   try {
-    const { fullName, email, gender, dob, country, bio } = req.body;
+    const { fullName, email, gender, dob, country, bio, avatar, theme } = req.body;
     
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -101,6 +120,8 @@ export const updateProfile = async (req, res) => {
     user.dob = dob || user.dob;
     user.country = country !== undefined ? country : user.country;
     user.bio = bio !== undefined ? bio : user.bio;
+    user.avatar = avatar !== undefined ? avatar : user.avatar;
+    user.theme = theme !== undefined ? theme : user.theme;
 
     await user.save();
     
@@ -115,6 +136,8 @@ export const updateProfile = async (req, res) => {
         dob: user.dob,
         country: user.country,
         bio: user.bio,
+        avatar: user.avatar || '',
+        theme: user.theme || 'default',
         role: user.role
       }
     });
@@ -128,6 +151,14 @@ export const updateProfile = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
+    
+    // Password validation: 6-30 characters, standard keyboard characters only, no icons
+    const passwordRegex = /^[\x21-\x7E]{6,30}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ 
+        message: 'New password must be 6-30 characters, containing only standard keyboard characters, and no icons.' 
+      });
+    }
     
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -220,6 +251,14 @@ export const resetPassword = async (req, res) => {
     const { email, code, newPassword } = req.body;
     if (!email || !code || !newPassword) {
       return res.status(400).json({ message: 'All fields (email, code, new password) are required' });
+    }
+
+    // Password validation: 6-30 characters, standard keyboard characters only, no icons
+    const passwordRegex = /^[\x21-\x7E]{6,30}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({ 
+        message: 'New password must be 6-30 characters, containing only standard keyboard characters, and no icons.' 
+      });
     }
 
     const user = await User.findOne({ 

@@ -1,8 +1,60 @@
 import { state } from '../common/state';
 import { getDaysInMonth, getDayOfWeek } from '../../utils/calendar';
 import { calculateStreak } from './tracker';
+import { TRANSLATIONS } from '../common/translations';
 
 export function renderCoachInsights(): void {
+  // Toggle Gemini AI button visibility based on api key presence
+  const geminiKey = localStorage.getItem('LICHTRINH_GEMINI_KEY') || '';
+  const btnAskGemini = document.getElementById('btn-ask-gemini') as HTMLButtonElement;
+  if (btnAskGemini) {
+    if (geminiKey) {
+      btnAskGemini.style.display = 'flex';
+      if (!btnAskGemini.dataset.listenerBound) {
+        btnAskGemini.dataset.listenerBound = 'true';
+        btnAskGemini.addEventListener('click', handleGeminiAnalysis);
+      }
+    } else {
+      btnAskGemini.style.display = 'none';
+    }
+  }
+
+  // Wire coach mode toggler
+  const btnToggleMode = document.getElementById('btn-toggle-coach-mode');
+  const staticView = document.getElementById('coach-static-view');
+  const chatView = document.getElementById('coach-chat-view');
+
+  if (btnToggleMode && staticView && chatView) {
+    if (!btnToggleMode.dataset.listenerBound) {
+      btnToggleMode.dataset.listenerBound = 'true';
+      btnToggleMode.addEventListener('click', () => {
+        const isShowingChat = chatView.style.display === 'flex';
+        const isVi = state.currentLang === 'vi';
+        if (isShowingChat) {
+          // Switch to static
+          chatView.style.display = 'none';
+          staticView.style.display = 'flex';
+          btnToggleMode.innerHTML = '💬 Chat';
+        } else {
+          // Switch to chat
+          staticView.style.display = 'none';
+          chatView.style.display = 'flex';
+          btnToggleMode.innerHTML = isVi ? '📊 Phân tích' : '📊 Insights';
+          
+          loadChatHistory();
+          renderChatMessages();
+        }
+      });
+    }
+  }
+
+  // Wire coach chat form submit
+  const chatForm = document.getElementById('coach-chat-input-form');
+  if (chatForm && !chatForm.dataset.listenerBound) {
+    chatForm.dataset.listenerBound = 'true';
+    chatForm.addEventListener('submit', handleChatSubmit);
+  }
+
   if (!state.currentUser || !state.currentRecord || state.habits.length === 0) {
     const insightsContainer = document.getElementById('coach-insights-list');
     if (insightsContainer) {
@@ -313,5 +365,601 @@ export function renderCoachInsights(): void {
     const coachIntroVi = 'Dưới đây là một số phân tích và đề xuất giúp bạn tối ưu hóa lịch trình của mình:';
     const coachIntroEn = 'Here are behavioral patterns and insights computed from your logs to help you optimize:';
     coachIntro.textContent = lang === 'vi' ? coachIntroVi : coachIntroEn;
+  }
+}
+
+async function handleGeminiAnalysis(): Promise<void> {
+  const btnAskGemini = document.getElementById('btn-ask-gemini') as HTMLButtonElement;
+  const geminiResponseBox = document.getElementById('gemini-response-box');
+  if (!btnAskGemini || !geminiResponseBox) return;
+
+  const geminiKey = localStorage.getItem('LICHTRINH_GEMINI_KEY') || '';
+  if (!geminiKey) {
+    alert(TRANSLATIONS[state.currentLang].alert_gemini_key_missing);
+    return;
+  }
+
+  const lang = state.currentLang;
+  const username = state.currentUser!.username;
+  const year = state.currentYear;
+  const month = state.currentMonth;
+  const daysCount = getDaysInMonth(year, month);
+  const habits = state.habits;
+  const checks = state.currentRecord!.checks;
+  const mood = state.currentRecord!.mood || new Array(daysCount).fill(0);
+  const motivation = state.currentRecord!.motivation || new Array(daysCount).fill(0);
+
+  // 1. Gather Habits completion rate & streak
+  const habitsData = habits.map(h => {
+    const hChecks = checks[h.id] || new Array(daysCount).fill(false);
+    const actual = hChecks.filter(c => c).length;
+    const rate = daysCount > 0 ? (actual / daysCount) * 100 : 0;
+    const { maxStreak } = calculateStreak(h.id, hChecks, username, year, month, habits);
+    return {
+      name: h.name,
+      emoji: h.emoji,
+      targetDays: daysCount,
+      actualDays: actual,
+      rate: Math.round(rate),
+      streak: maxStreak
+    };
+  });
+
+  // 2. Compute mood / motivation averages
+  const moodValues = mood.filter((v: number) => v > 0);
+  const avgMood = moodValues.length > 0 ? (moodValues.reduce((a: number, b: number) => a + b, 0) / moodValues.length).toFixed(1) : 'N/A';
+
+  const motivationValues = motivation.filter((v: number) => v > 0);
+  const avgMotivation = motivationValues.length > 0 ? (motivationValues.reduce((a: number, b: number) => a + b, 0) / motivationValues.length).toFixed(1) : 'N/A';
+
+  // 3. Gather journal reflections
+  const diary = state.currentRecord!.diary || {};
+  const journalEntries: string[] = [];
+  for (let d = 0; d < daysCount; d++) {
+    const entry = diary[d];
+    if (entry && entry.trim()) {
+      journalEntries.push(`Day ${d + 1}: "${entry.trim()}"`);
+    }
+  }
+
+  // 4. Build prompt
+  const prompt = lang === 'vi' 
+    ? `Bạn là một nhà tâm lý học hành vi và huấn luyện viên thói quen chuyên nghiệp.
+Hãy phân tích dữ liệu lịch trình thói quen của người dùng dưới đây cho Tháng ${month + 1}/${year}:
+
+1. Danh sách thói quen:
+${habitsData.map(h => `- ${h.emoji} ${h.name}: Đã làm ${h.actualDays}/${h.targetDays} ngày (${h.rate}%), Chuỗi dài nhất: ${h.streak} ngày`).join('\n')}
+
+2. Trạng thái tinh thần trung bình:
+- Điểm Tâm trạng (Mood): ${avgMood}/10
+- Điểm Động lực (Motivation): ${avgMotivation}/10
+
+3. Nhật ký ghi chú phản tư của các ngày:
+${journalEntries.length > 0 ? journalEntries.join('\n') : '(Không có ghi chép nhật ký nào trong tháng này)'}
+
+Hãy cung cấp một bài đánh giá sâu sắc, ngắn gọn, và có cấu trúc rõ ràng:
+- **Nhận xét tổng quan**: Đánh giá hiệu suất chung và mối liên hệ giữa tâm trạng/động lực với việc hoàn thành thói quen. Đưa ra lời khen ngợi cho điểm sáng lớn nhất.
+- **Phát hiện & Liên hệ**: Có sự liên quan gì giữa những gì ghi chép trong nhật ký với tiến độ thói quen không?
+- **3 Lời khuyên hành động cụ thể**: Đề xuất thiết thực nhất để cải thiện (ghép cặp thói quen, giảm tải thói quen yếu nhất, tạo động lực...).
+
+Lưu ý: 
+- Hãy phản hồi hoàn toàn bằng tiếng Việt.
+- Dùng các định dạng Markdown cơ bản (chữ đậm **chữ**, gạch đầu dòng \`* \` hoặc \`- \`, xuống dòng rõ ràng). Không sử dụng tiêu đề lớn như # hoặc ##, hãy dùng chữ đậm để phân chia đề mục.`
+    : `You are a professional behavioral psychologist and habit coach.
+Analyze the user's habit tracker data for the month ${month + 1}/${year}:
+
+1. Habits list:
+${habitsData.map(h => `- ${h.emoji} ${h.name}: Done ${h.actualDays}/${h.targetDays} days (${h.rate}%), Max streak: ${h.streak} days`).join('\n')}
+
+2. Mental states average:
+- Mood: ${avgMood}/10
+- Motivation: ${avgMotivation}/10
+
+3. Reflections / Journal logs:
+${journalEntries.length > 0 ? journalEntries.join('\n') : '(No journal entries written this month)'}
+
+Provide a deep, concise, and structured review:
+- **Overall Assessment**: Evaluate general performance and correlation between mood/motivation and habit completion. Appreciate the highlights.
+- **Insights & Correlations**: Any patterns between the journal notes and habit completion?
+- **3 Actionable Tips**: Practical suggestions (habit stacking, reducing scope of worst habits, creating cues...).
+
+Notes:
+- Respond entirely in English.
+- Use basic Markdown formatting (bold **text**, bullet points \`* \` or \`- \`, clean newlines). Do not use large headers like # or ##, use bold text for headings.`;
+
+  // 5. Show loading UI
+  const originalBtnHTML = btnAskGemini.innerHTML;
+  btnAskGemini.setAttribute('disabled', 'true');
+  btnAskGemini.innerHTML = `⚡ ${TRANSLATIONS[lang].coach_analyzing || 'Đang phân tích...'}`;
+
+  geminiResponseBox.style.display = 'block';
+  geminiResponseBox.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-muted); font-style: italic; padding: 10px 0;">
+      <span class="spinner" style="width: 16px; height: 16px; border: 2px solid var(--text-muted); border-top-color: var(--accent-orange); border-radius: 50%; display: inline-block;"></span>
+      <span>${TRANSLATIONS[lang].coach_analyzing || 'Đang phân tích...'}</span>
+    </div>
+  `;
+
+  // Add spin animation style inline if not exists
+  if (!document.getElementById('gemini-spin-keyframes')) {
+    const style = document.createElement('style');
+    style.id = 'gemini-spin-keyframes';
+    style.textContent = `
+      @keyframes gemini-spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  const spinner = geminiResponseBox.querySelector('.spinner') as HTMLElement;
+  if (spinner) {
+    spinner.style.animation = 'gemini-spin 1s linear infinite';
+  }
+
+  try {
+    // Dynamic model discovery
+    let modelName = 'models/gemini-1.5-flash';
+    try {
+      const modelsResponse = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${geminiKey}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': geminiKey
+        }
+      });
+      if (modelsResponse.ok) {
+        const modelsData = await modelsResponse.json();
+        const availableModels: any[] = modelsData.models || [];
+        const generateModels = availableModels.filter(m => 
+          m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
+        );
+
+        if (generateModels.length > 0) {
+          const has15Flash = generateModels.find(m => m.name === 'models/gemini-1.5-flash');
+          if (has15Flash) {
+            modelName = 'models/gemini-1.5-flash';
+          } else {
+            const anyFlash = generateModels.find(m => m.name.toLowerCase().includes('flash'));
+            if (anyFlash) {
+              modelName = anyFlash.name;
+            } else {
+              modelName = generateModels[0].name;
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to list models, using default models/gemini-1.5-flash:', e);
+    }
+
+    const cleanModelId = modelName.startsWith('models/') ? modelName.substring(7) : modelName;
+    console.log(`Using Gemini model: ${cleanModelId}`);
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${cleanModelId}:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': geminiKey
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt
+              }
+            ]
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      const errMsg = errJson.error?.message || `HTTP error! status: ${response.status}`;
+      throw new Error(errMsg);
+    }
+
+    const resData = await response.json();
+    const textResponse = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!textResponse) {
+      throw new Error('Empty response from Gemini API');
+    }
+
+    const headerText = lang === 'vi' ? '✨ Nhận xét chuyên sâu từ Gemini AI' : '✨ Gemini AI Habits Insights';
+    const parsedHtml = parseMarkdownToHtml(textResponse);
+
+    geminiResponseBox.innerHTML = `
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+        <span style="font-weight: 700; font-size: 14px; color: var(--accent-orange); display: flex; align-items: center; gap: 6px;">
+          ${headerText}
+        </span>
+        <button type="button" class="btn-close-gemini" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted); padding: 0 4px; line-height: 1;" title="Close">×</button>
+      </div>
+      <div class="gemini-content-body" style="font-size: 13px; line-height: 1.6;">
+        ${parsedHtml}
+      </div>
+    `;
+
+    const closeBtn = geminiResponseBox.querySelector('.btn-close-gemini');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        geminiResponseBox.style.display = 'none';
+      });
+    }
+
+  } catch (err: any) {
+    console.error('Gemini API call failed:', err);
+    const baseErr = TRANSLATIONS[lang].alert_gemini_api_error || 'Lỗi gọi API Gemini. Vui lòng kiểm tra lại API Key!';
+    alert(`${baseErr}\n\nDetails: ${err.message || err}`);
+    geminiResponseBox.style.display = 'none';
+  } finally {
+    btnAskGemini.removeAttribute('disabled');
+    btnAskGemini.innerHTML = originalBtnHTML;
+  }
+}
+
+function parseMarkdownToHtml(md: string): string {
+  // Escape HTML tags to prevent XSS
+  let html = md
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  // Bold **text** -> <strong>text</strong>
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  // Simple header replacement
+  html = html.replace(/^### (.*?)$/gm, '<h5 style="margin: 12px 0 6px 0; font-weight: 700; color: var(--accent-orange); font-size: 13px;">$1</h5>');
+  html = html.replace(/^## (.*?)$/gm, '<h4 style="margin: 14px 0 8px 0; font-weight: 700; color: var(--accent-orange); font-size: 14px;">$1</h4>');
+  html = html.replace(/^# (.*?)$/gm, '<h3 style="margin: 16px 0 10px 0; font-weight: 700; color: var(--accent-orange); font-size: 15px;">$1</h3>');
+
+  // Bullet points: line-by-line parsing
+  const lines = html.split('\n');
+  let inList = false;
+  const processedLines: string[] = [];
+
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+      if (!inList) {
+        processedLines.push('<ul style="margin: 8px 0; padding-left: 20px; list-style-type: disc;">');
+        inList = true;
+      }
+      const itemContent = trimmed.substring(2);
+      processedLines.push(`<li style="margin-bottom: 4px;">${itemContent}</li>`);
+    } else {
+      if (inList) {
+        processedLines.push('</ul>');
+        inList = false;
+      }
+      processedLines.push(line);
+    }
+  }
+  if (inList) {
+    processedLines.push('</ul>');
+  }
+
+  // Handle paragraphs and line breaks
+  let finalHtml = '';
+  let tempParagraph: string[] = [];
+
+  for (let line of processedLines) {
+    if (line.startsWith('<ul') || line.startsWith('<li') || line.startsWith('</ul') || line.startsWith('</li') || line.startsWith('<h3') || line.startsWith('<h4') || line.startsWith('<h5')) {
+      if (tempParagraph.length > 0) {
+        finalHtml += `<p style="margin-bottom: 12px; line-height: 1.6;">${tempParagraph.join('<br>')}</p>`;
+        tempParagraph = [];
+      }
+      finalHtml += line;
+    } else if (line.trim() === '') {
+      if (tempParagraph.length > 0) {
+        finalHtml += `<p style="margin-bottom: 12px; line-height: 1.6;">${tempParagraph.join('<br>')}</p>`;
+        tempParagraph = [];
+      }
+    } else {
+      tempParagraph.push(line);
+    }
+  }
+  if (tempParagraph.length > 0) {
+    finalHtml += `<p style="margin-bottom: 12px; line-height: 1.6;">${tempParagraph.join('<br>')}</p>`;
+  }
+
+  return finalHtml;
+}
+
+// ----------------------------------------------------
+// AI Coach Live Chat Companion Implementation
+// ----------------------------------------------------
+interface ChatMessage {
+  role: 'user' | 'model';
+  parts: { text: string }[];
+}
+
+let chatHistory: ChatMessage[] = [];
+
+async function fetchActiveModel(geminiKey: string): Promise<string> {
+  let modelName = 'models/gemini-1.5-flash';
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models?key=${geminiKey}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': geminiKey
+      }
+    });
+    if (response.ok) {
+      const data = await response.json();
+      const availableModels: any[] = data.models || [];
+      const generateModels = availableModels.filter(m => 
+        m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent')
+      );
+
+      if (generateModels.length > 0) {
+        const has15Flash = generateModels.find(m => m.name === 'models/gemini-1.5-flash');
+        if (has15Flash) {
+          modelName = 'models/gemini-1.5-flash';
+        } else {
+          const anyFlash = generateModels.find(m => m.name.toLowerCase().includes('flash'));
+          if (anyFlash) {
+            modelName = anyFlash.name;
+          } else {
+            modelName = generateModels[0].name;
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to discover models, using default models/gemini-1.5-flash:', e);
+  }
+  return modelName.startsWith('models/') ? modelName.substring(7) : modelName;
+}
+
+function buildSystemContext(): string {
+  const lang = state.currentLang;
+  const username = state.currentUser!.username;
+  const year = state.currentYear;
+  const month = state.currentMonth;
+  const daysCount = getDaysInMonth(year, month);
+  const habits = state.habits;
+  const checks = state.currentRecord!.checks;
+  const mood = state.currentRecord!.mood || new Array(daysCount).fill(0);
+  const motivation = state.currentRecord!.motivation || new Array(daysCount).fill(0);
+
+  // Gather Habits completion rate & streak
+  const habitsData = habits.map(h => {
+    const hChecks = checks[h.id] || new Array(daysCount).fill(false);
+    const actual = hChecks.filter(c => c).length;
+    const rate = daysCount > 0 ? (actual / daysCount) * 100 : 0;
+    const { maxStreak } = calculateStreak(h.id, hChecks, username, year, month, habits);
+    return `${h.emoji} ${h.name}: ${actual}/${daysCount} days (${Math.round(rate)}%, max streak ${maxStreak} days)`;
+  }).join('\n');
+
+  const moodValues = mood.filter((v: number) => v > 0);
+  const avgMood = moodValues.length > 0 ? (moodValues.reduce((a: number, b: number) => a + b, 0) / moodValues.length).toFixed(1) : 'N/A';
+
+  const motivationValues = motivation.filter((v: number) => v > 0);
+  const avgMotivation = motivationValues.length > 0 ? (motivationValues.reduce((a: number, b: number) => a + b, 0) / motivationValues.length).toFixed(1) : 'N/A';
+
+  const diary = state.currentRecord!.diary || {};
+  const journalEntries: string[] = [];
+  for (let d = 0; d < daysCount; d++) {
+    const entry = diary[d];
+    if (entry && entry.trim()) {
+      journalEntries.push(`Day ${d + 1}: "${entry.trim()}"`);
+    }
+  }
+
+  return `SYSTEM CONTEXT (User's Habit Tracker data for Month ${month + 1}/${year}):
+1. Habits Completion:
+${habitsData}
+
+2. Mental States Averages:
+- Mood: ${avgMood}/10
+- Motivation: ${avgMotivation}/10
+
+3. Daily Journal Reflections:
+${journalEntries.length > 0 ? journalEntries.join('\n') : '(No journal entries this month)'}
+
+INSTRUCTIONS:
+You are the professional Habit Coach for this user. Your name is Lịch Trình Coach.
+Analyze this context. When the user chats with you, refer to this data to give custom recommendations. Be warm, empathetic, and action-oriented. Keep responses concise (under 3-4 paragraphs) and formatted in clean Markdown. Respond in ${lang === 'vi' ? 'Vietnamese' : 'English'}.`;
+}
+
+function loadChatHistory(): void {
+  if (!state.currentUser) return;
+  const username = state.currentUser.username;
+  const year = state.currentYear;
+  const month = state.currentMonth;
+  const key = `LICHTRINH_COACH_CHAT_HISTORY_${username}_${year}_${month}`;
+  
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      chatHistory = JSON.parse(saved);
+    } catch (e) {
+      chatHistory = [];
+    }
+  } else {
+    chatHistory = [];
+  }
+}
+
+function saveChatHistory(): void {
+  if (!state.currentUser) return;
+  const username = state.currentUser.username;
+  const year = state.currentYear;
+  const month = state.currentMonth;
+  const key = `LICHTRINH_COACH_CHAT_HISTORY_${username}_${year}_${month}`;
+  
+  localStorage.setItem(key, JSON.stringify(chatHistory));
+}
+
+function renderChatMessages(): void {
+  const messagesContainer = document.getElementById('coach-chat-messages');
+  if (!messagesContainer) return;
+  
+  const lang = state.currentLang;
+  
+  if (chatHistory.length === 0) {
+    const welcome = lang === 'vi'
+      ? 'Chào bạn! Tôi đã phân tích thói quen và trạng thái tinh thần của bạn trong tháng này. Bạn cần tư vấn hay có câu hỏi gì không?'
+      : 'Hello! I have analyzed your habits and mental states for this month. Do you need any advice or have any questions?';
+      
+    messagesContainer.innerHTML = `
+      <div style="display: flex; gap: 8px; align-items: flex-start; max-width: 85%;">
+        <div style="background: var(--accent-orange); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0;">🤖</div>
+        <div style="background: var(--bg-selected); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 4px 12px 12px 12px; font-size: 12px; line-height: 1.5;">
+          ${welcome}
+        </div>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '';
+  chatHistory.forEach(msg => {
+    const isModel = msg.role === 'model';
+    const textHtml = parseMarkdownToHtml(msg.parts[0].text);
+    
+    if (isModel) {
+      html += `
+        <div style="display: flex; gap: 8px; align-items: flex-start; max-width: 85%; align-self: flex-start; margin-bottom: 4px;">
+          <div style="background: var(--accent-orange); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0;">🤖</div>
+          <div style="background: var(--bg-selected); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 4px 12px 12px 12px; font-size: 12px; line-height: 1.5; overflow-x: auto;">
+            ${textHtml}
+          </div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div style="display: flex; gap: 8px; align-items: flex-start; max-width: 85%; align-self: flex-end; justify-content: flex-end; margin-bottom: 4px;">
+          <div style="background: var(--bg-selected); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 12px 12px 4px 12px; font-size: 12px; line-height: 1.5; overflow-x: auto;">
+            ${textHtml}
+          </div>
+          <div style="background: var(--accent-blue, #3b82f6); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0;">👤</div>
+        </div>
+      `;
+    }
+  });
+  
+  messagesContainer.innerHTML = html;
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+async function handleChatSubmit(e: Event): Promise<void> {
+  e.preventDefault();
+  const inputEl = document.getElementById('coach-chat-input') as HTMLInputElement;
+  const messagesContainer = document.getElementById('coach-chat-messages');
+  if (!inputEl || !messagesContainer) return;
+  
+  const text = inputEl.value.trim();
+  if (!text) return;
+  
+  inputEl.value = '';
+  
+  chatHistory.push({
+    role: 'user',
+    parts: [{ text }]
+  });
+  saveChatHistory();
+  renderChatMessages();
+  
+  const typingIndicator = document.createElement('div');
+  typingIndicator.id = 'coach-typing-indicator';
+  typingIndicator.style.display = 'flex';
+  typingIndicator.style.gap = '8px';
+  typingIndicator.style.alignItems = 'flex-start';
+  typingIndicator.style.maxWidth = '85%';
+  typingIndicator.style.alignSelf = 'flex-start';
+  typingIndicator.style.marginBottom = '4px';
+  typingIndicator.innerHTML = `
+    <div style="background: var(--accent-orange); color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0;">🤖</div>
+    <div style="background: var(--bg-selected); color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 12px; border-radius: 4px 12px 12px 12px; font-size: 12px; font-style: italic;">
+      Đang suy nghĩ... (Thinking...)
+    </div>
+  `;
+  messagesContainer.appendChild(typingIndicator);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  const geminiKey = localStorage.getItem('LICHTRINH_GEMINI_KEY') || '';
+  if (!geminiKey) {
+    const indicator = document.getElementById('coach-typing-indicator');
+    if (indicator && indicator.parentNode) {
+      indicator.parentNode.removeChild(indicator);
+    }
+    alert(TRANSLATIONS[state.currentLang].alert_gemini_key_missing);
+    return;
+  }
+  
+  try {
+    const cleanModelId = await fetchActiveModel(geminiKey);
+    const systemContext = buildSystemContext();
+    
+    const requestContents = chatHistory.map((msg, idx) => {
+      if (idx === 0 && msg.role === 'user') {
+        return {
+          role: msg.role,
+          parts: [{ text: `${systemContext}\n\nUser request: ${msg.parts[0].text}` }]
+        };
+      }
+      return msg;
+    });
+    
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/${cleanModelId}:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-goog-api-key': geminiKey
+      },
+      body: JSON.stringify({
+        contents: requestContents
+      })
+    });
+    
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      const errMsg = errJson.error?.message || `HTTP error! status: ${response.status}`;
+      throw new Error(errMsg);
+    }
+    
+    const resData = await response.json();
+    const modelText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!modelText) {
+      throw new Error('Empty response from Gemini API');
+    }
+    
+    const indicator = document.getElementById('coach-typing-indicator');
+    if (indicator && indicator.parentNode) {
+      indicator.parentNode.removeChild(indicator);
+    }
+    
+    chatHistory.push({
+      role: 'model',
+      parts: [{ text: modelText }]
+    });
+    saveChatHistory();
+    renderChatMessages();
+    
+  } catch (err: any) {
+    console.error('Chat Gemini API call failed:', err);
+    
+    const indicator = document.getElementById('coach-typing-indicator');
+    if (indicator && indicator.parentNode) {
+      indicator.parentNode.removeChild(indicator);
+    }
+    
+    const errText = state.currentLang === 'vi'
+      ? `⚠️ Đã xảy ra lỗi khi kết nối với AI Coach. Chi tiết: ${err.message || err}`
+      : `⚠️ An error occurred while communicating with the AI Coach. Details: ${err.message || err}`;
+      
+    chatHistory.push({
+      role: 'model',
+      parts: [{ text: errText }]
+    });
+    saveChatHistory();
+    renderChatMessages();
   }
 }

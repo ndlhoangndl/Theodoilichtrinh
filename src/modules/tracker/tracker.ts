@@ -133,6 +133,13 @@ export function initializeState(): void {
   state.currentYear = dateInfo.year;
   state.currentMonth = dateInfo.month;
   state.currentRecord = loadRecord(username, state.currentYear, state.currentMonth, state.habits);
+
+  const today = new Date();
+  if (today.getFullYear() === state.currentYear && today.getMonth() === state.currentMonth) {
+    state.selectedWeekIdx = Math.floor((today.getDate() - 1) / 7);
+  } else {
+    state.selectedWeekIdx = 0;
+  }
 }
 
 // Helper: Calculate Streak metrics for a checklist, dynamically traversing month boundaries
@@ -413,6 +420,46 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
   if (!state.currentUser || !state.currentRecord) return;
   const daysCount = getDaysInMonth(state.currentYear, state.currentMonth);
   const dayNames = state.currentLang === 'vi' ? WEEK_DAYS_VN : WEEK_DAYS_EN;
+  const today = new Date();
+
+  // Update toggle button text dynamically
+  const btnToggleCompactGrid = document.getElementById('btn-toggle-compact-grid');
+  if (btnToggleCompactGrid) {
+    if (state.isCompactGrid) {
+      btnToggleCompactGrid.textContent = TRANSLATIONS[state.currentLang].btn_toggle_full || '📅 Đầy đủ';
+    } else {
+      btnToggleCompactGrid.textContent = TRANSLATIONS[state.currentLang].btn_toggle_compact || '📱 Thu gọn';
+    }
+  }
+
+  // Show/Hide and update options for the compact week selector dropdown
+  const selectWeekContainer = document.getElementById('select-week-container');
+  const selectWeek = document.getElementById('select-week') as HTMLSelectElement;
+  const weeksCount = daysCount > 28 ? 5 : 4;
+
+  if (selectWeekContainer && selectWeek) {
+    if (state.isCompactGrid) {
+      selectWeekContainer.style.display = 'flex';
+      
+      // Keep selectedWeekIdx within bounds
+      if (state.selectedWeekIdx >= weeksCount || state.selectedWeekIdx < 0) {
+        state.selectedWeekIdx = 0;
+      }
+      
+      let optionsHtml = '';
+      const weekLabel = state.currentLang === 'vi' ? 'Tuần' : 'Week';
+      for (let i = 0; i < weeksCount; i++) {
+        optionsHtml += `<option value="${i}" ${state.selectedWeekIdx === i ? 'selected' : ''} style="color:var(--text-main); background:var(--bg-panel);">${weekLabel} ${i + 1}</option>`;
+      }
+      selectWeek.innerHTML = optionsHtml;
+    } else {
+      selectWeekContainer.style.display = 'none';
+    }
+  }
+
+  // Calculate day range to show (by week if compact mode is enabled)
+  const startDay = state.isCompactGrid ? (state.selectedWeekIdx * 7 + 1) : 1;
+  const endDay = state.isCompactGrid ? Math.min(daysCount, startDay + 6) : daysCount;
   
   // 1. Render Week group header (e.g. Week 1, Week 2...)
   const weekHeader = document.getElementById('habit-grid-week-header');
@@ -420,14 +467,18 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
     const weekWord = state.currentLang === 'vi' ? 'Tuần' : 'Week';
     let html = `<th class="col-habit-name" rowspan="2">${state.currentLang === 'vi' ? 'Thói quen' : 'My Habits'}</th>`;
     
-    html += `<th colspan="7" class="week-group-header">${weekWord} 1</th>`;
-    html += `<th colspan="7" class="week-group-header">${weekWord} 2</th>`;
-    html += `<th colspan="7" class="week-group-header">${weekWord} 3</th>`;
-    html += `<th colspan="7" class="week-group-header">${weekWord} 4</th>`;
-    
-    const remainingDays = daysCount - 28;
-    if (remainingDays > 0) {
-      html += `<th colspan="${remainingDays}" class="week-group-header">${weekWord} 5</th>`;
+    if (state.isCompactGrid) {
+      html += `<th colspan="${endDay - startDay + 1}" class="week-group-header">${weekWord} ${state.selectedWeekIdx + 1}</th>`;
+    } else {
+      html += `<th colspan="7" class="week-group-header">${weekWord} 1</th>`;
+      html += `<th colspan="7" class="week-group-header">${weekWord} 2</th>`;
+      html += `<th colspan="7" class="week-group-header">${weekWord} 3</th>`;
+      html += `<th colspan="7" class="week-group-header">${weekWord} 4</th>`;
+      
+      const remainingDays = daysCount - 28;
+      if (remainingDays > 0) {
+        html += `<th colspan="${remainingDays}" class="week-group-header">${weekWord} 5</th>`;
+      }
     }
     
     weekHeader.innerHTML = html;
@@ -437,8 +488,7 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
   const daysHeader = document.getElementById('habit-grid-header');
   if (daysHeader) {
     let html = '';
-    const today = new Date();
-    for (let d = 1; d <= daysCount; d++) {
+    for (let d = startDay; d <= endDay; d++) {
       const dayIdx = getDayOfWeek(state.currentYear, state.currentMonth, d);
       const dayName = dayNames[dayIdx];
       const isWeekend = (dayIdx === 0 || dayIdx === 6);
@@ -468,6 +518,9 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
     // Click on date column header opens journal tab for that date
     const headers = daysHeader.querySelectorAll('th');
     headers.forEach(h => {
+      // Avoid attaching listener to the first habit name column
+      if (h.classList.contains('col-habit-name')) return;
+      
       h.addEventListener('click', () => {
         if (!state.currentRecord) return;
         const dayIdx = parseInt(h.getAttribute('data-day') || '0');
@@ -496,7 +549,7 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
       html += `<tr>`;
       html += `<td class="col-habit-name" title="${h.name}">${h.name}</td>`;
       
-      for (let d = 0; d < daysCount; d++) {
+      for (let d = startDay - 1; d < endDay; d++) {
         const isChecked = checks[d];
         const dayOfWeekIdx = getDayOfWeek(state.currentYear, state.currentMonth, d + 1);
         const isWeekend = (dayOfWeekIdx === 0 || dayOfWeekIdx === 6);
@@ -521,7 +574,7 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
     const labelMood = state.currentLang === 'vi' ? 'Mood (Tâm trạng)' : 'Mood';
     html += `<tr class="row-mental-state">`;
     html += `<td class="col-mental-label">${labelMood}</td>`;
-    for (let d = 0; d < daysCount; d++) {
+    for (let d = startDay - 1; d < endDay; d++) {
       const rating = state.currentRecord.mood[d] || 0;
       html += `
         <td class="cell-mental-state">
@@ -540,7 +593,7 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
     const labelMot = state.currentLang === 'vi' ? 'Motivation (Động lực)' : 'Motivation';
     html += `<tr class="row-mental-state">`;
     html += `<td class="col-mental-label">${labelMot}</td>`;
-    for (let d = 0; d < daysCount; d++) {
+    for (let d = startDay - 1; d < endDay; d++) {
       const rating = state.currentRecord.motivation[d] || 0;
       html += `
         <td class="cell-mental-state">
@@ -1054,6 +1107,27 @@ export function initTracker(): void {
   if (btnExportExcel) {
     btnExportExcel.addEventListener('click', () => {
       exportToCSV();
+    });
+  }
+
+  // Compact grid toggle button
+  const btnToggleCompactGrid = document.getElementById('btn-toggle-compact-grid');
+  if (btnToggleCompactGrid) {
+    btnToggleCompactGrid.addEventListener('click', () => {
+      state.isCompactGrid = !state.isCompactGrid;
+      
+      const stats = calculateStats();
+      renderSpreadsheetGrid(stats.habitStats);
+    });
+  }
+
+  // Compact grid week selector dropdown
+  const selectWeek = document.getElementById('select-week') as HTMLSelectElement;
+  if (selectWeek) {
+    selectWeek.addEventListener('change', () => {
+      state.selectedWeekIdx = parseInt(selectWeek.value);
+      const stats = calculateStats();
+      renderSpreadsheetGrid(stats.habitStats);
     });
   }
 

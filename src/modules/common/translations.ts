@@ -21,6 +21,7 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     panel_calendar_settings: 'Cài đặt lịch',
     label_year: 'Năm',
     label_month: 'Tháng',
+    label_week: 'Tuần',
     panel_daily_progress: 'Tiến độ hàng ngày',
     panel_weekly_progress: 'Tiến độ hàng tuần',
     panel_goals_stats: 'Thống kê mục tiêu',
@@ -54,9 +55,14 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     th_progress: 'Tiến độ',
     panel_habit_garden: 'Khu Vườn Thói Quen',
     btn_water_plant: 'Tưới nước',
+    panel_goals: 'Mục tiêu',
     panel_monthly_goals: 'Mục tiêu trong tháng',
     panel_weekly_goals: 'Mục tiêu trong tuần',
+    panel_monthly_goals_subtitle: 'Mục tiêu trong tháng',
+    panel_weekly_goals_subtitle: 'Mục tiêu trong tuần',
     panel_leaderboard: 'Top Thói Quen Hàng Đầu',
+    btn_toggle_compact: '📱 Thu gọn',
+    btn_toggle_full: '📅 Đầy đủ',
     modal_manage_title: 'Quản lý thói quen',
     add_habit_title: 'Thêm thói quen mới',
     modal_label_name: 'Tên thói quen mới',
@@ -88,6 +94,17 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     profile_btn_update_info: 'Cập nhật thông tin cơ bản',
     profile_btn_change_password: 'Đổi mật khẩu',
     profile_btn_logout: 'Đăng xuất khỏi hệ thống',
+    profile_api_settings: 'Cấu hình API trợ lý AI',
+    profile_gemini_label: 'Google Gemini API Key:',
+    profile_gemini_placeholder: 'Nhập API Key từ AI Studio...',
+    profile_gemini_help: 'để mở khóa nhận xét chuyên sâu từ AI thực tế.',
+    profile_gemini_help_prefix: 'Nhận API Key miễn phí tại',
+    profile_gemini_link_text: 'Google AI Studio',
+    btn_ask_gemini: '⚡ Phân tích bằng Gemini AI',
+    coach_analyzing: 'Đang phân tích dữ liệu tháng này...',
+    alert_gemini_key_saved: 'Đã lưu Gemini API Key thành công!',
+    alert_gemini_key_missing: 'Vui lòng cấu hình Gemini API Key tại trang Cá Nhân trước!',
+    alert_gemini_api_error: 'Lỗi gọi API Gemini. Vui lòng kiểm tra lại API Key!',
     profile_overview_details: 'Overview Details',
     profile_card_account: 'ACCOUNT',
     profile_card_email: 'EMAIL',
@@ -133,6 +150,13 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     prompt_plan: 'Ngày mai',
     goals_input_placeholder: 'Đặt mục tiêu mới cho tháng...',
     weekly_goals_input_placeholder: 'Đặt mục tiêu mới cho tuần...',
+    focus_ambient_title: '🎵 Âm thanh nền (Ambient Sound)',
+    ambient_none: '🔇 Không âm thanh (None)',
+    ambient_lofi: '🎵 Nhạc Lofi Thư Giãn (Lofi)',
+    ambient_rain: '🌧️ Mưa Rơi Êm Đềm (Rain)',
+    ambient_cafe: '☕ Không Khí Quán Cà Phê (Café)',
+    ambient_forest: '🌲 Rừng Thông Rào Rạt (Forest)',
+    ambient_volume: 'Âm lượng:',
     modal_input_placeholder: 'Ví dụ: Đọc sách 30 phút...',
     
     // Tooltips (titles)
@@ -189,6 +213,7 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     panel_calendar_settings: 'Calendar Settings',
     label_year: 'Year',
     label_month: 'Month',
+    label_week: 'Week',
     panel_daily_progress: 'Daily Progress',
     panel_weekly_progress: 'Weekly Progress',
     panel_goals_stats: 'Goal Stats',
@@ -222,9 +247,14 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     th_progress: 'Progress',
     panel_habit_garden: 'Habit Garden',
     btn_water_plant: 'Water Plant',
+    panel_goals: 'Goals',
     panel_monthly_goals: 'Monthly Goals',
     panel_weekly_goals: 'Weekly Goals',
+    panel_monthly_goals_subtitle: 'Monthly Goals',
+    panel_weekly_goals_subtitle: 'Weekly Goals',
     panel_leaderboard: 'Top Daily Habits',
+    btn_toggle_compact: '📱 Compact',
+    btn_toggle_full: '📅 Full',
     modal_manage_title: 'Manage Habits',
     add_habit_title: 'Add New Habit',
     modal_label_name: 'New Habit Name',
@@ -256,6 +286,17 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     profile_btn_update_info: 'Update Basic Info',
     profile_btn_change_password: 'Change Password',
     profile_btn_logout: 'Log Out of System',
+    profile_api_settings: 'AI Assistant API Settings',
+    profile_gemini_label: 'Google Gemini API Key:',
+    profile_gemini_placeholder: 'Enter API Key from AI Studio...',
+    profile_gemini_help: 'to unlock deep insights from real AI.',
+    profile_gemini_help_prefix: 'Get a free API Key at',
+    profile_gemini_link_text: 'Google AI Studio',
+    btn_ask_gemini: '⚡ Analyze with Gemini AI',
+    coach_analyzing: 'Analyzing this month\'s data...',
+    alert_gemini_key_saved: 'Gemini API Key saved successfully!',
+    alert_gemini_key_missing: 'Please configure your Gemini API Key in the Profile tab first!',
+    alert_gemini_api_error: 'Gemini API Error. Please verify your API Key!',
     profile_overview_details: 'Overview Details',
     profile_card_account: 'ACCOUNT',
     profile_card_email: 'EMAIL',
@@ -301,6 +342,13 @@ export const TRANSLATIONS: Record<'vi' | 'en', Record<string, string>> = {
     prompt_plan: 'Tomorrow',
     goals_input_placeholder: 'Add new monthly goal...',
     weekly_goals_input_placeholder: 'Add new weekly goal...',
+    focus_ambient_title: '🎵 Ambient Sound',
+    ambient_none: '🔇 None',
+    ambient_lofi: '🎵 Relaxing Lofi',
+    ambient_rain: '🌧️ Gentle Rain',
+    ambient_cafe: '☕ Café Ambience',
+    ambient_forest: '🌲 Whispering Forest',
+    ambient_volume: 'Volume:',
     modal_input_placeholder: 'e.g., Read 30 mins...',
     
     // Tooltips (titles)
@@ -420,14 +468,22 @@ export function translateUI(): void {
     });
   }
 
-  // Translate toggle theme button text based on state
-  const isDark = document.body.classList.contains('dark-theme');
-  const btnToggleTheme = document.getElementById('btn-toggle-theme');
-  if (btnToggleTheme) {
-    if (state.currentLang === 'vi') {
-      btnToggleTheme.textContent = isDark ? '🌙 Tối (Espresso)' : '☀️ Sáng (Cappuccino)';
-    } else {
-      btnToggleTheme.textContent = isDark ? '🌙 Dark (Espresso)' : '☀️ Light (Cappuccino)';
+  // Translate theme selector select options
+  const selectTheme = document.getElementById('select-theme') as HTMLSelectElement;
+  if (selectTheme) {
+    const isVi = state.currentLang === 'vi';
+    const currentThemeValue = selectTheme.value;
+    const options = selectTheme.options;
+    if (options.length >= 6) {
+      options[0].text = isVi ? '☀️ Cappuccino (Sáng)' : '☀️ Cappuccino (Light)';
+      options[1].text = isVi ? '🌙 Espresso (Tối)' : '🌙 Espresso (Dark)';
+      options[2].text = isVi ? '🍵 Matcha Latte' : '🍵 Matcha Latte';
+      options[3].text = isVi ? '🍫 Dark Chocolate' : '🍫 Dark Chocolate';
+      options[4].text = isVi ? '🌸 Sakura Blossom' : '🌸 Sakura Blossom';
+      options[5].text = isVi ? '🫐 Blueberry Cream' : '🫐 Blueberry Cream';
+    }
+    if (currentThemeValue) {
+      selectTheme.value = currentThemeValue;
     }
   }
 }

@@ -9,6 +9,8 @@ export interface User {
   country?: string;
   bio?: string;
   role?: string;
+  avatar?: string;
+  theme?: string;
 }
 
 export interface Habit {
@@ -42,6 +44,7 @@ export interface MonthRecord {
   };
   // Optional daily habit notes
   notes?: Record<string, string[]>;
+  selectedSeed?: string;
 }
 
 export interface HabitStats {

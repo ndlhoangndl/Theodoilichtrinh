@@ -164,6 +164,31 @@ export function initGoals(): void {
       }
     });
   }
+
+  // Tab switcher in merged goals panel
+  const btnMonth = document.getElementById('goals-tab-btn-month');
+  const btnWeek = document.getElementById('goals-tab-btn-week');
+  const subviewMonth = document.getElementById('goals-subview-month');
+  const subviewWeek = document.getElementById('goals-subview-week');
+
+  if (btnMonth && btnWeek && subviewMonth && subviewWeek) {
+    btnMonth.addEventListener('click', () => {
+      btnMonth.classList.add('active');
+      btnWeek.classList.remove('active');
+      subviewMonth.style.display = 'flex';
+      subviewWeek.style.display = 'none';
+    });
+
+    btnWeek.addEventListener('click', () => {
+      btnWeek.classList.add('active');
+      btnMonth.classList.remove('active');
+      subviewMonth.style.display = 'none';
+      subviewWeek.style.display = 'flex';
+      
+      renderWeeklyGoalsWeekSelect();
+      renderWeeklyGoalsList();
+    });
+  }
 }
 
 let lastRenderedYear = -1;

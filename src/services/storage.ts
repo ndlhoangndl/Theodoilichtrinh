@@ -1,5 +1,6 @@
 import { User, Habit, MonthRecord } from '../types/types';
 import { getDaysInMonth } from '../utils/calendar';
+import { apiGetHabits, apiSaveHabits, apiGetRecord, apiSaveRecord } from './api';
 
 // Local Storage Global Keys
 const KEY_USERS = 'LICHTRINH_USERS';
@@ -86,6 +87,11 @@ export function getCurrentSession(): User | null {
 export function saveHabits(username: string, habits: Habit[]): void {
   const key = `LICHTRINH_${username}_HABITS`;
   localStorage.setItem(key, JSON.stringify(habits));
+  
+  // Async background sync to server
+  apiSaveHabits(habits).catch(err => {
+    console.error('Failed to sync habits to server:', err);
+  });
 }
 
 // Load habits list under user namespace
@@ -134,6 +140,11 @@ export function loadSelectedDate(): { year: number; month: number } {
 export function saveRecord(username: string, year: number, month: number, record: MonthRecord): void {
   const recordKey = `LICHTRINH_${username}_RECORD_${year}_${month}`;
   localStorage.setItem(recordKey, JSON.stringify(record));
+  
+  // Async background sync to server
+  apiSaveRecord(year, month, record).catch(err => {
+    console.error(`Failed to sync monthly record ${year}-${month} to server:`, err);
+  });
 }
 
 // Load monthly record under user namespace, ensuring all structures are valid and aligned
@@ -205,6 +216,11 @@ export function loadRecord(username: string, year: number, month: number, habits
         record.wateredDays = [];
       }
 
+      // Seed selection validation
+      if (!record.selectedSeed) {
+        record.selectedSeed = 'oak';
+      }
+
       return record;
     } catch (e) {
       console.error(`Error parsing MonthRecord for ${username}`, e);
@@ -226,7 +242,8 @@ export function loadRecord(username: string, year: number, month: number, habits
     diary: new Array(daysCount).fill(''),
     goals: [],
     weeklyGoals: [],
-    wateredDays: []
+    wateredDays: [],
+    selectedSeed: 'oak'
   };
   
   saveRecord(username, year, month, record);
@@ -235,14 +252,59 @@ export function loadRecord(username: string, year: number, month: number, habits
 
 // Sync habits from server and save to local storage (No-op as data is kept local)
 export async function syncHabitsFromServer(username: string): Promise<void> {
-  // Pure local storage mode
-  void username;
+  try {
+    const serverHabits = await apiGetHabits();
+    const key = `LICHTRINH_${username}_HABITS`;
+    
+    if (serverHabits && serverHabits.length > 0) {
+      // Server has data, update local cache
+      localStorage.setItem(key, JSON.stringify(serverHabits));
+    } else {
+      // Server has no data, check if local cache has data to migrate
+      const localRaw = localStorage.getItem(key);
+      if (localRaw) {
+        try {
+          const localHabits = JSON.parse(localRaw) as Habit[];
+          if (localHabits.length > 0) {
+            console.log(`Migrating local habits for ${username} to server...`);
+            await apiSaveHabits(localHabits);
+          }
+        } catch (e) {
+          console.error('Failed to parse local habits for migration:', e);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('syncHabitsFromServer error:', err);
+  }
 }
 
 // Sync record from server and save to local storage (No-op as data is kept local)
 export async function syncRecordFromServer(username: string, year: number, month: number): Promise<void> {
-  // Pure local storage mode
-  void username;
-  void year;
-  void month;
+  try {
+    const serverRecord = await apiGetRecord(year, month);
+    const recordKey = `LICHTRINH_${username}_RECORD_${year}_${month}`;
+    
+    if (serverRecord) {
+      // Server has data, update local cache
+      localStorage.setItem(recordKey, JSON.stringify(serverRecord));
+    } else {
+      // Server has no data, check if local cache has data to migrate
+      const localRaw = localStorage.getItem(recordKey);
+      if (localRaw) {
+        try {
+          const localRecord = JSON.parse(localRaw) as MonthRecord;
+          // Ensure it's not an empty record before migrating
+          if (localRecord && (Object.keys(localRecord.checks || {}).length > 0 || (localRecord.wateredDays && localRecord.wateredDays.length > 0))) {
+            console.log(`Migrating local monthly record ${year}-${month} for ${username} to server...`);
+            await apiSaveRecord(year, month, localRecord);
+          }
+        } catch (e) {
+          console.error('Failed to parse local record for migration:', e);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('syncRecordFromServer error:', err);
+  }
 }

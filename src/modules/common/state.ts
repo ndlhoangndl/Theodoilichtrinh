@@ -7,7 +7,9 @@ export const state = {
   currentMonth: 0, // 0 = Jan
   currentRecord: null as MonthRecord | null,
   currentLang: 'vi' as 'vi' | 'en',
-  currentGoalWeek: 0
+  currentGoalWeek: 0,
+  isCompactGrid: false,
+  selectedWeekIdx: 0
 };
 
 // Default list of seed habits

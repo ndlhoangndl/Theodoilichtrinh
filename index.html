@@ -185,7 +185,15 @@
             <option value="en">🇬🇧 English</option>
           </select>
 
-          <button class="btn" id="btn-toggle-theme" title="Chuyển đổi giao diện sáng/tối" data-i18n-title="btn_theme_title" data-i18n="btn_theme">☀️ Sáng (Cappuccino)</button>
+          <!-- Theme Selector -->
+          <select id="select-theme" class="btn" title="Chọn giao diện / Select Theme" style="padding: 6px 10px; font-size:13px; font-weight:600; cursor:pointer;">
+            <option value="cappuccino">☀️ Cappuccino (Sáng)</option>
+            <option value="espresso">🌙 Espresso (Tối)</option>
+            <option value="matcha">🍵 Matcha Latte</option>
+            <option value="chocolate">🍫 Dark Chocolate</option>
+            <option value="sakura">🌸 Sakura Blossom</option>
+            <option value="blueberry">🫐 Blueberry Cream</option>
+          </select>
           
           <!-- Actions Dropdown Menu -->
           <div class="menu-dropdown" id="menu-dropdown">
@@ -221,7 +229,10 @@
           <!-- Habit sheet grid -->
           <div class="panel">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
-              <span data-i18n="panel_spreadsheet">Bảng Theo Dõi Thói Quen (Lịch Trình Chi Tiết)</span>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span data-i18n="panel_spreadsheet">Bảng Theo Dõi Thói Quen (Lịch Trình Chi Tiết)</span>
+                <button type="button" class="btn" id="btn-toggle-compact-grid" style="padding: 3px 8px; font-size: 11px; height: auto;" data-i18n="btn_toggle_compact">📱 Thu gọn</button>
+              </div>
               
               <!-- Compact Calendar Selectors -->
               <div style="display: flex; gap: 12px; align-items: center; flex-shrink: 0;">
@@ -249,6 +260,12 @@
                     <option value="9" style="color:var(--text-main); background:var(--bg-panel);">Tháng 10</option>
                     <option value="10" style="color:var(--text-main); background:var(--bg-panel);">Tháng 11</option>
                     <option value="11" style="color:var(--text-main); background:var(--bg-panel);">Tháng 12</option>
+                  </select>
+                </div>
+                <div id="select-week-container" style="display: none; align-items: center; gap: 6px;">
+                  <label for="select-week" style="font-size: 12px; font-weight:600; color:var(--text-light); text-transform: uppercase;" data-i18n="label_week">Tuần</label>
+                  <select id="select-week" style="font-size: 12px; padding: 4px 8px; border-radius: var(--radius-sm); border: none; background: rgba(255,255,255,0.2); color: var(--text-light); font-weight: 600; outline: none; cursor: pointer;">
+                    <!-- Options generated dynamically by JS -->
                   </select>
                 </div>
                 
@@ -362,6 +379,15 @@
               <!-- Action & Status -->
               <div style="display:flex; flex-direction:column; align-items:center; gap:6px; width:100%;">
                 <div id="garden-status-text" style="font-size:12px; font-weight:600; color:var(--text-muted); text-align:center; min-height:18px;">...</div>
+                
+                <!-- Seed Selection -->
+                <select id="select-garden-seed" style="font-size: 11px; padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-selected); color: var(--text-main); outline: none; cursor: pointer; width: 100%; max-width: 160px; text-align-last: center; margin-bottom: 2px;">
+                  <option value="oak">🌳 Cây Sồi (Oak)</option>
+                  <option value="cactus">🌵 Xương Rồng (Cactus)</option>
+                  <option value="lavender">🪻 Oải Hương (Lavender)</option>
+                  <option value="rose">🌹 Hoa Hồng (Rose)</option>
+                </select>
+
                 <button type="button" class="btn btn-primary" id="btn-water-plant" disabled style="width:100%; max-width:160px; padding:6px 12px; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; border:none; cursor:pointer;">
                   💧 <span data-i18n="btn_water_plant">Tưới nước</span>
                 </button>
@@ -369,57 +395,50 @@
             </div>
           </div>
 
-          <!-- Monthly Goals checklist -->
-          <div class="panel">
-            <div class="panel-header">
-              <span data-i18n="panel_monthly_goals">Mục tiêu trong tháng</span>
-              <span id="goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
-            </div>
-            <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
-              <!-- Form to add goal -->
-              <form id="form-add-goal" style="display:flex; gap:6px;">
-                <input type="text" id="input-new-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tháng..." data-i18n-placeholder="goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
-                <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
-              </form>
-              <!-- Goals List container -->
-              <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
-                <!-- Generated by JS -->
-              </div>
-            </div>
-          </div>
-
-          <!-- Weekly Goals checklist -->
-          <div class="panel">
+          <!-- Merged Goals Checklist Panel -->
+          <div class="panel" id="panel-goals-tabbed">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-              <span data-i18n="panel_weekly_goals">Mục tiêu trong tuần</span>
-              <div style="display: flex; align-items: center; gap: 6px;">
-                <select id="select-goal-week" style="font-size: 11px; padding: 3px 6px; border-radius: var(--radius-sm); border: none; background: rgba(255,255,255,0.2); color: var(--text-light); font-weight: 600; outline: none; cursor: pointer;">
-                  <!-- Options generated dynamically by JS -->
-                </select>
-                <span id="weekly-goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
+              <span data-i18n="panel_goals">Mục tiêu</span>
+              <div class="goals-tab-buttons" style="display: flex; gap: 4px; background: rgba(0,0,0,0.15); padding: 2px; border-radius: 6px;">
+                <button type="button" class="goals-tab-btn active" id="goals-tab-btn-month" style="font-size: 11px; padding: 3px 8px; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.2s;">Tháng</button>
+                <button type="button" class="goals-tab-btn" id="goals-tab-btn-week" style="font-size: 11px; padding: 3px 8px; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.2s;">Tuần</button>
               </div>
             </div>
-            <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
-              <!-- Form to add weekly goal -->
-              <form id="form-add-weekly-goal" style="display:flex; gap:6px;">
-                <input type="text" id="input-new-weekly-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tuần..." data-i18n-placeholder="weekly_goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
-                <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
-              </form>
-              <!-- Weekly Goals List container -->
-              <div id="weekly-goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
-                <!-- Generated by JS -->
+            
+            <div class="panel-content" style="padding: 14px;">
+              <!-- Month Goals Sub-view -->
+              <div id="goals-subview-month" style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);" data-i18n="panel_monthly_goals_subtitle">Mục tiêu trong tháng</span>
+                  <span id="goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
+                </div>
+                <form id="form-add-goal" style="display:flex; gap:6px;">
+                  <input type="text" id="input-new-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tháng..." data-i18n-placeholder="goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
+                  <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
+                </form>
+                <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
+                  <!-- Generated by JS -->
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Top 10 Daily Habit -->
-          <div class="panel">
-            <div class="panel-header">
-              <span data-i18n="panel_leaderboard">Top Thói Quen Hàng Đầu</span>
-            </div>
-            <div class="panel-content">
-              <div class="leaderboard-list" id="leaderboard-list">
-                <!-- Generated by JS -->
+              <!-- Week Goals Sub-view -->
+              <div id="goals-subview-week" style="display: none; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);" data-i18n="panel_weekly_goals_subtitle">Mục tiêu trong tuần</span>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <select id="select-goal-week" style="font-size: 11px; padding: 3px 6px; border-radius: var(--radius-sm); border: none; background: var(--bg-selected); color: var(--text-main); font-weight: 600; outline: none; cursor: pointer;">
+                      <!-- Options generated dynamically by JS -->
+                    </select>
+                    <span id="weekly-goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
+                  </div>
+                </div>
+                <form id="form-add-weekly-goal" style="display:flex; gap:6px;">
+                  <input type="text" id="input-new-weekly-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tuần..." data-i18n-placeholder="weekly_goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
+                  <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
+                </form>
+                <div id="weekly-goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
+                  <!-- Generated by JS -->
+                </div>
               </div>
             </div>
           </div>
@@ -508,20 +527,50 @@
 
           <!-- AI Habit Coach Panel -->
           <div class="panel coach-panel" style="margin-top: 20px;">
-            <div class="panel-header">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
               <span data-i18n="panel_coach">🤖 Trợ Lý Phân Tích Thói Quen (AI Habit Coach)</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <!-- Chat Toggle Button -->
+                <button type="button" class="btn btn-secondary" id="btn-toggle-coach-mode" style="font-size: 11px; padding: 4px 10px; display: flex; align-items: center; gap: 4px; height: auto; border: 1px solid var(--border-color); background: var(--bg-selected); color: var(--text-main); font-weight: 600; cursor: pointer;">
+                  💬 Chat
+                </button>
+                <!-- Gemini Trigger Button -->
+                <button type="button" class="btn btn-primary" id="btn-ask-gemini" style="font-size: 11px; padding: 4px 10px; display: none; align-items: center; gap: 4px; height: auto;" data-i18n="btn_ask_gemini">
+                  ⚡ Phân tích bằng Gemini AI
+                </button>
+              </div>
             </div>
             <div class="panel-content">
-              <div class="coach-container">
-                <div class="coach-header">
-                  <div class="coach-avatar">🤖</div>
-                  <div class="coach-welcome">
-                    <h4 id="coach-greeting">Chào bạn, tôi là trợ lý Lịch Trình.</h4>
-                    <p id="coach-intro">Dưới đây là một số phân tích và đề xuất giúp bạn tối ưu hóa lịch trình của mình:</p>
+              <div class="coach-container" style="display: flex; flex-direction: column; width: 100%;">
+                <!-- Static Insights View -->
+                <div id="coach-static-view" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                  <div class="coach-header">
+                    <div class="coach-avatar">🤖</div>
+                    <div class="coach-welcome">
+                      <h4 id="coach-greeting">Chào bạn, tôi là trợ lý Lịch Trình.</h4>
+                      <p id="coach-intro">Dưới đây là một số phân tích và đề xuất giúp bạn tối ưu hóa lịch trình của mình:</p>
+                    </div>
+                  </div>
+
+                  <!-- Gemini Response Box -->
+                  <div id="gemini-response-box" style="display: none; background: var(--bg-widget); border-radius: var(--radius-md); padding: 18px; margin: 16px 0; border: 1px dashed var(--accent-orange); font-size: 13px; line-height: 1.6; color: var(--text-main); position: relative; box-shadow: var(--shadow-sm);">
+                    <!-- AI dynamic output here -->
+                  </div>
+
+                  <div class="coach-insights-grid" id="coach-insights-list">
+                    <!-- Dynamic Insights -->
                   </div>
                 </div>
-                <div class="coach-insights-grid" id="coach-insights-list">
-                  <!-- Dynamic Insights -->
+
+                <!-- Interactive Chat View -->
+                <div id="coach-chat-view" style="display: none; flex-direction: column; gap: 12px; width: 100%;">
+                  <div id="coach-chat-messages" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; min-height: 220px; overflow-y: auto; padding: 12px; background: rgba(0,0,0,0.1); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <!-- Messages populated dynamically -->
+                  </div>
+                  <form id="coach-chat-input-form" style="display: flex; gap: 8px; width: 100%;">
+                    <input type="text" id="coach-chat-input" class="form-control" placeholder="Hỏi Huấn luyện viên về thói quen của bạn..." style="flex: 1; font-size: 13px; padding: 8px 12px;" required autocomplete="off">
+                    <button type="submit" class="btn btn-primary" style="padding: 6px 14px; font-size: 13px; margin: 0; height: auto;">Gửi</button>
+                  </form>
                 </div>
               </div>
             </div>
@@ -567,6 +616,18 @@
               </table>
             </div>
           </div>
+
+          <!-- Top 10 Daily Habit (Moved here) -->
+          <div class="panel">
+            <div class="panel-header">
+              <span data-i18n="panel_leaderboard">Top Thói Quen Hàng Đầu</span>
+            </div>
+            <div class="panel-content">
+              <div class="leaderboard-list" id="leaderboard-list">
+                <!-- Generated by JS -->
+              </div>
+            </div>
+          </div>
         </div>
       </section>
     </div> <!-- Close view-stats -->
@@ -581,7 +642,7 @@
               <span data-i18n="profile_title_banner">Trạng thái tài khoản</span>
             </div>
             <div class="panel-content profile-banner-content">
-              <div class="profile-avatar-frame">
+              <div class="profile-avatar-frame" id="profile-avatar-container">
                 <span id="profile-avatar-display">👤</span>
               </div>
               <div class="profile-meta-info">
@@ -615,9 +676,22 @@
                   <span>🚪</span> <span data-i18n="profile_btn_logout">Đăng xuất khỏi hệ thống</span>
                 </button>
               </div>
+              <div class="menu-divider" style="margin: 16px 0; border-top: 1px solid var(--border-color);"></div>
+              <h3 class="profile-settings-title" style="margin-bottom: 8px;" data-i18n="profile_api_settings">Cấu hình API trợ lý AI</h3>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <label for="input-gemini-key" style="font-size: 12px; font-weight: 600; color: var(--text-muted);" data-i18n="profile_gemini_label">Google Gemini API Key:</label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="password" class="form-control" id="input-gemini-key" placeholder="Nhập API Key từ AI Studio..." data-i18n-placeholder="profile_gemini_placeholder" style="flex: 1; height: 34px; font-size: 12px; border: 1px solid var(--border-color-dark); border-radius: 6px; padding: 6px 10px; outline: none; background: var(--bg-panel); color: var(--text-main);">
+                  <button type="button" class="btn btn-primary" id="btn-save-gemini-key" style="padding: 6px 12px; height: 34px; font-size: 12px; border-radius: 6px;" data-i18n="btn_save">Lưu</button>
+                </div>
+                <p style="font-size: 10px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+                  <span data-i18n="profile_gemini_help_prefix">Nhận API Key miễn phí tại</span> <a href="https://aistudio.google.com/" target="_blank" style="color: var(--accent-orange); font-weight: 600; text-decoration: none;" data-i18n="profile_gemini_link_text">Google AI Studio</a> <span data-i18n="profile_gemini_help">để mở khóa nhận xét chuyên sâu từ AI thực tế.</span>
+                </p>
+              </div>
             </div>
           </div>
         </div>
+
 
         <!-- Bottom Row: Overview Cards Grid -->
         <div class="profile-overview-section">
@@ -803,6 +877,73 @@
   </div>
 </div>
 
+<!-- Modal: Tùy chỉnh ảnh đại diện -->
+<div class="modal" id="modal-avatar-customizer">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3 data-i18n="modal_avatar_title">Tùy chỉnh ảnh đại diện</h3>
+      <button class="btn btn-icon modal-close-trigger" style="border:none; background:transparent; font-size:16px;">✕</button>
+    </div>
+    <div class="modal-body" style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
+      <!-- Avatar Preview -->
+      <div class="avatar-preview-container" id="avatar-preview-box" style="position: relative; width: 140px; height: 140px; border-radius: var(--radius-lg); border: 3px solid var(--accent-brown); display: flex; align-items: center; justify-content: center; background: var(--bg-selected); overflow: hidden; font-size: 60px;">
+        <span id="customizer-avatar-preview">👤</span>
+      </div>
+      
+      <!-- Option Tabs or Sections -->
+      <div style="width: 100%; display: flex; flex-direction: column; gap: 16px;">
+        
+        <!-- Predefined Gallery -->
+        <div>
+          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;" data-i18n="avatar_gallery_label">Chọn từ thư viện biểu tượng</label>
+          <div class="avatar-emoji-grid" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
+            <div class="emoji-option" data-emoji="🦊">🦊</div>
+            <div class="emoji-option" data-emoji="🦁">🦁</div>
+            <div class="emoji-option" data-emoji="🐼">🐼</div>
+            <div class="emoji-option" data-emoji="🐨">🐨</div>
+            <div class="emoji-option" data-emoji="🐱">🐱</div>
+            <div class="emoji-option" data-emoji="🐶">🐶</div>
+            <div class="emoji-option" data-emoji="🦄">🦄</div>
+            <div class="emoji-option" data-emoji="☕">☕</div>
+            <div class="emoji-option" data-emoji="🌟">🌟</div>
+            <div class="emoji-option" data-emoji="💻">💻</div>
+            <div class="emoji-option" data-emoji="🎯">🎯</div>
+            <div class="emoji-option" data-emoji="🚀">🚀</div>
+          </div>
+        </div>
+
+        <!-- Initials Gradient Generator -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;" data-i18n="avatar_initials_label">Tạo avatar theo tên viết tắt</label>
+          <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; color: var(--text-muted);" data-i18n="avatar_initials_desc">Tự động tạo ảnh đại diện từ tên viết tắt của bạn trên nền gradient.</span>
+            <button type="button" class="btn" id="btn-generate-initials" style="font-size: 12px; padding: 6px 12px;" data-i18n="avatar_btn_generate">Tạo ảnh</button>
+          </div>
+        </div>
+
+        <!-- File Upload -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;" data-i18n="avatar_upload_label">Tải lên ảnh từ thiết bị</label>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <input type="file" id="input-avatar-file" accept="image/*" style="display: none;">
+            <button type="button" class="btn" id="btn-trigger-file-input" style="width: 100%; justify-content: center; height: 38px;">
+              <span>📁</span> <span data-i18n="avatar_btn_choose_file">Chọn tệp ảnh...</span>
+            </button>
+            <span id="avatar-file-name" style="font-size: 11px; color: var(--text-muted); text-align: center; display: none;"></span>
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; gap: 12px; width: 100%; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <button type="button" class="btn modal-close-trigger" style="flex: 1; justify-content: center; height: 38px;" data-i18n="btn_cancel">Hủy</button>
+        <button type="button" class="btn btn-primary" id="btn-save-avatar" style="flex: 1; justify-content: center; height: 38px;" data-i18n="btn_save">Lưu</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Đổi mật khẩu -->
 <div class="modal" id="modal-edit-password">
   <div class="modal-content" style="max-width: 400px;">
@@ -952,14 +1093,67 @@
           <div id="focus-task-active" style="display: none;"></div>
         </div>
         
-        <div class="timer-controls">
-          <button class="btn-timer-ctrl" id="btn-timer-start">▶ Bắt đầu</button>
-          <button class="btn-timer-ctrl secondary" id="btn-timer-reset" style="display: none;">🔄 Cài lại</button>
+        <div class="timer-controls" style="display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%;">
+          <div style="display: flex; gap: 12px;">
+            <button class="btn-timer-ctrl" id="btn-timer-start">▶ Bắt đầu</button>
+            <button class="btn-timer-ctrl secondary" id="btn-timer-reset" style="display: none;">🔄 Cài lại</button>
+          </div>
+          
+          <!-- Settings Toggle Button -->
+          <button type="button" id="btn-pomo-settings-toggle" class="btn-timer-ctrl secondary" style="padding: 6px 14px; font-size: 11px; margin-top: 6px; box-shadow: none; border-radius: 16px;">
+            ⚙️ Thiết lập thời gian (Set Time)
+          </button>
+          
+          <!-- Custom Time Settings Panel (hidden by default) -->
+          <div id="pomo-settings-panel" style="display: none; flex-direction: column; gap: 8px; width: 100%; max-width: 280px; background: rgba(0,0,0,0.25); padding: 12px; border-radius: 10px; border: 1px solid rgba(200, 128, 97, 0.2); margin-top: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 600; color: #f5eee8;" data-i18n="pomo_focus_label">🍅 Tập trung (Min):</span>
+              <input type="number" id="input-pomo-focus" min="1" max="180" value="25" style="width: 65px; padding: 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; text-align: center; font-size: 12px;">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 600; color: #f5eee8;" data-i18n="pomo_short_label">☕ Nghỉ ngắn (Min):</span>
+              <input type="number" id="input-pomo-short" min="1" max="60" value="5" style="width: 65px; padding: 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; text-align: center; font-size: 12px;">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 600; color: #f5eee8;" data-i18n="pomo_long_label">🚶 Nghỉ dài (Min):</span>
+              <input type="number" id="input-pomo-long" min="1" max="120" value="15" style="width: 65px; padding: 4px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff; text-align: center; font-size: 12px;">
+            </div>
+            <button type="button" id="btn-pomo-settings-save" class="btn-timer-ctrl" style="padding: 6px; font-size: 11px; width: 100%; border-radius: 6px; margin-top: 4px; box-shadow: none;">
+              Áp dụng (Apply)
+            </button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+
+  <!-- Authentication Loading Screen Overlay -->
+  <div id="auth-loading-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle at center, #1b110b, #090604); z-index: 99999; align-items: center; justify-content: center; flex-direction: column; opacity: 0; transition: opacity 0.4s ease;">
+    <div style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 24px;">
+      <!-- Glowing Animated Icon Container -->
+      <div class="loading-logo-container" style="position: relative; width: 85px; height: 85px; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.02); border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 0 25px rgba(217, 119, 6, 0.15);">
+        <span class="loading-logo-pulsing" style="font-size: 38px; display: inline-block;">☕</span>
+        <!-- Spinning outer indicator ring -->
+        <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; border: 2px solid transparent; border-top-color: var(--accent-orange); border-radius: 50%; animation: gemini-spin 1s linear infinite;"></div>
+      </div>
+      
+      <!-- Typography & Status -->
+      <div>
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; color: #fff; letter-spacing: 3px; margin: 0 0 6px 0; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+          Lịch Trình
+        </h2>
+        <p id="loading-status-text" style="font-size: 13px; color: var(--text-muted); font-style: italic; margin: 0; height: 20px;">
+          Đang khởi động không gian làm việc...
+        </p>
+      </div>
+
+      <!-- Sleek Progress Bar -->
+      <div style="width: 220px; height: 4px; background: rgba(255, 255, 255, 0.08); border-radius: 2px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);">
+        <div id="loading-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-orange), #f59e0b); border-radius: 2px; transition: width 0.2s ease; box-shadow: 0 0 10px var(--accent-orange);"></div>
+      </div>
+    </div>
+  </div>
 
 <script type="module" src="/src/main.ts"></script>
 </body>

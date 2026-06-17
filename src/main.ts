@@ -10,8 +10,9 @@ import { initConfirmOverlay } from './modules/common/confirm';
 import { initGarden } from './modules/tracker/garden';
 import { initMonthlyReview } from './modules/tracker/review';
 import { initFocusMode } from './modules/tracker/focus';
-import { getCurrentSession } from './services/storage';
+import { getCurrentSession, updateUser, createSession } from './services/storage';
 import { initAdmin, renderAdminPage } from './modules/admin/admin';
+import { apiUpdateProfile } from './services/api';
 import { initUserChat, refreshUserChat } from './modules/chat/userChat';
 import { initAdminChat, refreshAdminChat } from './modules/chat/adminChat';
 import {
@@ -71,9 +72,18 @@ function initApp(): void {
   }
 
   // Load theme preference on load
-  const savedTheme = localStorage.getItem('LICHTRINH_THEME');
-  if (savedTheme === 'dark') {
-    document.body.classList.add('dark-theme');
+  let initialTheme = 'cappuccino';
+  if (sessionUser && sessionUser.theme && sessionUser.theme !== 'default') {
+    initialTheme = sessionUser.theme;
+  } else {
+    const savedTheme = localStorage.getItem('LICHTRINH_THEME');
+    initialTheme = savedTheme === 'dark' ? 'espresso' : 'cappuccino';
+  }
+  applyUserTheme(initialTheme);
+  
+  const selectTheme = document.getElementById('select-theme') as HTMLSelectElement;
+  if (selectTheme) {
+    selectTheme.value = initialTheme;
   }
 
   if (sessionUser) {
@@ -119,12 +129,25 @@ function initApp(): void {
     });
   }
 
-  // Dark/Light Theme toggle button
-  const btnToggleTheme = document.getElementById('btn-toggle-theme');
-  if (btnToggleTheme) {
-    btnToggleTheme.addEventListener('click', () => {
-      const isDark = document.body.classList.toggle('dark-theme');
+  // Theme Selector dropdown change handler
+  const selectThemeElement = document.getElementById('select-theme') as HTMLSelectElement;
+  if (selectThemeElement) {
+    selectThemeElement.addEventListener('change', () => {
+      const selectedTheme = selectThemeElement.value || 'cappuccino';
+      
+      // Apply theme variables globally
+      applyUserTheme(selectedTheme);
+      
+      // Update local storage preference for light/dark state
+      const isDark = selectedTheme === 'espresso' || selectedTheme === 'chocolate';
       localStorage.setItem('LICHTRINH_THEME', isDark ? 'dark' : 'light');
+      
+      if (state.currentUser) {
+        state.currentUser.theme = selectedTheme;
+        updateUser(state.currentUser);
+        createSession(state.currentUser);
+        apiUpdateProfile({ theme: selectedTheme }).catch(err => console.error('Failed to sync theme:', err));
+      }
       
       translateUI();
       
@@ -209,3 +232,24 @@ function initApp(): void {
 
 // Start execution when DOM is ready
 window.addEventListener('DOMContentLoaded', initApp);
+
+export function applyUserTheme(themeName: string | undefined): void {
+  // Remove all custom theme classes
+  document.body.classList.remove('theme-matcha', 'theme-chocolate', 'theme-sakura', 'theme-blueberry', 'dark-theme');
+  
+  if (themeName === 'matcha') {
+    document.body.classList.add('theme-matcha');
+  } else if (themeName === 'chocolate') {
+    document.body.classList.add('theme-chocolate');
+    document.body.classList.add('dark-theme');
+  } else if (themeName === 'sakura') {
+    document.body.classList.add('theme-sakura');
+  } else if (themeName === 'blueberry') {
+    document.body.classList.add('theme-blueberry');
+  } else if (themeName === 'espresso') {
+    document.body.classList.add('dark-theme');
+  } else {
+    // Default or cappuccino - defaults to light cappuccino
+    // no additional class needed
+  }
+}

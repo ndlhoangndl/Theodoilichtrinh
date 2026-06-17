@@ -9,6 +9,7 @@ export function renderGarden(): void {
   const growthLabel = document.getElementById('garden-growth-percent');
   const statusText = document.getElementById('garden-status-text');
   const waterBtn = document.getElementById('btn-water-plant') as HTMLButtonElement;
+  const seedSelect = document.getElementById('select-garden-seed') as HTMLSelectElement;
 
   if (!plantContainer || !growthLabel || !statusText || !waterBtn) return;
 
@@ -61,8 +62,14 @@ export function renderGarden(): void {
     }
   }
 
+  // Set active seed dropdown value
+  const activeSeed = state.currentRecord.selectedSeed || 'oak';
+  if (seedSelect) {
+    seedSelect.value = activeSeed;
+  }
+
   // Build Plant SVG
-  plantContainer.innerHTML = drawPlantSVG(stageKey, !isWithered);
+  plantContainer.innerHTML = drawPlantSVG(stageKey, !isWithered, activeSeed);
 
   // Watering Eligibility check for today
   const totalHabits = state.habits.length;
@@ -117,11 +124,11 @@ export function renderGarden(): void {
   if (isWithered) {
     statusText.innerHTML = state.currentLang === 'vi'
       ? '<span style="color:var(--accent-orange);">⚠️ Cây đang bị héo do thiếu nước! Hãy hoàn thành mục tiêu hôm nay để cứu cây!</span>'
-      : '<span style="color:var(--accent-orange);">⚠️ The plant is withering! Complete today\'s habits to save it!</span>';
+      : '<span style="color:var(--accent-orange);">⚠️ The plant is withered due to lack of water! Complete today\'s habits to save it!</span>';
   }
 }
 
-function drawPlantSVG(stage: string, healthy: boolean): string {
+function drawPlantSVG(stage: string, healthy: boolean, seed: string): string {
   const strokeColor = healthy ? 'var(--accent-green)' : '#988775';
   const fillColor = healthy ? 'var(--accent-green)' : '#a5937f';
   const flowerFill = healthy ? '#ffffff' : '#bfaea1';
@@ -141,70 +148,229 @@ function drawPlantSVG(stage: string, healthy: boolean): string {
     html += `<g transform="rotate(18 50 110)">`;
   }
 
-  // Render plant parts based on stage
+  // Render plant parts based on stage and seed selection
   if (stage === 'seed') {
     // Tiny seed lying on soil
     html += `
       <ellipse cx="50" cy="107" rx="3.5" ry="1.8" fill="var(--accent-brown)" stroke="var(--text-muted)" stroke-width="0.8" transform="rotate(-15 50 107)" />
     `;
-  } else if (stage === 'sprout') {
-    // Small sprout emerging
-    html += `
-      <!-- Stem -->
-      <path class="garden-leaf" d="M 50 110 Q 48 95 53 85" fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round" />
-      <!-- Leaf -->
-      <path class="garden-leaf" d="M 53 85 Q 60 83 62 88 Q 57 91 53 85 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-    `;
-  } else if (stage === 'small') {
-    // Small plant with multiple leaves
-    html += `
-      <!-- Main stem -->
-      <path class="garden-leaf" d="M 50 110 Q 52 85 48 65" fill="none" stroke="${strokeColor}" stroke-width="3.5" stroke-linecap="round" />
-      <!-- Bottom Left Leaf -->
-      <path class="garden-leaf" d="M 49 88 Q 38 83 36 88 Q 43 92 49 88 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-      <!-- Mid Right Leaf -->
-      <path class="garden-leaf" d="M 49 76 Q 58 71 60 77 Q 53 81 49 76 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-      <!-- Top Bud -->
-      <path class="garden-leaf" d="M 48 65 Q 43 55 48 48 Q 53 55 48 65 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-    `;
-  } else if (stage === 'mature' || stage === 'flower') {
-    // Large mature plant
-    html += `
-      <!-- Main stalk -->
-      <path class="garden-leaf" d="M 50 110 Q 52 75 49 45" fill="none" stroke="${strokeColor}" stroke-width="4.5" stroke-linecap="round" />
-      <!-- Lower Left Leaf -->
-      <path class="garden-leaf" d="M 50 90 Q 36 85 34 93 Q 44 97 50 90 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-      <!-- Lower Right Leaf -->
-      <path class="garden-leaf" d="M 51 82 Q 65 77 67 84 Q 59 89 51 82 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-      <!-- Left Branch -->
-      <path class="garden-leaf" d="M 50 68 Q 38 61 32 50" fill="none" stroke="${strokeColor}" stroke-width="3" stroke-linecap="round" />
-      <path class="garden-leaf" d="M 32 50 Q 24 44 26 52 Q 32 56 32 50 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-      <!-- Right Branch -->
-      <path class="garden-leaf" d="M 50 58 Q 62 53 68 42" fill="none" stroke="${strokeColor}" stroke-width="3" stroke-linecap="round" />
-      <path class="garden-leaf" d="M 68 42 Q 76 34 77 42 Q 71 47 68 42 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-      <!-- Top Sprout -->
-      <path class="garden-leaf" d="M 49 45 Q 44 32 49 22 Q 54 32 49 45 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
-    `;
+  } else {
+    if (seed === 'cactus') {
+      // 🌵 CACTUS
+      const cactusColor = healthy ? '#2e7d32' : '#8d6e63';
+      const spikeColor = healthy ? '#81c784' : '#b0bec5';
+      const blossomColor = healthy ? '#ff4081' : '#b0bec5';
+      
+      if (stage === 'sprout') {
+        html += `
+          <!-- Tiny stub -->
+          <rect x="47" y="93" width="6" height="17" rx="3" fill="${cactusColor}" stroke="${strokeColor}" stroke-width="0.8" />
+        `;
+      } else if (stage === 'small') {
+        html += `
+          <!-- Main body -->
+          <rect x="46" y="80" width="8" height="30" rx="4" fill="${cactusColor}" stroke="${strokeColor}" stroke-width="0.8" />
+          <!-- Left arm -->
+          <path d="M 46 92 C 40 92 40 85 41 83" fill="none" stroke="${cactusColor}" stroke-width="3" stroke-linecap="round" />
+          <!-- Tiny spikes -->
+          <line x1="50" y1="84" x2="50" y2="87" stroke="${spikeColor}" stroke-width="0.6" />
+          <line x1="43" y1="90" x2="40" y2="90" stroke="${spikeColor}" stroke-width="0.6" />
+        `;
+      } else if (stage === 'mature' || stage === 'flower') {
+        html += `
+          <!-- Main body -->
+          <rect x="44" y="65" width="12" height="45" rx="6" fill="${cactusColor}" stroke="${strokeColor}" stroke-width="1" />
+          <!-- Left arm -->
+          <path d="M 44 85 C 34 85 34 72 36 70" fill="none" stroke="${cactusColor}" stroke-width="4.5" stroke-linecap="round" />
+          <path d="M 44 85 C 34 85 34 72 36 70" fill="none" stroke="${strokeColor}" stroke-width="1" stroke-linecap="round" style="opacity: 0.3" />
+          <!-- Right arm -->
+          <path d="M 56 78 C 64 78 65 67 63 65" fill="none" stroke="${cactusColor}" stroke-width="4.5" stroke-linecap="round" />
+          
+          <!-- Spikes -->
+          <line x1="50" y1="72" x2="50" y2="76" stroke="${spikeColor}" stroke-width="0.8" />
+          <line x1="40" y1="80" x2="37" y2="80" stroke="${spikeColor}" stroke-width="0.8" />
+          <line x1="60" y1="72" x2="63" y2="72" stroke="${spikeColor}" stroke-width="0.8" />
+        `;
+        if (stage === 'flower') {
+          // Flower blossom on top
+          html += `
+            <ellipse cx="50" cy="62" rx="4" ry="2.5" fill="${blossomColor}" />
+            <circle cx="50" cy="62" r="1.5" fill="#ffd54f" />
+            <circle cx="36" cy="67" r="2.5" fill="${blossomColor}" />
+          `;
+        }
+      }
+    } else if (seed === 'lavender') {
+      // 🪻 LAVENDER
+      const stemColor = healthy ? '#4caf50' : '#8d6e63';
+      const lavenderPurple = healthy ? '#8a2be2' : '#b0bec5';
+      const darkPurple = healthy ? '#4b0082' : '#90a4ae';
 
-    // Add flowers if fully blossomed
-    if (stage === 'flower') {
-      html += `
-        <!-- Flower 1 (Top) -->
-        <g class="garden-leaf">
-          <circle cx="49" cy="35" r="4.5" fill="${flowerFill}" stroke="var(--text-muted)" stroke-width="0.5" />
-          <circle cx="49" cy="35" r="1.8" fill="${centerFill}" />
-        </g>
-        <!-- Flower 2 (Right) -->
-        <g class="garden-leaf">
-          <circle cx="58" cy="53" r="4.5" fill="${flowerFill}" stroke="var(--text-muted)" stroke-width="0.5" />
-          <circle cx="58" cy="53" r="1.8" fill="${centerFill}" />
-        </g>
-        <!-- Flower 3 (Left) -->
-        <g class="garden-leaf">
-          <circle cx="39" cy="60" r="4.5" fill="${flowerFill}" stroke="var(--text-muted)" stroke-width="0.5" />
-          <circle cx="39" cy="60" r="1.8" fill="${centerFill}" />
-        </g>
-      `;
+      if (stage === 'sprout') {
+        html += `
+          <path d="M 50 110 L 50 92" fill="none" stroke="${stemColor}" stroke-width="1.8" stroke-linecap="round" />
+          <circle cx="50" cy="92" r="3.5" fill="${lavenderPurple}" />
+        `;
+      } else if (stage === 'small') {
+        html += `
+          <!-- Three small stalks -->
+          <path d="M 50 110 Q 48 90 45 75" fill="none" stroke="${stemColor}" stroke-width="1.5" />
+          <path d="M 50 110 Q 52 92 55 78" fill="none" stroke="${stemColor}" stroke-width="1.5" />
+          <!-- Small flowers -->
+          <circle cx="45" cy="75" r="2.5" fill="${lavenderPurple}" />
+          <circle cx="44" cy="79" r="2" fill="${darkPurple}" />
+          <circle cx="55" cy="78" r="2.5" fill="${lavenderPurple}" />
+        `;
+      } else if (stage === 'mature' || stage === 'flower') {
+        html += `
+          <!-- Five tall stalks -->
+          <path d="M 50 110 Q 46 80 40 50" fill="none" stroke="${stemColor}" stroke-width="2" />
+          <path d="M 50 110 Q 54 84 60 55" fill="none" stroke="${stemColor}" stroke-width="2" />
+          <path d="M 50 110 L 50 45" fill="none" stroke="${stemColor}" stroke-width="2.2" />
+          
+          <!-- Foliage leaves at bottom -->
+          <path d="M 50 102 Q 38 100 40 94" fill="none" stroke="${stemColor}" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M 50 98 Q 62 96 60 90" fill="none" stroke="${stemColor}" stroke-width="1.5" stroke-linecap="round" />
+        `;
+        
+        const renderBuds = (cx: number, cy: number, count: number) => {
+          let buds = '';
+          for (let i = 0; i < count; i++) {
+            const yOffset = i * 6;
+            buds += `
+              <circle cx="${cx}" cy="${cy + yOffset}" r="3" fill="${lavenderPurple}" />
+              <circle cx="${cx - 2.5}" cy="${cy + yOffset + 2}" r="2" fill="${darkPurple}" />
+              <circle cx="${cx + 2.5}" cy="${cy + yOffset + 2}" r="2" fill="${darkPurple}" />
+            `;
+          }
+          return buds;
+        };
+
+        // Render lavender flower clusters
+        html += renderBuds(50, 45, stage === 'flower' ? 5 : 3);
+        html += renderBuds(40, 50, stage === 'flower' ? 4 : 2);
+        html += renderBuds(60, 55, stage === 'flower' ? 4 : 2);
+      }
+    } else if (seed === 'rose') {
+      // 🌹 ROSE
+      const stemColor = healthy ? '#2e7d32' : '#8d6e63';
+      const leafColor = healthy ? '#4caf50' : '#a5937f';
+      const roseRed = healthy ? '#e91e63' : '#b0bec5';
+      const darkRed = healthy ? '#c2185b' : '#90a4ae';
+
+      if (stage === 'sprout') {
+        html += `
+          <path d="M 50 110 Q 47 96 50 88" fill="none" stroke="${stemColor}" stroke-width="2" stroke-linecap="round" />
+          <circle cx="50" cy="88" r="2.5" fill="${roseRed}" />
+        `;
+      } else if (stage === 'small') {
+        html += `
+          <!-- Thorny stem -->
+          <path d="M 50 110 Q 52 88 47 70" fill="none" stroke="${stemColor}" stroke-width="2.2" stroke-linecap="round" />
+          <!-- Thorns -->
+          <line x1="51" y1="92" x2="54" y2="90" stroke="${stemColor}" stroke-width="1" />
+          <!-- Side leaf -->
+          <path d="M 51 84 Q 60 81 62 85 Q 55 88 51 84 Z" fill="${leafColor}" stroke="${stemColor}" stroke-width="0.5" />
+          <!-- Red rose bud -->
+          <ellipse cx="47" cy="68" rx="4" ry="5.5" fill="${roseRed}" />
+          <path d="M 45 71 Q 47 66 49 71" fill="none" stroke="${darkRed}" stroke-width="1" />
+        `;
+      } else if (stage === 'mature' || stage === 'flower') {
+        html += `
+          <!-- Main stalk -->
+          <path d="M 50 110 Q 53 78 48 48" fill="none" stroke="${stemColor}" stroke-width="3" stroke-linecap="round" />
+          
+          <!-- Thorns -->
+          <line x1="52" y1="95" x2="56" y2="93" stroke="${stemColor}" stroke-width="1.2" />
+          <line x1="48" y1="78" x2="44" y2="76" stroke="${stemColor}" stroke-width="1.2" />
+          
+          <!-- Branching leaves -->
+          <path d="M 52 80 Q 64 78 68 83 Q 58 87 52 80 Z" fill="${leafColor}" stroke="${stemColor}" stroke-width="0.6" />
+          <path d="M 48 66 Q 36 62 33 67 Q 44 71 48 66 Z" fill="${leafColor}" stroke="${stemColor}" stroke-width="0.6" />
+        `;
+        
+        if (stage === 'mature') {
+          // Closed rosebud
+          html += `
+            <!-- Sepals -->
+            <path d="M 45 50 Q 48 56 51 50 Q 48 46 45 50" fill="${leafColor}" stroke="${stemColor}" stroke-width="0.5" />
+            <!-- Rose bud petals -->
+            <ellipse cx="48" cy="45" rx="6" ry="8" fill="${roseRed}" />
+            <path d="M 44 48 C 44 41 52 41 52 48" fill="none" stroke="${darkRed}" stroke-width="1.5" />
+          `;
+        } else {
+          // Blossomed Rose!
+          html += `
+            <!-- Sepals -->
+            <path d="M 44 51 Q 48 57 52 51" fill="none" stroke="${stemColor}" stroke-width="1.5" />
+            <!-- Outer large petals -->
+            <circle cx="48" cy="43" r="10" fill="${roseRed}" />
+            <circle cx="43" cy="41" r="7" fill="${darkRed}" style="opacity:0.8;" />
+            <circle cx="53" cy="41" r="7" fill="${darkRed}" style="opacity:0.8;" />
+            <!-- Inner swirl -->
+            <ellipse cx="48" cy="43" rx="5" ry="4.5" fill="#f48fb1" />
+            <circle cx="48" cy="43" r="2.5" fill="${darkRed}" />
+          `;
+        }
+      }
+    } else {
+      // 🌳 DEFAULT OAK TREE
+      if (stage === 'sprout') {
+        html += `
+          <!-- Stem -->
+          <path class="garden-leaf" d="M 50 110 Q 48 95 53 85" fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round" />
+          <!-- Leaf -->
+          <path class="garden-leaf" d="M 53 85 Q 60 83 62 88 Q 57 91 53 85 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+        `;
+      } else if (stage === 'small') {
+        html += `
+          <!-- Main stem -->
+          <path class="garden-leaf" d="M 50 110 Q 52 85 48 65" fill="none" stroke="${strokeColor}" stroke-width="3.5" stroke-linecap="round" />
+          <!-- Bottom Left Leaf -->
+          <path class="garden-leaf" d="M 49 88 Q 38 83 36 88 Q 43 92 49 88 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+          <!-- Mid Right Leaf -->
+          <path class="garden-leaf" d="M 49 76 Q 58 71 60 77 Q 53 81 49 76 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+          <!-- Top Bud -->
+          <path class="garden-leaf" d="M 48 65 Q 43 55 48 48 Q 53 55 48 65 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+        `;
+      } else if (stage === 'mature' || stage === 'flower') {
+        html += `
+          <!-- Main stalk -->
+          <path class="garden-leaf" d="M 50 110 Q 52 75 49 45" fill="none" stroke="${strokeColor}" stroke-width="4.5" stroke-linecap="round" />
+          <!-- Lower Left Leaf -->
+          <path class="garden-leaf" d="M 50 90 Q 36 85 34 93 Q 44 97 50 90 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+          <!-- Lower Right Leaf -->
+          <path class="garden-leaf" d="M 51 82 Q 65 77 67 84 Q 59 89 51 82 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+          <!-- Left Branch -->
+          <path class="garden-leaf" d="M 50 68 Q 38 61 32 50" fill="none" stroke="${strokeColor}" stroke-width="3" stroke-linecap="round" />
+          <path class="garden-leaf" d="M 32 50 Q 24 44 26 52 Q 32 56 32 50 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+          <!-- Right Branch -->
+          <path class="garden-leaf" d="M 50 58 Q 62 53 68 42" fill="none" stroke="${strokeColor}" stroke-width="3" stroke-linecap="round" />
+          <path class="garden-leaf" d="M 68 42 Q 76 34 77 42 Q 71 47 68 42 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+          <!-- Top Sprout -->
+          <path class="garden-leaf" d="M 49 45 Q 44 32 49 22 Q 54 32 49 45 Z" fill="${fillColor}" stroke="${strokeColor}" stroke-width="0.5" />
+        `;
+
+        if (stage === 'flower') {
+          html += `
+            <!-- Flower 1 (Top) -->
+            <g class="garden-leaf">
+              <circle cx="49" cy="35" r="4.5" fill="${flowerFill}" stroke="var(--text-muted)" stroke-width="0.5" />
+              <circle cx="49" cy="35" r="1.8" fill="${centerFill}" />
+            </g>
+            <!-- Flower 2 (Right) -->
+            <g class="garden-leaf">
+              <circle cx="58" cy="53" r="4.5" fill="${flowerFill}" stroke="var(--text-muted)" stroke-width="0.5" />
+              <circle cx="58" cy="53" r="1.8" fill="${centerFill}" />
+            </g>
+            <!-- Flower 3 (Left) -->
+            <g class="garden-leaf">
+              <circle cx="39" cy="60" r="4.5" fill="${flowerFill}" stroke="var(--text-muted)" stroke-width="0.5" />
+              <circle cx="39" cy="60" r="1.8" fill="${centerFill}" />
+            </g>
+          `;
+        }
+      }
     }
   }
 
@@ -225,6 +391,17 @@ function drawPlantSVG(stage: string, healthy: boolean): string {
 
 export function initGarden(): void {
   const waterBtn = document.getElementById('btn-water-plant');
+  const seedSelect = document.getElementById('select-garden-seed') as HTMLSelectElement;
+
+  if (seedSelect) {
+    seedSelect.addEventListener('change', () => {
+      if (!state.currentUser || !state.currentRecord) return;
+      state.currentRecord.selectedSeed = seedSelect.value;
+      saveRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.currentRecord);
+      renderGarden();
+    });
+  }
+
   if (!waterBtn) return;
 
   waterBtn.addEventListener('click', () => {

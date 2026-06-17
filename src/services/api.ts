@@ -86,13 +86,14 @@ export async function apiSaveHabits(habits: Habit[]): Promise<any> {
 }
 
 export async function apiGetRecord(year: number, month: number): Promise<MonthRecord | null> {
-  return request(`/tracker/record?year=${year}&month=${month}`);
+  const data = await request(`/tracker/record/${year}/${month}`);
+  return data.record;
 }
 
 export async function apiSaveRecord(year: number, month: number, record: MonthRecord): Promise<any> {
-  return request('/tracker/record', {
+  return request(`/tracker/record/${year}/${month}`, {
     method: 'POST',
-    body: JSON.stringify({ year, month, record })
+    body: JSON.stringify({ record })
   });
 }
 
