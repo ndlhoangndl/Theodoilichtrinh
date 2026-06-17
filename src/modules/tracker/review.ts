@@ -200,15 +200,15 @@ export function renderMemoryBook(): void {
 
   // Polaroid markup
   container.innerHTML = `
-    <div class="polaroid-card animate-polaroid" style="grid-column: 1 / -1; background:#fff; border:1px solid #e2e2e2; box-shadow: 0 10px 20px rgba(0,0,0,0.06); padding: 20px 20px 30px 20px; border-radius: 4px; display:flex; flex-direction:column; gap:16px; font-family:'Plus Jakarta Sans', sans-serif; position:relative; overflow:hidden;">
+    <div class="polaroid-card animate-polaroid" style="grid-column: 1 / -1; background:var(--bg-widget); border:1px solid var(--border-color); box-shadow: var(--shadow-md); padding: 20px 20px 30px 20px; border-radius: 4px; display:flex; flex-direction:column; gap:16px; font-family:'Plus Jakarta Sans', sans-serif; position:relative; overflow:hidden;">
       <!-- Tape graphic at top -->
-      <div style="position:absolute; top:-6px; left:50%; transform:translateX(-50%) rotate(-1deg); width:110px; height:24px; background:rgba(216, 205, 191, 0.4); border-left:1px dashed #bbaea1; border-right:1px dashed #bbaea1; z-index:2;"></div>
+      <div style="position:absolute; top:-6px; left:50%; transform:translateX(-50%) rotate(-1deg); width:110px; height:24px; background:rgba(216, 205, 191, 0.25); border-left:1px dashed var(--border-color-dark); border-right:1px dashed var(--border-color-dark); z-index:2;"></div>
       
       <!-- Polaroid Content Row (Split into stats summary & reflections text) -->
       <div class="polaroid-row" style="display:grid; grid-template-columns:1fr; gap:16px;">
         <!-- Left Side: Custom Polaroid Stats Banner -->
-        <div style="background:#fefbf7; border:1px solid #eae2d5; border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:10px; color:#3d352f;">
-          <div style="font-family:'Outfit', sans-serif; font-size:18px; font-weight:700; border-bottom:1px solid #eae2d5; padding-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="background:var(--bg-panel); border:1px solid var(--border-color); border-radius:6px; padding:12px; display:flex; flex-direction:column; gap:10px; color:var(--text-main);">
+          <div style="font-family:'Outfit', sans-serif; font-size:18px; font-weight:700; border-bottom:1px solid var(--border-color); padding-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
             <span>✨ MEMORY CARD</span>
             <span style="font-size:12px; font-weight:500; opacity:0.8;">${monthLabel} / ${state.currentYear}</span>
           </div>
@@ -227,24 +227,24 @@ export function renderMemoryBook(): void {
         </div>
 
         <!-- Right Side: Reflection Q&As -->
-        <div style="display:flex; flex-direction:column; gap:12px; color:#4a423a;">
+        <div style="display:flex; flex-direction:column; gap:12px; color:var(--text-muted);">
           <div style="font-size:12px; line-height:1.5;">
-            <div style="font-weight:700; font-family:'Outfit', sans-serif; color:#231d1a; margin-bottom:2px;">${labelQ1}</div>
+            <div style="font-weight:700; font-family:'Outfit', sans-serif; color:var(--text-main); margin-bottom:2px;">${labelQ1}</div>
             <p style="margin:0; font-style:italic; border-left:2px solid var(--accent-green); padding-left:8px; font-size:13px;">"${review.q1 || '...'}"</p>
           </div>
           <div style="font-size:12px; line-height:1.5;">
-            <div style="font-weight:700; font-family:'Outfit', sans-serif; color:#231d1a; margin-bottom:2px;">${labelQ2}</div>
+            <div style="font-weight:700; font-family:'Outfit', sans-serif; color:var(--text-main); margin-bottom:2px;">${labelQ2}</div>
             <p style="margin:0; font-style:italic; border-left:2px solid var(--accent-orange); padding-left:8px; font-size:13px;">"${review.q2 || '...'}"</p>
           </div>
           <div style="font-size:12px; line-height:1.5;">
-            <div style="font-weight:700; font-family:'Outfit', sans-serif; color:#231d1a; margin-bottom:2px;">${labelQ3}</div>
+            <div style="font-weight:700; font-family:'Outfit', sans-serif; color:var(--text-main); margin-bottom:2px;">${labelQ3}</div>
             <p style="margin:0; font-style:italic; border-left:2px solid var(--accent-brown); padding-left:8px; font-size:13px;">"${review.q3 || '...'}"</p>
           </div>
         </div>
       </div>
       
       <!-- Polaroid bottom handwriting caption area -->
-      <div style="border-top:1px dashed #eae2d5; padding-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#7c6d60; font-style:italic;">
+      <div style="border-top:1px dashed var(--border-color-dark); padding-top:12px; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--text-muted); font-style:italic;">
         <span>${labelCompleted} ${review.completedAt}</span>
         <button class="btn btn-sm btn-edit-review" style="font-size:11px; padding:3px 8px; font-style:normal; height:auto; display:inline-flex; align-items:center; gap:4px;">✍️ ${labelEdit}</button>
       </div>
