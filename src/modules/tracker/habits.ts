@@ -240,6 +240,11 @@ export function renderManageHabitsList(): void {
       });
 
       const nameInput = item.querySelector('.modal-habit-name-input') as HTMLInputElement;
+      nameInput.addEventListener('input', () => {
+        if (!state.currentUser) return;
+        state.habits[index].name = nameInput.value.trim() || 'Thói quen mới';
+        saveHabits(state.currentUser.username, state.habits);
+      });
       nameInput.addEventListener('change', () => {
         state.habits[index].name = nameInput.value.trim() || 'Thói quen mới';
         persistHabitsChange();

@@ -72,7 +72,7 @@ export const saveMonthRecord = async (req, res) => {
     const userId = req.user.id;
     const year = parseInt(req.params.year);
     const month = parseInt(req.params.month);
-    const { record } = req.body;
+    const record = req.body.record || req.body;
 
     if (isNaN(year) || isNaN(month) || !record) {
       return res.status(400).json({ message: 'Invalid payload data' });
@@ -88,8 +88,7 @@ export const saveMonthRecord = async (req, res) => {
       wateredDays: record.wateredDays || [],
       monthlyReview: record.monthlyReview || {},
       notes: record.notes || {},
-      selectedSeed: record.selectedSeed || 'oak',
-      coachChatHistory: record.coachChatHistory || []
+      selectedSeed: record.selectedSeed || 'oak'
     };
 
     const updatedRecord = await MonthRecord.findOneAndUpdate(

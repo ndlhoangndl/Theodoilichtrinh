@@ -6,7 +6,8 @@ export interface CalendarTask {
   completed: boolean;
 }
 
-const getStorageKey = (username: string) => `LICHTRINH_${username}_TASKS`;
+export const getCalendarTasksStorageKey = (username: string) => `LICHTRINH_${username}_TASKS`;
+export const KEY_DIRTY_CALENDAR_TASKS = 'LICHTRINH_DIRTY_CALENDAR_TASKS';
 
 export const DEFAULT_CALENDAR_TASKS: CalendarTask[] = [
   { id: 'task_1', title: 'Hoàn thành bài tập lớn', completed: false },
@@ -15,7 +16,7 @@ export const DEFAULT_CALENDAR_TASKS: CalendarTask[] = [
 ];
 
 export function loadCalendarTasks(username: string): CalendarTask[] {
-  const key = getStorageKey(username);
+  const key = getCalendarTasksStorageKey(username);
   const raw = localStorage.getItem(key);
   if (raw) {
     try {
@@ -25,17 +26,23 @@ export function loadCalendarTasks(username: string): CalendarTask[] {
     }
   }
 
-  saveCalendarTasks(username, DEFAULT_CALENDAR_TASKS);
+  // Return default tasks in memory only — do NOT call saveCalendarTasks() here
+  // so an empty localStorage never overwrites existing MongoDB tasks on startup.
   return [...DEFAULT_CALENDAR_TASKS];
 }
 
 export function saveCalendarTasks(username: string, tasks: CalendarTask[]): void {
-  const key = getStorageKey(username);
+  const key = getCalendarTasksStorageKey(username);
   localStorage.setItem(key, JSON.stringify(tasks));
+  localStorage.setItem(KEY_DIRTY_CALENDAR_TASKS, 'true');
 
-  apiSaveCalendarTasks(tasks).catch(err => {
-    console.error('Failed to sync calendar tasks to MongoDB:', err);
-  });
+  apiSaveCalendarTasks(tasks)
+    .then(() => {
+      localStorage.removeItem(KEY_DIRTY_CALENDAR_TASKS);
+    })
+    .catch(err => {
+      console.error('Failed to sync calendar tasks to MongoDB (will retry):', err);
+    });
 }
 
 export function addCalendarTask(username: string, title: string): CalendarTask {

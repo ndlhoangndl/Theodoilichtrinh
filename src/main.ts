@@ -17,7 +17,7 @@ import {
   syncRecordFromServer,
   migrateAllLocalRecordsToServer
 } from './services/storage';
-import { apiGetOwnerProfile, apiUpdateProfile } from './services/api';
+import { apiGetOwnerProfile, apiUpdateProfile, setToken } from './services/api';
 import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
@@ -55,7 +55,7 @@ async function syncAllFromMongoDB(): Promise<void> {
     if (ownerProfile && ownerProfile.user) {
       const serverUser = ownerProfile.user;
       if (ownerProfile.token) {
-        localStorage.setItem('LICHTRINH_AUTH_TOKEN', ownerProfile.token);
+        setToken(ownerProfile.token);
       }
 
       state.currentUser = serverUser;
@@ -84,10 +84,8 @@ async function syncAllFromMongoDB(): Promise<void> {
 
       // Sync selected year & month if saved on MongoDB
       if (typeof serverUser.selectedYear === 'number' && typeof serverUser.selectedMonth === 'number') {
-        localStorage.setItem(
-          'LICHTRINH_SELECTED_DATE',
-          JSON.stringify({ year: serverUser.selectedYear, month: serverUser.selectedMonth })
-        );
+        localStorage.setItem('LICHTRINH_SEL_YEAR', serverUser.selectedYear.toString());
+        localStorage.setItem('LICHTRINH_SEL_MONTH', serverUser.selectedMonth.toString());
       }
     }
 
@@ -177,6 +175,9 @@ function initApp(): void {
 
   // Sync everything with MongoDB in the background
   syncAllFromMongoDB();
+  window.addEventListener('online', () => {
+    syncAllFromMongoDB();
+  });
 
   // Bind Language Selector dropdown
   const selectLang = document.getElementById('select-lang') as HTMLSelectElement;

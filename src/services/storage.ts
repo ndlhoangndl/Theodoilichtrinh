@@ -7,6 +7,8 @@ const KEY_USERS = 'LICHTRINH_USERS';
 const KEY_SESSION = 'LICHTRINH_SESSION';
 const KEY_SEL_YEAR = 'LICHTRINH_SEL_YEAR';
 const KEY_SEL_MONTH = 'LICHTRINH_SEL_MONTH';
+const KEY_DIRTY_HABITS = 'LICHTRINH_DIRTY_HABITS';
+const getDirtyRecordKey = (year: number, month: number) => `LICHTRINH_DIRTY_RECORD_${year}_${month}`;
 
 export const DEFAULT_OWNER_USER: User = {
   username: 'ndlhoangndl',
@@ -68,11 +70,16 @@ export function getCurrentSession(): User {
 export function saveHabits(username: string, habits: Habit[]): void {
   const key = `LICHTRINH_${username}_HABITS`;
   localStorage.setItem(key, JSON.stringify(habits));
+  localStorage.setItem(KEY_DIRTY_HABITS, 'true');
 
   // Sync to MongoDB
-  apiSaveHabits(habits).catch(err => {
-    console.error('Failed to sync habits to MongoDB:', err);
-  });
+  apiSaveHabits(habits)
+    .then(() => {
+      localStorage.removeItem(KEY_DIRTY_HABITS);
+    })
+    .catch(err => {
+      console.error('Failed to sync habits to MongoDB (will retry):', err);
+    });
 }
 
 export function loadHabits(username: string, defaultHabits: Habit[]): Habit[] {
@@ -89,7 +96,8 @@ export function loadHabits(username: string, defaultHabits: Habit[]): Habit[] {
     }
   }
 
-  saveHabits(username, defaultHabits);
+  // Return default habits in memory only — do NOT call saveHabits() here
+  // so an empty localStorage never overwrites existing MongoDB habits on startup.
   return [...defaultHabits];
 }
 
@@ -106,11 +114,12 @@ export function loadSelectedDate(): { year: number; month: number } {
   const savedYear = localStorage.getItem(KEY_SEL_YEAR);
   const savedMonth = localStorage.getItem(KEY_SEL_MONTH);
 
-  if (savedYear && savedMonth) {
-    return {
-      year: parseInt(savedYear),
-      month: parseInt(savedMonth)
-    };
+  if (savedYear !== null && savedMonth !== null) {
+    const y = parseInt(savedYear);
+    const m = parseInt(savedMonth);
+    if (!isNaN(y) && !isNaN(m)) {
+      return { year: y, month: m };
+    }
   }
 
   const today = new Date();
@@ -122,12 +131,18 @@ export function loadSelectedDate(): { year: number; month: number } {
 
 export function saveRecord(username: string, year: number, month: number, record: MonthRecord): void {
   const recordKey = `LICHTRINH_${username}_RECORD_${year}_${month}`;
+  const dirtyKey = getDirtyRecordKey(year, month);
   localStorage.setItem(recordKey, JSON.stringify(record));
+  localStorage.setItem(dirtyKey, 'true');
 
   // Sync to MongoDB
-  apiSaveRecord(year, month, record).catch(err => {
-    console.error(`Failed to sync monthly record ${year}-${month} to MongoDB:`, err);
-  });
+  apiSaveRecord(year, month, record)
+    .then(() => {
+      localStorage.removeItem(dirtyKey);
+    })
+    .catch(err => {
+      console.error(`Failed to sync monthly record ${year}-${month} to MongoDB (will retry):`, err);
+    });
 }
 
 export function loadRecord(username: string, year: number, month: number, habits: Habit[]): MonthRecord {
@@ -201,13 +216,14 @@ export function loadRecord(username: string, year: number, month: number, habits
     }
   }
 
-  // Create new blank record
+  // Create new blank record in memory ONLY — do NOT call saveRecord() here
+  // so reading an uncached month never overwrites MongoDB with blank data.
   const blankChecks: Record<string, boolean[]> = {};
   habits.forEach(h => {
     blankChecks[h.id] = new Array(daysCount).fill(false);
   });
 
-  const record: MonthRecord = {
+  return {
     year,
     month,
     checks: blankChecks,
@@ -219,17 +235,29 @@ export function loadRecord(username: string, year: number, month: number, habits
     wateredDays: [],
     selectedSeed: 'oak'
   };
-
-  saveRecord(username, year, month, record);
-  return record;
 }
 
 export async function syncHabitsFromServer(username: string): Promise<void> {
   try {
-    const serverHabits = await apiGetHabits();
     const key = `LICHTRINH_${username}_HABITS`;
     const localRaw = localStorage.getItem(key);
+    const isDirty = localStorage.getItem(KEY_DIRTY_HABITS) === 'true';
 
+    // If local has unsynced changes, push local to MongoDB first so user edits are never lost
+    if (isDirty && localRaw) {
+      try {
+        const localHabits = JSON.parse(localRaw) as Habit[];
+        if (Array.isArray(localHabits) && localHabits.length > 0) {
+          await apiSaveHabits(localHabits);
+          localStorage.removeItem(KEY_DIRTY_HABITS);
+          return;
+        }
+      } catch (e) {
+        console.error('Failed to push dirty local habits to MongoDB:', e);
+      }
+    }
+
+    const serverHabits = await apiGetHabits();
     if (serverHabits && serverHabits.length > 0) {
       localStorage.setItem(key, JSON.stringify(serverHabits));
     } else if (localRaw) {
@@ -237,6 +265,7 @@ export async function syncHabitsFromServer(username: string): Promise<void> {
         const localHabits = JSON.parse(localRaw) as Habit[];
         if (localHabits.length > 0) {
           await apiSaveHabits(localHabits);
+          localStorage.removeItem(KEY_DIRTY_HABITS);
         }
       } catch (e) {
         console.error('Failed to parse local habits for migration:', e);
@@ -249,22 +278,37 @@ export async function syncHabitsFromServer(username: string): Promise<void> {
 
 export async function syncRecordFromServer(username: string, year: number, month: number): Promise<void> {
   try {
-    const serverRecord = await apiGetRecord(year, month);
     const recordKey = `LICHTRINH_${username}_RECORD_${year}_${month}`;
+    const dirtyKey = getDirtyRecordKey(year, month);
+    const localRaw = localStorage.getItem(recordKey);
+    const isDirty = localStorage.getItem(dirtyKey) === 'true';
 
+    // If local record has unsynced edits, push local to MongoDB first so user edits are never lost
+    if (isDirty && localRaw) {
+      try {
+        const localRecord = JSON.parse(localRaw) as MonthRecord;
+        if (localRecord) {
+          await apiSaveRecord(year, month, localRecord);
+          localStorage.removeItem(dirtyKey);
+          return;
+        }
+      } catch (e) {
+        console.error('Failed to push dirty local record to MongoDB:', e);
+      }
+    }
+
+    const serverRecord = await apiGetRecord(year, month);
     if (serverRecord) {
       localStorage.setItem(recordKey, JSON.stringify(serverRecord));
-    } else {
-      const localRaw = localStorage.getItem(recordKey);
-      if (localRaw) {
-        try {
-          const localRecord = JSON.parse(localRaw) as MonthRecord;
-          if (localRecord) {
-            await apiSaveRecord(year, month, localRecord);
-          }
-        } catch (e) {
-          console.error('Failed to parse local record for migration:', e);
+    } else if (localRaw) {
+      try {
+        const localRecord = JSON.parse(localRaw) as MonthRecord;
+        if (localRecord) {
+          await apiSaveRecord(year, month, localRecord);
+          localStorage.removeItem(dirtyKey);
         }
+      } catch (e) {
+        console.error('Failed to parse local record for migration:', e);
       }
     }
   } catch (err) {

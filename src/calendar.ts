@@ -5,7 +5,9 @@ import {
   loadCalendarEvents, 
   saveCalendarEvents,
   addCalendarEvent, 
-  deleteCalendarEvent 
+  deleteCalendarEvent,
+  getCalendarEventsStorageKey,
+  KEY_DIRTY_CALENDAR_EVENTS
 } from './modules/calendar/eventStorage';
 import {
   CalendarTask,
@@ -13,7 +15,9 @@ import {
   saveCalendarTasks,
   addCalendarTask,
   toggleCalendarTask,
-  deleteCalendarTask
+  deleteCalendarTask,
+  getCalendarTasksStorageKey,
+  KEY_DIRTY_CALENDAR_TASKS
 } from './modules/calendar/taskStorage';
 
 // Active calendar state
@@ -242,20 +246,36 @@ function getWeekRange(date: Date, startOnMonday = true): { start: Date; end: Dat
 async function syncCalendarWithMongoDB() {
   if (!currentUser) return;
   try {
+    const eventsDirty = localStorage.getItem(KEY_DIRTY_CALENDAR_EVENTS) === 'true';
+    const tasksDirty = localStorage.getItem(KEY_DIRTY_CALENDAR_TASKS) === 'true';
+
+    if (eventsDirty) {
+      await apiSaveCalendarEvents(eventsList);
+      localStorage.removeItem(KEY_DIRTY_CALENDAR_EVENTS);
+    }
+    if (tasksDirty) {
+      await apiSaveCalendarTasks(tasksList);
+      localStorage.removeItem(KEY_DIRTY_CALENDAR_TASKS);
+    }
+
     const serverData = await apiGetCalendarData();
     if (serverData) {
-      if (Array.isArray(serverData.events)) {
-        eventsList = serverData.events;
-        localStorage.setItem(`LICHTRINH_${currentUser.username}_CALENDAR_EVENTS`, JSON.stringify(eventsList));
-      } else {
-        await apiSaveCalendarEvents(eventsList);
+      if (!eventsDirty) {
+        if (Array.isArray(serverData.events)) {
+          eventsList = serverData.events;
+          localStorage.setItem(getCalendarEventsStorageKey(currentUser.username), JSON.stringify(eventsList));
+        } else {
+          await apiSaveCalendarEvents(eventsList);
+        }
       }
 
-      if (Array.isArray(serverData.tasks)) {
-        tasksList = serverData.tasks;
-        localStorage.setItem(`LICHTRINH_${currentUser.username}_CALENDAR_TASKS`, JSON.stringify(tasksList));
-      } else {
-        await apiSaveCalendarTasks(tasksList);
+      if (!tasksDirty) {
+        if (Array.isArray(serverData.tasks)) {
+          tasksList = serverData.tasks;
+          localStorage.setItem(getCalendarTasksStorageKey(currentUser.username), JSON.stringify(tasksList));
+        } else {
+          await apiSaveCalendarTasks(tasksList);
+        }
       }
 
       renderAll();

@@ -12,7 +12,8 @@ export interface CalendarEvent {
   excludedDates?: string[]; // Date strings (YYYY-MM-DD) to exclude from recurrence
 }
 
-const getStorageKey = (username: string) => `LICHTRINH_${username}_CALENDAR_EVENTS`;
+export const getCalendarEventsStorageKey = (username: string) => `LICHTRINH_${username}_CALENDAR_EVENTS`;
+export const KEY_DIRTY_CALENDAR_EVENTS = 'LICHTRINH_DIRTY_CALENDAR_EVENTS';
 
 export const DEFAULT_CALENDAR_EVENTS: CalendarEvent[] = [
   {
@@ -78,7 +79,7 @@ export const DEFAULT_CALENDAR_EVENTS: CalendarEvent[] = [
 ];
 
 export function loadCalendarEvents(username: string): CalendarEvent[] {
-  const key = getStorageKey(username);
+  const key = getCalendarEventsStorageKey(username);
   const raw = localStorage.getItem(key);
   if (raw) {
     try {
@@ -88,17 +89,23 @@ export function loadCalendarEvents(username: string): CalendarEvent[] {
     }
   }
 
-  saveCalendarEvents(username, DEFAULT_CALENDAR_EVENTS);
+  // Return default events in memory only — do NOT call saveCalendarEvents() here
+  // so an empty localStorage never overwrites existing MongoDB calendar events on startup.
   return [...DEFAULT_CALENDAR_EVENTS];
 }
 
 export function saveCalendarEvents(username: string, events: CalendarEvent[]): void {
-  const key = getStorageKey(username);
+  const key = getCalendarEventsStorageKey(username);
   localStorage.setItem(key, JSON.stringify(events));
+  localStorage.setItem(KEY_DIRTY_CALENDAR_EVENTS, 'true');
 
-  apiSaveCalendarEvents(events).catch(err => {
-    console.error('Failed to sync calendar events to MongoDB:', err);
-  });
+  apiSaveCalendarEvents(events)
+    .then(() => {
+      localStorage.removeItem(KEY_DIRTY_CALENDAR_EVENTS);
+    })
+    .catch(err => {
+      console.error('Failed to sync calendar events to MongoDB (will retry):', err);
+    });
 }
 
 export function addCalendarEvent(username: string, event: Omit<CalendarEvent, 'id'>): CalendarEvent {

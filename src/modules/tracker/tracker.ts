@@ -1,7 +1,7 @@
 import { state, WEEK_DAYS_VN, WEEK_DAYS_EN } from '../common/state';
 import { HabitStats, MonthRecord, Habit } from '../../types/types';
 import { MONTH_NAMES, getDaysInMonth, getDayOfWeek } from '../../utils/calendar';
-import { loadHabits, loadRecord, loadSelectedDate, saveSelectedDate, saveRecord, saveHabits, syncRecordFromServer } from '../../services/storage';
+import { loadHabits, loadRecord, loadSelectedDate, saveSelectedDate, saveRecord, syncRecordFromServer } from '../../services/storage';
 import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
@@ -30,103 +30,12 @@ const DEFAULT_HABITS: Habit[] = [
   { id: 'h11', name: 'Ngủ trước 23:00', emoji: '💤' }
 ];
 
-function seedSampleData(username: string, year: number, month: number): void {
-  const daysCount = getDaysInMonth(year, month);
-  
-  // Save default habits
-  saveHabits(username, DEFAULT_HABITS);
-
-  const checks: Record<string, boolean[]> = {};
-  const sampleCheckedDays: Record<string, number[]> = {
-    'h1': [1, 2, 3, 6, 13, 16, 20],
-    'h2': [1, 2, 3, 4, 5, 6, 8, 9, 10, 13, 14, 16, 17, 19, 20, 21, 22],
-    'h3': [1, 3, 4, 6, 8, 10, 13, 15, 20, 22],
-    'h4': [1, 2, 3, 4, 8, 9, 13, 14, 16, 19],
-    'h5': [1, 2, 4, 8, 9, 11, 13, 14, 16, 21, 22, 23, 26, 27, 29],
-    'h6': [1, 2, 3, 4, 7, 8, 9, 10, 13, 14, 15, 16, 17, 19, 20, 21, 22, 24, 25, 26],
-    'h7': [1, 2, 4, 8, 9, 11, 13, 14, 16, 21],
-    'h8': [1, 4, 5, 6, 8, 9, 11, 13, 19, 20],
-    'h9': [1, 4, 5, 6, 8, 9, 19, 20, 21],
-    'h10': [2, 3, 8, 13, 14, 15, 20, 21],
-    'h11': [1, 2, 3, 8, 9, 13, 16, 17, 21]
-  };
-
-  DEFAULT_HABITS.forEach(h => {
-    const arr = new Array(daysCount).fill(false);
-    const checkedIndices = sampleCheckedDays[h.id] || [];
-    checkedIndices.forEach(idx => {
-      if (idx < daysCount) {
-        arr[idx] = true;
-      }
-    });
-    checks[h.id] = arr;
-  });
-
-  const mood = new Array(daysCount).fill(0);
-  const motivation = new Array(daysCount).fill(0);
-  for (let i = 0; i < Math.min(24, daysCount); i++) {
-    mood[i] = Math.floor(Math.random() * 3) + 7;
-    motivation[i] = Math.floor(Math.random() * 4) + 6;
-  }
-
-  const diary = new Array(daysCount).fill('');
-  diary[1] = 'Hôm nay dậy sớm chạy bộ rất sảng khoái. Làm việc tập trung hiệu quả cao.';
-  diary[4] = 'Có chút mệt mỏi vào buổi chiều nhưng đã thiền 15 phút nên lấy lại được năng lượng.';
-  diary[8] = 'Ngày mới tràn đầy năng lượng, hoàn thành hết mục tiêu ngày đề ra!';
-
-  const notes: Record<string, string[]> = {};
-  DEFAULT_HABITS.forEach(h => {
-    notes[h.id] = new Array(daysCount).fill('');
-  });
-  notes['h3'][1] = 'Tập ngực + tay sau 45p';
-  notes['h3'][4] = 'Chạy bộ nhẹ nhàng 3km';
-  notes['h6'][2] = 'Đọc chương 3 sách Tâm lý học hành vi';
-  notes['h6'][8] = 'Đọc chương 4 sách Nghệ thuật tập trung';
-  notes['h7'][9] = 'Học Javascript nâng cao (Closures)';
-
-  const goals = [
-    { id: 'g1', text: 'Thiền định ít nhất 20 ngày', completed: false, pinned: true },
-    { id: 'g2', text: 'Đọc xong 2 cuốn sách', completed: true, pinned: false },
-    { id: 'g3', text: 'Tập thể thao 3 buổi/tuần', completed: false, pinned: true }
-  ];
-
-  const weeklyGoals = [
-    { id: 'w1', weekIndex: 0, text: 'Chạy bộ 5km', completed: true, pinned: true },
-    { id: 'w2', weekIndex: 0, text: 'Ngủ sớm trước 23h cả tuần', completed: false, pinned: false },
-    { id: 'w3', weekIndex: 1, text: 'Học 3 bài học lập trình mới', completed: true, pinned: true },
-    { id: 'w4', weekIndex: 1, text: 'Không uống trà sữa', completed: false, pinned: false }
-  ];
-
-  const wateredDays = [1, 2, 3, 4, 8, 9, 10, 13, 14, 16, 21];
-
-  const record: MonthRecord = {
-    year,
-    month,
-    checks,
-    mood,
-    motivation,
-    diary,
-    goals,
-    weeklyGoals,
-    wateredDays,
-    notes
-  };
-
-  saveRecord(username, year, month, record);
-}
-
 // Initialize State
 export function initializeState(): void {
   if (!state.currentUser) return;
 
   const username = state.currentUser.username;
-  const habitsKey = `LICHTRINH_${username}_HABITS`;
   const dateInfo = loadSelectedDate();
-
-  const habitsRaw = localStorage.getItem(habitsKey);
-  if (habitsRaw === null || habitsRaw === '[]') {
-    seedSampleData(username, dateInfo.year, dateInfo.month);
-  }
 
   state.habits = loadHabits(username, DEFAULT_HABITS);
   state.currentYear = dateInfo.year;
