@@ -105,6 +105,13 @@ export function showEmojiPicker(triggerElement: HTMLElement, onSelect: (emoji: s
   }, 0);
 }
 
+function persistHabitsChange(): void {
+  if (!state.currentUser) return;
+  saveHabits(state.currentUser.username, state.habits);
+  state.currentRecord = loadRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.habits);
+  renderAll();
+}
+
 export function renderManageHabitsList(): void {
   const container = document.getElementById('modal-habit-list-container');
   if (container) {
@@ -188,7 +195,7 @@ export function renderManageHabitsList(): void {
           const draggedItem = state.habits[draggedIdx];
           state.habits.splice(draggedIdx, 1);
           state.habits.splice(index, 0, draggedItem);
-          renderManageHabitsList();
+          persistHabitsChange();
         }
       });
 
@@ -198,7 +205,7 @@ export function renderManageHabitsList(): void {
           const temp = state.habits[index];
           state.habits[index] = state.habits[index - 1];
           state.habits[index - 1] = temp;
-          renderManageHabitsList();
+          persistHabitsChange();
         }
       });
 
@@ -208,7 +215,7 @@ export function renderManageHabitsList(): void {
           const temp = state.habits[index];
           state.habits[index] = state.habits[index + 1];
           state.habits[index + 1] = temp;
-          renderManageHabitsList();
+          persistHabitsChange();
         }
       });
 
@@ -217,7 +224,7 @@ export function renderManageHabitsList(): void {
         const confirmed = await showConfirm(TRANSLATIONS[state.currentLang].confirm_delete_habit);
         if (confirmed) {
           state.habits.splice(index, 1);
-          renderManageHabitsList();
+          persistHabitsChange();
         }
       });
 
@@ -228,12 +235,14 @@ export function renderManageHabitsList(): void {
         showEmojiPicker(emojiInput, (emoji) => {
           emojiInput.value = emoji;
           state.habits[index].emoji = emoji;
+          persistHabitsChange();
         });
       });
 
       const nameInput = item.querySelector('.modal-habit-name-input') as HTMLInputElement;
       nameInput.addEventListener('change', () => {
         state.habits[index].name = nameInput.value.trim() || 'Thói quen mới';
+        persistHabitsChange();
       });
     });
   }
@@ -290,7 +299,7 @@ export function initHabits(): void {
         inputName.value = '';
         inputEmoji.value = '🎯';
         
-        renderManageHabitsList();
+        persistHabitsChange();
       }
     });
   }

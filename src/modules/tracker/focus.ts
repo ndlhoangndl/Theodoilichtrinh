@@ -1,5 +1,6 @@
 import { state } from '../common/state';
-import { saveRecord } from '../../services/storage';
+import { saveRecord, updateUser, createSession } from '../../services/storage';
+import { apiUpdateProfile } from '../../services/api';
 import { triggerConfetti } from '../../utils/confetti';
 import { renderGarden } from './garden';
 
@@ -46,11 +47,12 @@ function playAlertSound() {
   }
 }
 
-// Load custom timer configuration
+// Load custom timer configuration (from MongoDB user profile or localStorage)
 function loadPomoDurations(): { work: number; short: number; long: number } {
-  const work = parseInt(localStorage.getItem('LICHTRINH_POMO_TIME_FOCUS') || '25');
-  const short = parseInt(localStorage.getItem('LICHTRINH_POMO_TIME_SHORT') || '5');
-  const long = parseInt(localStorage.getItem('LICHTRINH_POMO_TIME_LONG') || '15');
+  const userPomo = state.currentUser?.pomoSettings;
+  const work = userPomo?.work || parseInt(localStorage.getItem('LICHTRINH_POMO_TIME_FOCUS') || '25');
+  const short = userPomo?.short || parseInt(localStorage.getItem('LICHTRINH_POMO_TIME_SHORT') || '5');
+  const long = userPomo?.long || parseInt(localStorage.getItem('LICHTRINH_POMO_TIME_LONG') || '15');
   return { work, short, long };
 }
 
@@ -218,6 +220,14 @@ export function initFocusMode(): void {
       localStorage.setItem('LICHTRINH_POMO_TIME_FOCUS', fVal.toString());
       localStorage.setItem('LICHTRINH_POMO_TIME_SHORT', sVal.toString());
       localStorage.setItem('LICHTRINH_POMO_TIME_LONG', lVal.toString());
+
+      const pomoSettings = { work: fVal, short: sVal, long: lVal };
+      if (state.currentUser) {
+        state.currentUser.pomoSettings = pomoSettings;
+        updateUser(state.currentUser);
+        createSession(state.currentUser);
+        apiUpdateProfile({ pomoSettings }).catch(err => console.error('Failed to sync pomoSettings to MongoDB:', err));
+      }
 
       updatePomoTabsDurations();
 

@@ -1,3 +1,5 @@
+import { apiSaveCalendarTasks } from '../../services/api';
+
 export interface CalendarTask {
   id: string;
   title: string;
@@ -6,7 +8,12 @@ export interface CalendarTask {
 
 const getStorageKey = (username: string) => `LICHTRINH_${username}_TASKS`;
 
-// Load all tasks for a user
+export const DEFAULT_CALENDAR_TASKS: CalendarTask[] = [
+  { id: 'task_1', title: 'Hoàn thành bài tập lớn', completed: false },
+  { id: 'task_2', title: 'Mua sắm nhu yếu phẩm', completed: true },
+  { id: 'task_3', title: 'Chuẩn bị bài thuyết trình', completed: false }
+];
+
 export function loadCalendarTasks(username: string): CalendarTask[] {
   const key = getStorageKey(username);
   const raw = localStorage.getItem(key);
@@ -18,23 +25,19 @@ export function loadCalendarTasks(username: string): CalendarTask[] {
     }
   }
 
-  // Default mock tasks on first launch
-  const defaultTasks: CalendarTask[] = [
-    { id: 'task_1', title: 'Hoàn thành bài tập lớn', completed: false },
-    { id: 'task_2', title: 'Mua sắm nhu yếu phẩm', completed: true },
-    { id: 'task_3', title: 'Chuẩn bị bài thuyết trình', completed: false }
-  ];
-  saveCalendarTasks(username, defaultTasks);
-  return defaultTasks;
+  saveCalendarTasks(username, DEFAULT_CALENDAR_TASKS);
+  return [...DEFAULT_CALENDAR_TASKS];
 }
 
-// Save all tasks for a user
 export function saveCalendarTasks(username: string, tasks: CalendarTask[]): void {
   const key = getStorageKey(username);
   localStorage.setItem(key, JSON.stringify(tasks));
+
+  apiSaveCalendarTasks(tasks).catch(err => {
+    console.error('Failed to sync calendar tasks to MongoDB:', err);
+  });
 }
 
-// Add a new task
 export function addCalendarTask(username: string, title: string): CalendarTask {
   const tasks = loadCalendarTasks(username);
   const newTask: CalendarTask = {
@@ -47,7 +50,6 @@ export function addCalendarTask(username: string, title: string): CalendarTask {
   return newTask;
 }
 
-// Toggle task completion
 export function toggleCalendarTask(username: string, taskId: string): void {
   const tasks = loadCalendarTasks(username);
   const task = tasks.find(t => t.id === taskId);
@@ -57,7 +59,6 @@ export function toggleCalendarTask(username: string, taskId: string): void {
   }
 }
 
-// Delete a task
 export function deleteCalendarTask(username: string, taskId: string): void {
   const tasks = loadCalendarTasks(username);
   const filtered = tasks.filter(t => t.id !== taskId);

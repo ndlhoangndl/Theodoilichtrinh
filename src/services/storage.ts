@@ -1,16 +1,28 @@
 import { User, Habit, MonthRecord } from '../types/types';
 import { getDaysInMonth } from '../utils/calendar';
-import { apiGetHabits, apiSaveHabits, apiGetRecord, apiSaveRecord } from './api';
+import { apiGetHabits, apiSaveHabits, apiGetRecord, apiSaveRecord, apiUpdateProfile } from './api';
 
-// Local Storage Global Keys
+// Local Storage Global Keys (used as fast local cache for MongoDB data)
 const KEY_USERS = 'LICHTRINH_USERS';
 const KEY_SESSION = 'LICHTRINH_SESSION';
 const KEY_SEL_YEAR = 'LICHTRINH_SEL_YEAR';
 const KEY_SEL_MONTH = 'LICHTRINH_SEL_MONTH';
 
-// ---------------- AUTHENTICATION OPERATIONS ----------------
+export const DEFAULT_OWNER_USER: User = {
+  username: 'ndlhoangndl',
+  email: 'ndlhoangndl@gmail.com',
+  fullName: 'Nguyễn Đăng Lê Hoàng',
+  gender: 'male',
+  dob: '2006-05-02',
+  country: 'Vietnam',
+  bio: 'Không gian cá nhân quản lý lịch trình, kỷ luật và thói quen hàng ngày.',
+  role: 'ADMIN',
+  theme: 'cappuccino',
+  lang: 'vi'
+};
 
-// Fetch all registered users
+// ---------------- PERSONAL OWNER SESSION OPERATIONS ----------------
+
 export function getUsers(): User[] {
   const usersRaw = localStorage.getItem(KEY_USERS);
   if (usersRaw) {
@@ -20,115 +32,87 @@ export function getUsers(): User[] {
       console.error('Error parsing users list', e);
     }
   }
-  return [];
+  return [DEFAULT_OWNER_USER];
 }
 
-// Save a new user. Returns true if successful, false if username already exists
-export function saveUser(user: User): boolean {
-  const users = getUsers();
-  const exists = users.some(u => u.username.toLowerCase() === user.username.toLowerCase());
-  
-  if (exists) {
-    return false;
-  }
-  
-  users.push(user);
-  localStorage.setItem(KEY_USERS, JSON.stringify(users));
-  return true;
-}
-
-// Update existing user details in registry
 export function updateUser(user: User): void {
-  const users = getUsers();
-  const index = users.findIndex(u => u.username.toLowerCase() === user.username.toLowerCase());
-  if (index !== -1) {
-    users[index] = user;
-    localStorage.setItem(KEY_USERS, JSON.stringify(users));
-  }
+  localStorage.setItem(KEY_USERS, JSON.stringify([user]));
 }
 
-// Verify login details. Returns User object if verified, null otherwise
-export function verifyUser(username: string, passwordHash: string): User | null {
-  const users = getUsers();
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  
-  if (user && user.passwordHash === passwordHash) {
-    return user;
-  }
-  return null;
-}
-
-// Set active user session
 export function createSession(user: User): void {
   localStorage.setItem(KEY_SESSION, JSON.stringify(user));
 }
 
-// Clear active user session (Logout)
 export function clearSession(): void {
   localStorage.removeItem(KEY_SESSION);
 }
 
-// Get active session user
-export function getCurrentSession(): User | null {
+export function getCurrentSession(): User {
   const sessionRaw = localStorage.getItem(KEY_SESSION);
   if (sessionRaw) {
     try {
-      return JSON.parse(sessionRaw);
+      const parsed = JSON.parse(sessionRaw) as User;
+      if (parsed && parsed.username) {
+        return parsed;
+      }
     } catch (e) {
       console.error('Error parsing active session', e);
     }
   }
-  return null;
+  createSession(DEFAULT_OWNER_USER);
+  return { ...DEFAULT_OWNER_USER };
 }
 
-// ---------------- USER-SPECIFIC RECORD DATA OPERATIONS ----------------
+// ---------------- HABITS & RECORD DATA OPERATIONS (MONGODB SYNCED) ----------------
 
-// Save habits list under user namespace
 export function saveHabits(username: string, habits: Habit[]): void {
   const key = `LICHTRINH_${username}_HABITS`;
   localStorage.setItem(key, JSON.stringify(habits));
-  
-  // Async background sync to server
+
+  // Sync to MongoDB
   apiSaveHabits(habits).catch(err => {
-    console.error('Failed to sync habits to server:', err);
+    console.error('Failed to sync habits to MongoDB:', err);
   });
 }
 
-// Load habits list under user namespace
 export function loadHabits(username: string, defaultHabits: Habit[]): Habit[] {
   const key = `LICHTRINH_${username}_HABITS`;
   const habitsRaw = localStorage.getItem(key);
   if (habitsRaw) {
     try {
       const parsed = JSON.parse(habitsRaw) as Habit[];
-      return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
     } catch (e) {
       console.error(`Error parsing habits for ${username}`, e);
     }
   }
-  
+
   saveHabits(username, defaultHabits);
   return [...defaultHabits];
 }
 
-// Save selected date preferences globally (shared across login views)
 export function saveSelectedDate(year: number, month: number): void {
   localStorage.setItem(KEY_SEL_YEAR, year.toString());
   localStorage.setItem(KEY_SEL_MONTH, month.toString());
+
+  apiUpdateProfile({ selectedYear: year, selectedMonth: month }).catch(err => {
+    console.error('Failed to sync selected date to MongoDB:', err);
+  });
 }
 
-// Load selected date preferences globally
 export function loadSelectedDate(): { year: number; month: number } {
   const savedYear = localStorage.getItem(KEY_SEL_YEAR);
   const savedMonth = localStorage.getItem(KEY_SEL_MONTH);
-  
+
   if (savedYear && savedMonth) {
     return {
       year: parseInt(savedYear),
       month: parseInt(savedMonth)
     };
   }
-  
+
   const today = new Date();
   return {
     year: today.getFullYear(),
@@ -136,18 +120,16 @@ export function loadSelectedDate(): { year: number; month: number } {
   };
 }
 
-// Save monthly record under user namespace
 export function saveRecord(username: string, year: number, month: number, record: MonthRecord): void {
   const recordKey = `LICHTRINH_${username}_RECORD_${year}_${month}`;
   localStorage.setItem(recordKey, JSON.stringify(record));
-  
-  // Async background sync to server
+
+  // Sync to MongoDB
   apiSaveRecord(year, month, record).catch(err => {
-    console.error(`Failed to sync monthly record ${year}-${month} to server:`, err);
+    console.error(`Failed to sync monthly record ${year}-${month} to MongoDB:`, err);
   });
 }
 
-// Load monthly record under user namespace, ensuring all structures are valid and aligned
 export function loadRecord(username: string, year: number, month: number, habits: Habit[]): MonthRecord {
   const recordKey = `LICHTRINH_${username}_RECORD_${year}_${month}`;
   const recordRaw = localStorage.getItem(recordKey);
@@ -157,7 +139,6 @@ export function loadRecord(username: string, year: number, month: number, habits
     try {
       const record = JSON.parse(recordRaw) as MonthRecord;
 
-      // Sanity checks and data integrity migrations
       if (!record.checks) {
         record.checks = {};
       }
@@ -174,7 +155,6 @@ export function loadRecord(username: string, year: number, month: number, habits
         }
       });
 
-      // Mood array validation
       if (!record.mood || record.mood.length !== daysCount) {
         const oldMood = record.mood || [];
         record.mood = new Array(daysCount).fill(0);
@@ -183,7 +163,6 @@ export function loadRecord(username: string, year: number, month: number, habits
         }
       }
 
-      // Motivation array validation
       if (!record.motivation || record.motivation.length !== daysCount) {
         const oldMotivation = record.motivation || [];
         record.motivation = new Array(daysCount).fill(0);
@@ -192,7 +171,6 @@ export function loadRecord(username: string, year: number, month: number, habits
         }
       }
 
-      // Diary notes array validation
       if (!record.diary || record.diary.length !== daysCount) {
         const oldDiary = record.diary || [];
         record.diary = new Array(daysCount).fill('');
@@ -201,22 +179,18 @@ export function loadRecord(username: string, year: number, month: number, habits
         }
       }
 
-      // Goals array validation
       if (!record.goals) {
         record.goals = [];
       }
 
-      // Weekly goals array validation
       if (!record.weeklyGoals) {
         record.weeklyGoals = [];
       }
 
-      // Watered days array validation for the Habit Garden
       if (!record.wateredDays) {
         record.wateredDays = [];
       }
 
-      // Seed selection validation
       if (!record.selectedSeed) {
         record.selectedSeed = 'oak';
       }
@@ -245,33 +219,27 @@ export function loadRecord(username: string, year: number, month: number, habits
     wateredDays: [],
     selectedSeed: 'oak'
   };
-  
+
   saveRecord(username, year, month, record);
   return record;
 }
 
-// Sync habits from server and save to local storage (No-op as data is kept local)
 export async function syncHabitsFromServer(username: string): Promise<void> {
   try {
     const serverHabits = await apiGetHabits();
     const key = `LICHTRINH_${username}_HABITS`;
-    
+    const localRaw = localStorage.getItem(key);
+
     if (serverHabits && serverHabits.length > 0) {
-      // Server has data, update local cache
       localStorage.setItem(key, JSON.stringify(serverHabits));
-    } else {
-      // Server has no data, check if local cache has data to migrate
-      const localRaw = localStorage.getItem(key);
-      if (localRaw) {
-        try {
-          const localHabits = JSON.parse(localRaw) as Habit[];
-          if (localHabits.length > 0) {
-            console.log(`Migrating local habits for ${username} to server...`);
-            await apiSaveHabits(localHabits);
-          }
-        } catch (e) {
-          console.error('Failed to parse local habits for migration:', e);
+    } else if (localRaw) {
+      try {
+        const localHabits = JSON.parse(localRaw) as Habit[];
+        if (localHabits.length > 0) {
+          await apiSaveHabits(localHabits);
         }
+      } catch (e) {
+        console.error('Failed to parse local habits for migration:', e);
       }
     }
   } catch (err) {
@@ -279,24 +247,19 @@ export async function syncHabitsFromServer(username: string): Promise<void> {
   }
 }
 
-// Sync record from server and save to local storage (No-op as data is kept local)
 export async function syncRecordFromServer(username: string, year: number, month: number): Promise<void> {
   try {
     const serverRecord = await apiGetRecord(year, month);
     const recordKey = `LICHTRINH_${username}_RECORD_${year}_${month}`;
-    
+
     if (serverRecord) {
-      // Server has data, update local cache
       localStorage.setItem(recordKey, JSON.stringify(serverRecord));
     } else {
-      // Server has no data, check if local cache has data to migrate
       const localRaw = localStorage.getItem(recordKey);
       if (localRaw) {
         try {
           const localRecord = JSON.parse(localRaw) as MonthRecord;
-          // Ensure it's not an empty record before migrating
-          if (localRecord && (Object.keys(localRecord.checks || {}).length > 0 || (localRecord.wateredDays && localRecord.wateredDays.length > 0))) {
-            console.log(`Migrating local monthly record ${year}-${month} for ${username} to server...`);
+          if (localRecord) {
             await apiSaveRecord(year, month, localRecord);
           }
         } catch (e) {
@@ -306,5 +269,27 @@ export async function syncRecordFromServer(username: string, year: number, month
     }
   } catch (err) {
     console.error('syncRecordFromServer error:', err);
+  }
+}
+
+export async function migrateAllLocalRecordsToServer(username: string): Promise<void> {
+  try {
+    const prefix = `LICHTRINH_${username}_RECORD_`;
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(prefix)) {
+        const suffix = key.substring(prefix.length);
+        const parts = suffix.split('_');
+        if (parts.length === 2) {
+          const y = parseInt(parts[0]);
+          const m = parseInt(parts[1]);
+          if (!isNaN(y) && !isNaN(m)) {
+            await syncRecordFromServer(username, y, m);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error migrating local records to MongoDB:', err);
   }
 }

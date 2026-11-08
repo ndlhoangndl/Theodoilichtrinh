@@ -1,4 +1,5 @@
 import { getCurrentSession } from './services/storage';
+import { apiGetCalendarData, apiSaveCalendarEvents, apiSaveCalendarTasks } from './services/api';
 import { 
   CalendarEvent, 
   loadCalendarEvents, 
@@ -237,14 +238,37 @@ function getWeekRange(date: Date, startOnMonday = true): { start: Date; end: Dat
   return { start, end };
 }
 
+// Sync events & tasks with MongoDB
+async function syncCalendarWithMongoDB() {
+  if (!currentUser) return;
+  try {
+    const serverData = await apiGetCalendarData();
+    if (serverData) {
+      if (Array.isArray(serverData.events)) {
+        eventsList = serverData.events;
+        localStorage.setItem(`LICHTRINH_${currentUser.username}_CALENDAR_EVENTS`, JSON.stringify(eventsList));
+      } else {
+        await apiSaveCalendarEvents(eventsList);
+      }
+
+      if (Array.isArray(serverData.tasks)) {
+        tasksList = serverData.tasks;
+        localStorage.setItem(`LICHTRINH_${currentUser.username}_CALENDAR_TASKS`, JSON.stringify(tasksList));
+      } else {
+        await apiSaveCalendarTasks(tasksList);
+      }
+
+      renderAll();
+      renderTasksList();
+    }
+  } catch (err) {
+    console.warn('Could not sync calendar data from MongoDB:', err);
+  }
+}
+
 // Initialize Page
 function init() {
   currentUser = getCurrentSession();
-  if (!currentUser) {
-    // Redirect to login page if no active session
-    window.location.href = '/index.html';
-    return;
-  }
 
   // Display Greeting
   if (userGreeting) {
@@ -271,6 +295,7 @@ function init() {
   renderAll();
   renderTasksList();
   loadWeatherForecast();
+  syncCalendarWithMongoDB();
   
   // Auto-scroll time grid to 7:00 AM for better viewing on startup
   if (calendarScrollContainer) {
@@ -478,13 +503,6 @@ function setupEventListeners() {
       openEventEditorModal();
     });
   }
-  
-  const toolbarNewEvent = document.getElementById('btn-new-event-toolbar');
-  if (toolbarNewEvent) {
-    toolbarNewEvent.addEventListener('click', () => {
-      openEventEditorModal();
-    });
-  }
 
   if (editorModalClose) {
     editorModalClose.addEventListener('click', closeEventEditorModal);
@@ -511,8 +529,9 @@ function setupEventListeners() {
       };
 
       // Validation check
+      const isVi = (localStorage.getItem('LICHTRINH_LANG') || 'vi') === 'vi';
       if (newEvt.startTime >= newEvt.endTime) {
-        alert(currentUser.username === 'vi' ? 'Giờ bắt đầu phải nhỏ hơn giờ kết thúc!' : 'Start time must be before end time!');
+        alert(isVi ? 'Giờ bắt đầu phải nhỏ hơn giờ kết thúc!' : 'Start time must be before end time!');
         return;
       }
 
@@ -535,10 +554,11 @@ function setupEventListeners() {
         const evt = eventsList.find(e => e.id === activePopoverEventId);
         if (!evt) return;
 
+        const isVi = (localStorage.getItem('LICHTRINH_LANG') || 'vi') === 'vi';
         if (evt.recurrence && evt.recurrence !== 'none') {
           // Recurring event deletion prompt
           const choice = confirm(
-            currentUser.username === 'vi' || document.documentElement.lang === 'vi'
+            isVi
               ? "Đây là sự kiện lặp lại. Bấm OK để xóa toàn bộ chuỗi lặp lại, hoặc Cancel để chỉ xóa lần lặp ngày này?"
               : "This is a recurring event. Click OK to delete all occurrences, or Cancel to delete only this single occurrence?"
           );
@@ -618,6 +638,33 @@ function setupEventListeners() {
       }
     });
   }
+
+  // Keyboard shortcuts (N, T, W, M)
+  document.addEventListener('keydown', (e) => {
+    const activeEl = document.activeElement;
+    if (
+      activeEl &&
+      (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT')
+    ) {
+      return;
+    }
+    const key = e.key.toLowerCase();
+    if (key === 'n') {
+      e.preventDefault();
+      openEventEditorModal();
+    } else if (key === 't') {
+      e.preventDefault();
+      selectedDate = new Date();
+      miniCalendarMonthDate = new Date(selectedDate);
+      renderAll();
+    } else if (key === 'w') {
+      e.preventDefault();
+      viewOptWeek?.click();
+    } else if (key === 'm') {
+      e.preventDefault();
+      viewOptMonth?.click();
+    }
+  });
 }
 
 // Navigation Date Calculations
@@ -1341,7 +1388,7 @@ function handleEventMoveOrResize(
   originalOccurrenceDate: string | null
 ) {
   if (evt.recurrence && evt.recurrence !== 'none') {
-    const isVi = currentUser.username === 'vi' || document.documentElement.lang === 'vi';
+    const isVi = (localStorage.getItem('LICHTRINH_LANG') || 'vi') === 'vi';
     const choice = confirm(
       isVi
         ? "Đây là sự kiện lặp lại. Bấm OK để áp dụng cho tất cả các lần lặp, hoặc Cancel để chỉ áp dụng cho lần lặp ngày này?"

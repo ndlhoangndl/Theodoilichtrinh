@@ -1,6 +1,5 @@
 import { state } from './modules/common/state';
 import { translateUI } from './modules/common/translations';
-import { initAuth, setupPasswordToggles } from './modules/auth/auth';
 import { initProfile, renderProfilePage } from './modules/profile/profile';
 import { setupJournalPanel, initJournalPrompts } from './modules/journal/journal';
 import { initGoals } from './modules/goals/goals';
@@ -10,11 +9,15 @@ import { initConfirmOverlay } from './modules/common/confirm';
 import { initGarden } from './modules/tracker/garden';
 import { initMonthlyReview } from './modules/tracker/review';
 import { initFocusMode } from './modules/tracker/focus';
-import { getCurrentSession, updateUser, createSession } from './services/storage';
-import { initAdmin, renderAdminPage } from './modules/admin/admin';
-import { apiUpdateProfile } from './services/api';
-import { initUserChat, refreshUserChat } from './modules/chat/userChat';
-import { initAdminChat, refreshAdminChat } from './modules/chat/adminChat';
+import {
+  getCurrentSession,
+  updateUser,
+  createSession,
+  syncHabitsFromServer,
+  syncRecordFromServer,
+  migrateAllLocalRecordsToServer
+} from './services/storage';
+import { apiGetOwnerProfile, apiUpdateProfile } from './services/api';
 import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
@@ -22,15 +25,99 @@ import {
   drawMoodMotivationTrendChart
 } from './services/charts';
 
+function setupPasswordToggles(): void {
+  const toggleBtns = document.querySelectorAll('.password-toggle-btn');
+  toggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const container = btn.closest('.password-input-container');
+      if (!container) return;
+
+      const input = container.querySelector('input') as HTMLInputElement;
+      const eyeOpen = btn.querySelector('.eye-open') as HTMLElement;
+      const eyeClosed = btn.querySelector('.eye-closed') as HTMLElement;
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eyeOpen) eyeOpen.style.display = 'none';
+        if (eyeClosed) eyeClosed.style.display = 'block';
+      } else {
+        input.type = 'password';
+        if (eyeOpen) eyeOpen.style.display = 'block';
+        if (eyeClosed) eyeClosed.style.display = 'none';
+      }
+    });
+  });
+}
+
+async function syncAllFromMongoDB(): Promise<void> {
+  try {
+    const ownerProfile = await apiGetOwnerProfile();
+    if (ownerProfile && ownerProfile.user) {
+      const serverUser = ownerProfile.user;
+      if (ownerProfile.token) {
+        localStorage.setItem('LICHTRINH_AUTH_TOKEN', ownerProfile.token);
+      }
+
+      state.currentUser = serverUser;
+      updateUser(serverUser);
+      createSession(serverUser);
+
+      // Sync language
+      if (serverUser.lang === 'vi' || serverUser.lang === 'en') {
+        state.currentLang = serverUser.lang;
+        localStorage.setItem('LICHTRINH_LANG', serverUser.lang);
+        const selectLang = document.getElementById('select-lang') as HTMLSelectElement;
+        if (selectLang) selectLang.value = serverUser.lang;
+      }
+
+      // Sync theme
+      if (serverUser.theme && serverUser.theme !== 'default') {
+        applyUserTheme(serverUser.theme);
+        const selectTheme = document.getElementById('select-theme') as HTMLSelectElement;
+        if (selectTheme) selectTheme.value = serverUser.theme;
+      }
+
+      // Sync Pomodoro settings
+      if (serverUser.pomoSettings) {
+        localStorage.setItem('LICHTRINH_POMO_SETTINGS', JSON.stringify(serverUser.pomoSettings));
+      }
+
+      // Sync selected year & month if saved on MongoDB
+      if (typeof serverUser.selectedYear === 'number' && typeof serverUser.selectedMonth === 'number') {
+        localStorage.setItem(
+          'LICHTRINH_SELECTED_DATE',
+          JSON.stringify({ year: serverUser.selectedYear, month: serverUser.selectedMonth })
+        );
+      }
+    }
+
+    if (!state.currentUser) return;
+    const username = state.currentUser.username;
+
+    await syncHabitsFromServer(username);
+    initializeState();
+    await syncRecordFromServer(username, state.currentYear, state.currentMonth);
+    await migrateAllLocalRecordsToServer(username);
+
+    initializeState();
+    translateUI();
+    setupJournalPanel();
+    renderAll();
+  } catch (err) {
+    console.warn('Could not sync from MongoDB on startup, using local cache:', err);
+  }
+}
+
 function initApp(): void {
   // Load language preference
   state.currentLang = (localStorage.getItem('LICHTRINH_LANG') || 'vi') as 'vi' | 'en';
 
   const sessionUser = getCurrentSession();
-  const authContainer = document.getElementById('auth-container');
-  const dashboardContainer = document.getElementById('dashboard-container');
+  state.currentUser = sessionUser;
 
-  initAuth();
+  const dashboardContainer = document.getElementById('dashboard-container');
+  if (dashboardContainer) dashboardContainer.style.display = 'block';
+
   setupPasswordToggles();
   initProfile();
   initGoals();
@@ -40,9 +127,6 @@ function initApp(): void {
   initGarden();
   initJournalPrompts();
   initMonthlyReview();
-  initAdmin();
-  initUserChat();
-  initAdminChat();
   initFocusMode();
 
   // Toggle Actions Menu Dropdown
@@ -80,40 +164,19 @@ function initApp(): void {
     initialTheme = savedTheme === 'dark' ? 'espresso' : 'cappuccino';
   }
   applyUserTheme(initialTheme);
-  
+
   const selectTheme = document.getElementById('select-theme') as HTMLSelectElement;
   if (selectTheme) {
     selectTheme.value = initialTheme;
   }
 
-  if (sessionUser) {
-    state.currentUser = sessionUser;
-    if (authContainer) authContainer.style.display = 'none';
-    if (dashboardContainer) dashboardContainer.style.display = 'block';
+  initializeState();
+  translateUI();
+  setupJournalPanel();
+  renderAll();
 
-    const menuTabAdmin = document.getElementById('menu-tab-admin');
-    if (menuTabAdmin) {
-      menuTabAdmin.style.display = sessionUser.role === 'ADMIN' ? 'block' : 'none';
-    }
-
-    initializeState();
-    translateUI();
-    setupJournalPanel();
-    renderAll();
-    refreshUserChat();
-    refreshAdminChat();
-  } else {
-    state.currentUser = null;
-    if (authContainer) authContainer.style.display = 'flex';
-    if (dashboardContainer) dashboardContainer.style.display = 'none';
-    
-    const menuTabAdmin = document.getElementById('menu-tab-admin');
-    if (menuTabAdmin) menuTabAdmin.style.display = 'none';
-
-    translateUI();
-    refreshUserChat();
-    refreshAdminChat();
-  }
+  // Sync everything with MongoDB in the background
+  syncAllFromMongoDB();
 
   // Bind Language Selector dropdown
   const selectLang = document.getElementById('select-lang') as HTMLSelectElement;
@@ -122,7 +185,14 @@ function initApp(): void {
     selectLang.addEventListener('change', () => {
       state.currentLang = selectLang.value as 'vi' | 'en';
       localStorage.setItem('LICHTRINH_LANG', state.currentLang);
-      
+
+      if (state.currentUser) {
+        state.currentUser.lang = state.currentLang;
+        updateUser(state.currentUser);
+        createSession(state.currentUser);
+        apiUpdateProfile({ lang: state.currentLang }).catch(err => console.error('Failed to sync lang:', err));
+      }
+
       translateUI();
       setupJournalPanel();
       renderAll();
@@ -134,23 +204,23 @@ function initApp(): void {
   if (selectThemeElement) {
     selectThemeElement.addEventListener('change', () => {
       const selectedTheme = selectThemeElement.value || 'cappuccino';
-      
+
       // Apply theme variables globally
       applyUserTheme(selectedTheme);
-      
+
       // Update local storage preference for light/dark state
       const isDark = selectedTheme === 'espresso' || selectedTheme === 'chocolate';
       localStorage.setItem('LICHTRINH_THEME', isDark ? 'dark' : 'light');
-      
+
       if (state.currentUser) {
         state.currentUser.theme = selectedTheme;
         updateUser(state.currentUser);
         createSession(state.currentUser);
         apiUpdateProfile({ theme: selectedTheme }).catch(err => console.error('Failed to sync theme:', err));
       }
-      
+
       translateUI();
-      
+
       if (state.currentUser && state.currentRecord) {
         const stats = calculateStats();
         drawDailyProgressChart(stats.dailyCompletionRates);
@@ -161,38 +231,32 @@ function initApp(): void {
     });
   }
 
-  // Tabs Navigation switching (Moved to Dropdown Menu Items)
+  // Tabs Navigation switching (Dropdown Menu Items)
   const menuTabTracker = document.getElementById('menu-tab-tracker');
   const menuTabStats = document.getElementById('menu-tab-stats');
   const menuTabProfile = document.getElementById('menu-tab-profile');
-  const menuTabAdmin = document.getElementById('menu-tab-admin');
-  
+
   const viewTracker = document.getElementById('view-tracker');
   const viewStats = document.getElementById('view-stats');
   const viewProfile = document.getElementById('view-profile');
-  const viewAdmin = document.getElementById('view-admin');
 
-  if (menuTabTracker && menuTabStats && menuTabProfile && menuTabAdmin && viewTracker && viewStats && viewProfile && viewAdmin) {
+  if (menuTabTracker && menuTabStats && menuTabProfile && viewTracker && viewStats && viewProfile) {
     menuTabTracker.addEventListener('click', () => {
       menuTabTracker.classList.add('active');
       menuTabStats.classList.remove('active');
       menuTabProfile.classList.remove('active');
-      menuTabAdmin.classList.remove('active');
       viewTracker.style.display = 'flex';
       viewStats.style.display = 'none';
       viewProfile.style.display = 'none';
-      viewAdmin.style.display = 'none';
     });
 
     menuTabStats.addEventListener('click', () => {
       menuTabStats.classList.add('active');
       menuTabTracker.classList.remove('active');
       menuTabProfile.classList.remove('active');
-      menuTabAdmin.classList.remove('active');
       viewTracker.style.display = 'none';
       viewStats.style.display = 'flex';
       viewProfile.style.display = 'none';
-      viewAdmin.style.display = 'none';
 
       // Re-trigger graphs draw on tab show
       if (state.currentUser && state.currentRecord) {
@@ -208,24 +272,10 @@ function initApp(): void {
       menuTabProfile.classList.add('active');
       menuTabTracker.classList.remove('active');
       menuTabStats.classList.remove('active');
-      menuTabAdmin.classList.remove('active');
       viewTracker.style.display = 'none';
       viewStats.style.display = 'none';
       viewProfile.style.display = 'block';
-      viewAdmin.style.display = 'none';
       renderProfilePage();
-    });
-
-    menuTabAdmin.addEventListener('click', () => {
-      menuTabAdmin.classList.add('active');
-      menuTabTracker.classList.remove('active');
-      menuTabStats.classList.remove('active');
-      menuTabProfile.classList.remove('active');
-      viewTracker.style.display = 'none';
-      viewStats.style.display = 'none';
-      viewProfile.style.display = 'none';
-      viewAdmin.style.display = 'flex';
-      renderAdminPage();
     });
   }
 }
@@ -236,7 +286,7 @@ window.addEventListener('DOMContentLoaded', initApp);
 export function applyUserTheme(themeName: string | undefined): void {
   // Remove all custom theme classes
   document.body.classList.remove('theme-matcha', 'theme-chocolate', 'theme-sakura', 'theme-blueberry', 'dark-theme');
-  
+
   if (themeName === 'matcha') {
     document.body.classList.add('theme-matcha');
   } else if (themeName === 'chocolate') {
@@ -248,8 +298,5 @@ export function applyUserTheme(themeName: string | undefined): void {
     document.body.classList.add('theme-blueberry');
   } else if (themeName === 'espresso') {
     document.body.classList.add('dark-theme');
-  } else {
-    // Default or cappuccino - defaults to light cappuccino
-    // no additional class needed
   }
 }

@@ -1,7 +1,7 @@
 export interface User {
   id?: string;
   username: string;
-  passwordHash: string; // Stored simply for mock auth purposes
+  passwordHash?: string;
   email: string;
   fullName: string;
   gender: string; // e.g. male, female, other, unknown
@@ -11,6 +11,14 @@ export interface User {
   role?: string;
   avatar?: string;
   theme?: string;
+  lang?: 'vi' | 'en';
+  selectedYear?: number;
+  selectedMonth?: number;
+  pomoSettings?: {
+    work: number;
+    short: number;
+    long: number;
+  };
 }
 
 export interface Habit {

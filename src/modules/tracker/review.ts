@@ -154,7 +154,9 @@ export function renderMemoryBook(): void {
   const lang = state.currentLang;
   const monthLabel = lang === 'vi' ? `Tháng ${state.currentMonth + 1}` : MONTH_NAMES[state.currentMonth];
 
-  if (!review) {
+  const hasReviewContent = !!(review && (review.completedAt || review.q1 || review.q2 || review.q3));
+
+  if (!hasReviewContent) {
     // If not reviewed yet
     container.innerHTML = `
       <div style="grid-column: 1 / -1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 30px 20px; background:var(--bg-widget); border:1px dashed var(--border-color-dark); border-radius:var(--radius-md); gap:12px;">

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lịch Lớp Học (Outlook style) - Lịch Trình Tracker</title>
-  <link rel="stylesheet" href="/public/calendar.css">
+  <link rel="stylesheet" href="/calendar.css">
 </head>
 <body>
 
@@ -16,6 +16,7 @@
     </div>
     
     <div class="header-right">
+      <span id="mongodb-sync-badge" style="font-size: 11px; font-weight: 700; color: #34d399; background: rgba(52, 211, 153, 0.14); padding: 4px 10px; border-radius: 12px; display: inline-flex; align-items: center; gap: 4px;">☁️ Đã lưu MongoDB</span>
       <span id="user-greeting-display" style="font-size:12px; font-weight:600; color:#cbd5e1;"></span>
       <a href="/index.html" class="header-btn">📅 Về trang chính (Lịch Trình)</a>
       <button class="header-btn" id="outlook-theme-toggle">☀️ Sáng/Tối</button>
@@ -70,11 +71,6 @@
       <button class="toolbar-btn" id="btn-open-guide">
         📖 Hướng dẫn nhanh (Quick Guide)
       </button>
-      <div class="toolbar-divider"></div>
-      <!-- Contact Admin -->
-      <a href="/index.html" class="toolbar-btn" style="text-decoration: none; color: inherit; display: flex; align-items: center;">
-        💬 Nhắn tin hỗ trợ (Contact Support)
-      </a>
       <div class="toolbar-divider"></div>
       <!-- Reset Calendar Events -->
       <button class="toolbar-btn" id="btn-reset-events" style="color: #ef4444; font-weight: 600;">

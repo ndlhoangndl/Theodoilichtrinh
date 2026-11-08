@@ -12,6 +12,14 @@ const userSchema = new mongoose.Schema({
   role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
   avatar: { type: String, default: '' },
   theme: { type: String, default: 'default' },
+  lang: { type: String, default: 'vi' },
+  selectedYear: { type: Number, default: null },
+  selectedMonth: { type: Number, default: null },
+  pomoSettings: {
+    work: { type: Number, default: 25 },
+    short: { type: Number, default: 5 },
+    long: { type: Number, default: 15 }
+  },
   createdAt: { type: Date, default: Date.now },
   resetCode: { type: String, default: null },
   resetCodeExpires: { type: Date, default: null }

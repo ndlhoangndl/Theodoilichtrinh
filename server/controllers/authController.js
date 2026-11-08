@@ -1,60 +1,52 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
-import transporter from '../config/nodemailer.js';
+import { OWNER_USERNAME, ensurePersonalOwner } from '../config/db.js';
 
-// POST /api/auth/register
-export const register = async (req, res) => {
+function formatUserResponse(user) {
+  return {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    fullName: user.fullName,
+    gender: user.gender,
+    dob: user.dob,
+    country: user.country || 'Vietnam',
+    bio: user.bio || '',
+    avatar: user.avatar || '',
+    theme: user.theme || 'cappuccino',
+    lang: user.lang || 'vi',
+    selectedYear: user.selectedYear || null,
+    selectedMonth: user.selectedMonth !== undefined ? user.selectedMonth : null,
+    geminiKey: user.geminiKey || '',
+    pomoSettings: user.pomoSettings || { work: 25, short: 5, long: 15 },
+    role: user.role || 'ADMIN'
+  };
+}
+
+// GET /api/auth/owner
+export const getOwnerProfile = async (req, res) => {
   try {
-    const { username, password, email, fullName, gender, dob } = req.body;
-    
-    if (!username || !password || !email || !fullName || !gender || !dob) {
-      return res.status(400).json({ message: 'All fields are required' });
+    let user = await User.findOne({ username: OWNER_USERNAME });
+    if (!user) {
+      user = await ensurePersonalOwner();
+    }
+    if (!user) {
+      return res.status(404).json({ message: 'Owner profile not found' });
     }
 
-    const trimmedUsername = username.trim().toLowerCase();
+    const token = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET || 'lichtrinh_secret',
+      { expiresIn: '365d' }
+    );
 
-    // Username validation: 4-20 characters, alphanumeric or underscore, no icons/emojis
-    const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
-    if (!usernameRegex.test(trimmedUsername)) {
-      return res.status(400).json({ 
-        message: 'Username must be 4-20 characters, containing only letters, numbers, or underscores, and no icons/special characters.' 
-      });
-    }
-
-    // Password validation: 6-30 characters, standard keyboard characters only, no icons/emojis
-    const passwordRegex = /^[\x21-\x7E]{6,30}$/;
-    if (!passwordRegex.test(password)) {
-      return res.status(400).json({ 
-        message: 'Password must be 6-30 characters, containing only standard keyboard characters, and no icons.' 
-      });
-    }
-
-    const existingUser = await User.findOne({ username: trimmedUsername });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Username is already taken' });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    // Auto-assign ADMIN role to ndlhoangndl
-    const role = trimmedUsername === 'ndlhoangndl' ? 'ADMIN' : 'USER';
-
-    const newUser = new User({
-      username: trimmedUsername,
-      passwordHash,
-      email,
-      fullName,
-      gender,
-      dob,
-      role
+    res.json({
+      token,
+      user: formatUserResponse(user)
     });
-
-    await newUser.save();
-    res.status(201).json({ message: 'Registration successful' });
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Get owner profile error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -63,7 +55,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    
+
     if (!username || !password) {
       return res.status(400).json({ message: 'Username and password are required' });
     }
@@ -80,25 +72,13 @@ export const login = async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, username: user.username, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '30d' }
+      process.env.JWT_SECRET || 'lichtrinh_secret',
+      { expiresIn: '365d' }
     );
 
     res.json({
       token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        fullName: user.fullName,
-        gender: user.gender,
-        dob: user.dob,
-        country: user.country,
-        bio: user.bio,
-        avatar: user.avatar || '',
-        theme: user.theme || 'default',
-        role: user.role
-      }
+      user: formatUserResponse(user)
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -109,37 +89,47 @@ export const login = async (req, res) => {
 // POST /api/auth/update-profile
 export const updateProfile = async (req, res) => {
   try {
-    const { fullName, email, gender, dob, country, bio, avatar, theme } = req.body;
-    
-    const user = await User.findById(req.user.id);
+    const {
+      fullName,
+      email,
+      gender,
+      dob,
+      country,
+      bio,
+      avatar,
+      theme,
+      lang,
+      selectedYear,
+      selectedMonth,
+      geminiKey,
+      pomoSettings
+    } = req.body;
+
+    let user = await User.findById(req.user.id);
+    if (!user) {
+      user = await User.findOne({ username: OWNER_USERNAME });
+    }
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    user.fullName = fullName || user.fullName;
-    user.email = email || user.email;
-    user.gender = gender || user.gender;
-    user.dob = dob || user.dob;
-    user.country = country !== undefined ? country : user.country;
-    user.bio = bio !== undefined ? bio : user.bio;
-    user.avatar = avatar !== undefined ? avatar : user.avatar;
-    user.theme = theme !== undefined ? theme : user.theme;
+    if (fullName !== undefined) user.fullName = fullName || user.fullName;
+    if (email !== undefined) user.email = email || user.email;
+    if (gender !== undefined) user.gender = gender || user.gender;
+    if (dob !== undefined) user.dob = dob || user.dob;
+    if (country !== undefined) user.country = country;
+    if (bio !== undefined) user.bio = bio;
+    if (avatar !== undefined) user.avatar = avatar;
+    if (theme !== undefined) user.theme = theme;
+    if (lang !== undefined) user.lang = lang;
+    if (selectedYear !== undefined) user.selectedYear = selectedYear;
+    if (selectedMonth !== undefined) user.selectedMonth = selectedMonth;
+    if (geminiKey !== undefined) user.geminiKey = geminiKey;
+    if (pomoSettings !== undefined) user.pomoSettings = pomoSettings;
 
     await user.save();
-    
+
     res.json({
       message: 'Profile updated successfully',
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        fullName: user.fullName,
-        gender: user.gender,
-        dob: user.dob,
-        country: user.country,
-        bio: user.bio,
-        avatar: user.avatar || '',
-        theme: user.theme || 'default',
-        role: user.role
-      }
+      user: formatUserResponse(user)
     });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -151,15 +141,14 @@ export const updateProfile = async (req, res) => {
 export const changePassword = async (req, res) => {
   try {
     const { oldPassword, newPassword } = req.body;
-    
-    // Password validation: 6-30 characters, standard keyboard characters only, no icons
+
     const passwordRegex = /^[\x21-\x7E]{6,30}$/;
     if (!passwordRegex.test(newPassword)) {
-      return res.status(400).json({ 
-        message: 'New password must be 6-30 characters, containing only standard keyboard characters, and no icons.' 
+      return res.status(400).json({
+        message: 'New password must be 6-30 characters, containing only standard keyboard characters, and no icons.'
       });
     }
-    
+
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
@@ -175,114 +164,6 @@ export const changePassword = async (req, res) => {
     res.json({ message: 'Password changed successfully' });
   } catch (error) {
     console.error('Change password error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// POST /api/auth/forgot-password
-export const forgotPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-
-    const user = await User.findOne({ email: email.trim().toLowerCase() });
-    if (!user) {
-      return res.json({ message: 'Mã xác nhận đặt lại mật khẩu đã được gửi (nếu email tồn tại trong hệ thống).' });
-    }
-
-    // Generate 6-digit verification code
-    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
-    user.resetCode = resetCode;
-    user.resetCodeExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
-    await user.save();
-
-    // Try sending real email
-    let sentRealEmail = false;
-    if (transporter) {
-      try {
-        const mailOptions = {
-          from: `"Lịch Trình Tracker" <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: 'Mã xác nhận đặt lại mật khẩu - Lịch Trình Tracker',
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
-              <h2 style="color: #6d4c41; text-align: center;">Yêu cầu đặt lại mật khẩu</h2>
-              <p>Chào bạn <strong>${user.fullName}</strong>,</p>
-              <p>Hệ thống nhận được yêu cầu đặt lại mật khẩu từ tài khoản của bạn (<strong>@${user.username}</strong>).</p>
-              <p>Mã xác thực của bạn là:</p>
-              <div style="text-align: center; margin: 20px 0;">
-                <span style="font-size: 24px; font-weight: bold; background: #efebe9; color: #5d4037; padding: 10px 20px; border-radius: 6px; letter-spacing: 4px;">
-                  ${resetCode}
-                </span>
-              </div>
-              <p style="color: #888; font-size: 12px;">Mã xác thực này sẽ hết hạn trong vòng 15 phút. Vui lòng không chia sẻ mã này cho bất kỳ ai.</p>
-              <hr style="border: 0; border-top: 1px solid #eee;" />
-              <p style="font-size: 11px; color: #aaa; text-align: center;">Lịch Trình Tracker - 📅 Trình theo dõi kỷ luật & thói quen</p>
-            </div>
-          `
-        };
-        await transporter.sendMail(mailOptions);
-        sentRealEmail = true;
-        console.log(`Password reset email sent successfully to ${user.email}`);
-      } catch (mailError) {
-        console.error('Error sending reset email via Nodemailer:', mailError);
-      }
-    }
-
-    // Console mock print (crucial for local testing)
-    if (!sentRealEmail) {
-      console.log('\n=============================================================');
-      console.log(`[MOCK EMAIL LOG] Password reset code for user @${user.username} (${user.email}) is: ${resetCode}`);
-      console.log('=============================================================\n');
-    }
-
-    res.json({ message: 'Mã xác nhận đặt lại mật khẩu đã được gửi đến email của bạn!' });
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// POST /api/auth/reset-password
-export const resetPassword = async (req, res) => {
-  try {
-    const { email, code, newPassword } = req.body;
-    if (!email || !code || !newPassword) {
-      return res.status(400).json({ message: 'All fields (email, code, new password) are required' });
-    }
-
-    // Password validation: 6-30 characters, standard keyboard characters only, no icons
-    const passwordRegex = /^[\x21-\x7E]{6,30}$/;
-    if (!passwordRegex.test(newPassword)) {
-      return res.status(400).json({ 
-        message: 'New password must be 6-30 characters, containing only standard keyboard characters, and no icons.' 
-      });
-    }
-
-    const user = await User.findOne({ 
-      email: email.trim().toLowerCase(),
-      resetCode: code.trim(),
-      resetCodeExpires: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: 'Mã xác thực không hợp lệ hoặc đã hết hạn.' });
-    }
-
-    // Encrypt and save new password
-    const salt = await bcrypt.genSalt(10);
-    user.passwordHash = await bcrypt.hash(newPassword, salt);
-    
-    // Clear code and expire time
-    user.resetCode = null;
-    user.resetCodeExpires = null;
-    await user.save();
-
-    res.json({ message: 'Đặt lại mật khẩu thành công! Bạn có thể dùng mật khẩu mới để đăng nhập.' });
-  } catch (error) {
-    console.error('Reset password error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

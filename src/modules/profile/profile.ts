@@ -1,11 +1,8 @@
-import { updateUser, createSession, clearSession } from '../../services/storage';
+import { updateUser, createSession } from '../../services/storage';
 import { state } from '../common/state';
 import { TRANSLATIONS, translateUI } from '../common/translations';
-import { showConfirm } from '../common/confirm';
 import { renderAll } from '../tracker/tracker';
 import { apiUpdateProfile, apiChangePassword } from '../../services/api';
-import { refreshUserChat } from '../chat/userChat';
-import { refreshAdminChat } from '../chat/adminChat';
 
 // Render Profile Page details (SONICLE layout)
 export function renderProfilePage(): void {
@@ -71,49 +68,6 @@ export function renderProfilePage(): void {
   if (valCountry) valCountry.textContent = country;
   if (valDob) valDob.textContent = dob;
   if (valRole) valRole.textContent = role;
-
-  // Load saved Gemini API key
-  const inputGeminiKey = document.getElementById('input-gemini-key') as HTMLInputElement;
-  if (inputGeminiKey) {
-    inputGeminiKey.value = localStorage.getItem('LICHTRINH_GEMINI_KEY') || '';
-  }
-}
-
-// Log out user cleanly with confirm
-export async function logoutUser(): Promise<void> {
-  const confirmed = await showConfirm(TRANSLATIONS[state.currentLang].confirm_logout);
-  if (confirmed) {
-    clearSession();
-    state.currentUser = null;
-    
-    const dashboardContainer = document.getElementById('dashboard-container') as HTMLElement;
-    const authContainer = document.getElementById('auth-container') as HTMLElement;
-    const registerView = document.getElementById('auth-register-view') as HTMLElement;
-    const loginView = document.getElementById('auth-login-view') as HTMLElement;
-    
-    if (dashboardContainer) dashboardContainer.style.display = 'none';
-    if (authContainer) authContainer.style.display = 'flex';
-    if (registerView) registerView.style.display = 'none';
-    if (loginView) loginView.style.display = 'block';
-    
-    // Reset active tabs on logout
-    const tabTracker = document.getElementById('menu-tab-tracker');
-    const tabStats = document.getElementById('menu-tab-stats');
-    const tabProfile = document.getElementById('menu-tab-profile');
-    const viewTracker = document.getElementById('view-tracker');
-    const viewStats = document.getElementById('view-stats');
-    const viewProfile = document.getElementById('view-profile');
-    
-    if (tabTracker) tabTracker.classList.add('active');
-    if (tabStats) tabStats.classList.remove('active');
-    if (tabProfile) tabProfile.classList.remove('active');
-    if (viewTracker) viewTracker.style.display = 'flex';
-    if (viewStats) viewStats.style.display = 'none';
-    if (viewProfile) viewProfile.style.display = 'none';
-
-    refreshUserChat();
-    refreshAdminChat();
-  }
 }
 
 // Bind Profile Customization Modal actions
@@ -258,41 +212,6 @@ export function initProfile(): void {
       });
     }
   }
-
-  // Logout from profile tab
-  const btnProfileLogout = document.getElementById('btn-profile-logout');
-  if (btnProfileLogout) {
-    btnProfileLogout.addEventListener('click', () => {
-      logoutUser();
-    });
-  }
-
-  // Save Gemini API Key
-  const btnSaveGeminiKey = document.getElementById('btn-save-gemini-key');
-  const inputGeminiKey = document.getElementById('input-gemini-key') as HTMLInputElement;
-  if (btnSaveGeminiKey && inputGeminiKey) {
-    btnSaveGeminiKey.addEventListener('click', () => {
-      const key = inputGeminiKey.value.trim();
-      if (key) {
-        localStorage.setItem('LICHTRINH_GEMINI_KEY', key);
-      } else {
-        localStorage.removeItem('LICHTRINH_GEMINI_KEY');
-      }
-      alert(TRANSLATIONS[state.currentLang].alert_gemini_key_saved);
-      
-      // Update UI button immediately in case the coach panel needs to hide or show
-      const btnAskGemini = document.getElementById('btn-ask-gemini');
-      if (btnAskGemini) {
-        if (key) {
-          btnAskGemini.style.display = 'flex';
-        } else {
-          btnAskGemini.style.display = 'none';
-        }
-      }
-    });
-  }
-
-
 
   // Avatar Customizer temporary state
   let tempAvatar = '';
