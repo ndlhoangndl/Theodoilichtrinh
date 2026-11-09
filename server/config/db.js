@@ -1,7 +1,15 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import User from '../models/User.js';
 import Habit from '../models/Habit.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config();
 
 export const OWNER_USERNAME = 'ndlhoangndl';
 
@@ -19,7 +27,18 @@ const DEFAULT_HABITS = [
   { id: 'h11', name: 'Ngủ trước 23:00', emoji: '💤' }
 ];
 
+let connectionPromise = null;
+let ownerInitialized = false;
+
 export const connectDB = async () => {
+  if (mongoose.connection.readyState === 1 && ownerInitialized) {
+    return mongoose.connection;
+  }
+
+  if (connectionPromise) {
+    return connectionPromise;
+  }
+
   let connectionUri = process.env.MONGODB_URI;
 
   if (connectionUri) {
@@ -37,7 +56,7 @@ export const connectDB = async () => {
             const username = credentials.substring(0, colonIndex);
             const password = credentials.substring(colonIndex + 1);
             const encodedPassword = password.includes('%') ? password : encodeURIComponent(password);
-            connectionUri = `${protocol}${username}:${encodedPassword}@${lastAtIndex !== -1 ? hostInfo : ''}`;
+            connectionUri = `${protocol}${username}:${encodedPassword}@${hostInfo}`;
           }
         }
       }
@@ -46,14 +65,25 @@ export const connectDB = async () => {
     }
   }
 
-  try {
-    await mongoose.connect(connectionUri, { family: 4 });
-    console.log('Successfully connected to MongoDB Atlas!');
-    await ensurePersonalOwner();
-  } catch (err) {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-  }
+  connectionPromise = (async () => {
+    try {
+      if (mongoose.connection.readyState !== 1) {
+        await mongoose.connect(connectionUri, { family: 4 });
+        console.log('Successfully connected to MongoDB Atlas!');
+      }
+      if (!ownerInitialized) {
+        await ensurePersonalOwner();
+        ownerInitialized = true;
+      }
+      return mongoose.connection;
+    } catch (err) {
+      connectionPromise = null;
+      console.error('MongoDB connection error:', err);
+      throw err;
+    }
+  })();
+
+  return connectionPromise;
 };
 
 export const ensurePersonalOwner = async () => {

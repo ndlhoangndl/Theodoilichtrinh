@@ -2,7 +2,9 @@ import { User, Habit, MonthRecord } from '../types/types';
 import { CalendarEvent } from '../modules/calendar/eventStorage';
 import { CalendarTask } from '../modules/calendar/taskStorage';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.PROD
+  ? '/api'
+  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api');
 
 // Helper to get token
 export function getToken(): string | null {
