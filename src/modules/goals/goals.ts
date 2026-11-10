@@ -1,4 +1,4 @@
-import { state } from '../common/state';
+﻿import { state } from '../common/state';
 import { TRANSLATIONS } from '../common/translations';
 import { saveRecord } from '../../services/storage';
 import { triggerConfetti } from '../../utils/confetti';
@@ -165,6 +165,18 @@ export function initGoals(): void {
     });
   }
 
+  // Weekly focus (theme of the week) auto-save
+  const inputWeeklyFocus = document.getElementById('input-weekly-focus') as HTMLInputElement | null;
+  if (inputWeeklyFocus) {
+    inputWeeklyFocus.addEventListener('input', () => {
+      if (!state.currentUser || !state.currentRecord) return;
+      if (!state.currentRecord.weeklyFocus) {
+        state.currentRecord.weeklyFocus = {};
+      }
+      state.currentRecord.weeklyFocus[state.currentGoalWeek.toString()] = inputWeeklyFocus.value;
+      saveRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.currentRecord);
+    });
+  }
   // Tab switcher in merged goals panel
   const btnMonth = document.getElementById('goals-tab-btn-month');
   const btnWeek = document.getElementById('goals-tab-btn-week');
@@ -232,6 +244,10 @@ export function renderWeeklyGoalsWeekSelect(): void {
 
 export function renderWeeklyGoalsList(): void {
   if (!state.currentUser || !state.currentRecord) return;
+  const inputWeeklyFocus = document.getElementById('input-weekly-focus') as HTMLInputElement | null;
+  if (inputWeeklyFocus && document.activeElement !== inputWeeklyFocus) {
+    inputWeeklyFocus.value = state.currentRecord.weeklyFocus?.[state.currentGoalWeek.toString()] || '';
+  }
   const listContainer = document.getElementById('weekly-goals-list-container');
   const ratioLabel = document.getElementById('weekly-goals-progress-ratio');
 

@@ -1,8 +1,8 @@
-import { state } from './modules/common/state';
+﻿import { state } from './modules/common/state';
 import { translateUI } from './modules/common/translations';
-import { initProfile, renderProfilePage } from './modules/profile/profile';
 import { setupJournalPanel, initJournalPrompts } from './modules/journal/journal';
 import { initGoals } from './modules/goals/goals';
+import { initDailyPlan } from './modules/tracker/dailyPlan';
 import { initHabits } from './modules/tracker/habits';
 import { initTracker, initializeState, renderAll, calculateStats } from './modules/tracker/tracker';
 import { initConfirmOverlay } from './modules/common/confirm';
@@ -21,9 +21,7 @@ import { apiGetOwnerProfile, apiUpdateProfile, setToken } from './services/api';
 import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
-  drawOverallDonutChart,
-  drawMoodMotivationTrendChart
-} from './services/charts';
+  drawOverallDonutChart } from './services/charts';
 
 function setupPasswordToggles(): void {
   const toggleBtns = document.querySelectorAll('.password-toggle-btn');
@@ -117,10 +115,10 @@ function initApp(): void {
   if (dashboardContainer) dashboardContainer.style.display = 'block';
 
   setupPasswordToggles();
-  initProfile();
   initGoals();
   initHabits();
   initTracker();
+  initDailyPlan();
   initConfirmOverlay();
   initGarden();
   initJournalPrompts();
@@ -227,60 +225,40 @@ function initApp(): void {
         drawDailyProgressChart(stats.dailyCompletionRates);
         drawWeeklyProgressChart(stats.weeklyCompletionRates);
         drawOverallDonutChart(stats.completionRate, stats.totalCompleted, stats.totalLeft);
-        drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
       }
     });
   }
 
-  // Tabs Navigation switching (Dropdown Menu Items)
-  const menuTabTracker = document.getElementById('menu-tab-tracker');
-  const menuTabStats = document.getElementById('menu-tab-stats');
-  const menuTabProfile = document.getElementById('menu-tab-profile');
+  // Main tabs navigation (Hôm nay / Mục tiêu / Nhật ký / Thói quen / Thống kê / Cá nhân)
+  const tabButtons = document.querySelectorAll<HTMLButtonElement>('.main-tab-btn');
+  const tabViews = document.querySelectorAll<HTMLElement>('.tab-view');
 
-  const viewTracker = document.getElementById('view-tracker');
-  const viewStats = document.getElementById('view-stats');
-  const viewProfile = document.getElementById('view-profile');
-
-  if (menuTabTracker && menuTabStats && menuTabProfile && viewTracker && viewStats && viewProfile) {
-    menuTabTracker.addEventListener('click', () => {
-      menuTabTracker.classList.add('active');
-      menuTabStats.classList.remove('active');
-      menuTabProfile.classList.remove('active');
-      viewTracker.style.display = 'flex';
-      viewStats.style.display = 'none';
-      viewProfile.style.display = 'none';
+  const showTab = (viewId: string): void => {
+    tabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.view === viewId));
+    tabViews.forEach(view => {
+      view.style.display = view.id === viewId ? 'flex' : 'none';
     });
+    localStorage.setItem('LICHTRINH_ACTIVE_TAB', viewId);
 
-    menuTabStats.addEventListener('click', () => {
-      menuTabStats.classList.add('active');
-      menuTabTracker.classList.remove('active');
-      menuTabProfile.classList.remove('active');
-      viewTracker.style.display = 'none';
-      viewStats.style.display = 'flex';
-      viewProfile.style.display = 'none';
+    if (viewId === 'view-stats' && state.currentUser && state.currentRecord) {
+      const stats = calculateStats();
+      drawDailyProgressChart(stats.dailyCompletionRates);
+      drawWeeklyProgressChart(stats.weeklyCompletionRates);
+      drawOverallDonutChart(stats.completionRate, stats.totalCompleted, stats.totalLeft);
+    } else if (viewId === 'view-journal') {
+      setupJournalPanel();
+    }
+  };
 
-      // Re-trigger graphs draw on tab show
-      if (state.currentUser && state.currentRecord) {
-        const stats = calculateStats();
-        drawDailyProgressChart(stats.dailyCompletionRates);
-        drawWeeklyProgressChart(stats.weeklyCompletionRates);
-        drawOverallDonutChart(stats.completionRate, stats.totalCompleted, stats.totalLeft);
-        drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
-      }
-    });
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => showTab(btn.dataset.view || 'view-tracker'));
+  });
 
-    menuTabProfile.addEventListener('click', () => {
-      menuTabProfile.classList.add('active');
-      menuTabTracker.classList.remove('active');
-      menuTabStats.classList.remove('active');
-      viewTracker.style.display = 'none';
-      viewStats.style.display = 'none';
-      viewProfile.style.display = 'block';
-      renderProfilePage();
-    });
+  const savedTab = localStorage.getItem('LICHTRINH_ACTIVE_TAB');
+  if (savedTab && document.getElementById(savedTab)) {
+    showTab(savedTab);
   }
 }
-
 // Start execution when DOM is ready
 window.addEventListener('DOMContentLoaded', initApp);
 

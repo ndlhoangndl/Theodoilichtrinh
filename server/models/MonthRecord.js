@@ -33,7 +33,36 @@ const monthRecordSchema = new mongoose.Schema({
     completedAt: { type: String, default: '' }
   },
   notes: { type: Map, of: [String], default: {} },
-  selectedSeed: { type: String, default: 'oak' }
+  selectedSeed: { type: String, default: 'oak' },
+  weeklyFocus: { type: Map, of: String, default: {} },
+  dailyPlans: {
+    type: Map,
+    of: new mongoose.Schema(
+      {
+        focus: { type: String, default: '' },
+        timeBlocks: [
+          {
+            id: { type: String, required: true },
+            startTime: { type: String, required: true },
+            endTime: { type: String, required: true },
+            title: { type: String, required: true },
+            category: { type: String, default: 'work' },
+            completed: { type: Boolean, default: false }
+          }
+        ],
+        goals: [
+          {
+            id: { type: String, required: true },
+            text: { type: String, required: true },
+            completed: { type: Boolean, default: false },
+            pinned: { type: Boolean, default: false }
+          }
+        ]
+      },
+      { _id: false }
+    ),
+    default: {}
+  }
 });
 
 // Composite unique index on userId + year + month

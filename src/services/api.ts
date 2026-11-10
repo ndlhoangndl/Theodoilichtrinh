@@ -1,6 +1,4 @@
-import { User, Habit, MonthRecord } from '../types/types';
-import { CalendarEvent } from '../modules/calendar/eventStorage';
-import { CalendarTask } from '../modules/calendar/taskStorage';
+﻿import { User, Habit, MonthRecord } from '../types/types';
 
 const API_BASE_URL = import.meta.env.PROD
   ? '/api'
@@ -14,11 +12,6 @@ export function getToken(): string | null {
 // Helper to set token
 export function setToken(token: string): void {
   localStorage.setItem('LICHTRINH_TOKEN', token);
-}
-
-// Helper to clear token
-export function clearToken(): void {
-  localStorage.removeItem('LICHTRINH_TOKEN');
 }
 
 // Update MongoDB Sync status badge in UI
@@ -74,24 +67,10 @@ export async function apiGetOwnerProfile(): Promise<{ token: string; user: User 
   return request('/auth/owner', { method: 'GET' });
 }
 
-export async function apiLogin(username: string, password: string): Promise<{ token: string; user: User }> {
-  return request('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password })
-  });
-}
-
 export async function apiUpdateProfile(user: Partial<User>): Promise<{ user: User }> {
   return request('/auth/update-profile', {
     method: 'POST',
     body: JSON.stringify(user)
-  }, true);
-}
-
-export async function apiChangePassword(oldPassword: string, newPassword: string): Promise<any> {
-  return request('/auth/change-password', {
-    method: 'POST',
-    body: JSON.stringify({ oldPassword, newPassword })
   }, true);
 }
 
@@ -116,23 +95,5 @@ export async function apiSaveRecord(year: number, month: number, record: MonthRe
   return request(`/tracker/record/${year}/${month}`, {
     method: 'POST',
     body: JSON.stringify({ record })
-  }, true);
-}
-
-export async function apiGetCalendarData(): Promise<{ events: CalendarEvent[] | null; tasks: CalendarTask[] | null }> {
-  return request('/tracker/calendar');
-}
-
-export async function apiSaveCalendarEvents(events: CalendarEvent[]): Promise<any> {
-  return request('/tracker/calendar/events', {
-    method: 'POST',
-    body: JSON.stringify({ events })
-  }, true);
-}
-
-export async function apiSaveCalendarTasks(tasks: CalendarTask[]): Promise<any> {
-  return request('/tracker/calendar/tasks', {
-    method: 'POST',
-    body: JSON.stringify({ tasks })
   }, true);
 }

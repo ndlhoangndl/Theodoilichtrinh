@@ -1,4 +1,4 @@
-import { User, Habit, MonthRecord } from '../types/types';
+﻿import { User, Habit, MonthRecord } from '../types/types';
 import { getDaysInMonth } from '../utils/calendar';
 import { apiGetHabits, apiSaveHabits, apiGetRecord, apiSaveRecord, apiUpdateProfile } from './api';
 
@@ -25,28 +25,12 @@ export const DEFAULT_OWNER_USER: User = {
 
 // ---------------- PERSONAL OWNER SESSION OPERATIONS ----------------
 
-export function getUsers(): User[] {
-  const usersRaw = localStorage.getItem(KEY_USERS);
-  if (usersRaw) {
-    try {
-      return JSON.parse(usersRaw);
-    } catch (e) {
-      console.error('Error parsing users list', e);
-    }
-  }
-  return [DEFAULT_OWNER_USER];
-}
-
 export function updateUser(user: User): void {
   localStorage.setItem(KEY_USERS, JSON.stringify([user]));
 }
 
 export function createSession(user: User): void {
   localStorage.setItem(KEY_SESSION, JSON.stringify(user));
-}
-
-export function clearSession(): void {
-  localStorage.removeItem(KEY_SESSION);
 }
 
 export function getCurrentSession(): User {
@@ -210,6 +194,14 @@ export function loadRecord(username: string, year: number, month: number, habits
         record.selectedSeed = 'oak';
       }
 
+      if (!record.dailyPlans) {
+        record.dailyPlans = {};
+      }
+
+      if (!record.weeklyFocus) {
+        record.weeklyFocus = {};
+      }
+
       return record;
     } catch (e) {
       console.error(`Error parsing MonthRecord for ${username}`, e);
@@ -232,6 +224,8 @@ export function loadRecord(username: string, year: number, month: number, habits
     diary: new Array(daysCount).fill(''),
     goals: [],
     weeklyGoals: [],
+    weeklyFocus: {},
+    dailyPlans: {},
     wateredDays: [],
     selectedSeed: 'oak'
   };

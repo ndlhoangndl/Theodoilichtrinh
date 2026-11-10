@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+﻿import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 export default defineConfig({
@@ -6,7 +6,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        calendar: resolve(__dirname, 'calendar.html'),
       },
     },
   },

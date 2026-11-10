@@ -9,7 +9,8 @@ export const state = {
   currentLang: 'vi' as 'vi' | 'en',
   currentGoalWeek: 0,
   isCompactGrid: false,
-  selectedWeekIdx: 0
+  selectedWeekIdx: 0,
+  selectedDayIdx: 0
 };
 
 // Default list of seed habits

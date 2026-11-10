@@ -2697,3 +2697,33 @@ body.theme-blueberry {
 
 
 
+
+/* ===== Main navigation tabs ===== */
+.main-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  margin: 0 0 16px 0;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 12px);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.main-tabs::-webkit-scrollbar { display: none; }
+.main-tab-btn {
+  flex: 1 0 auto;
+  padding: 9px 16px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: var(--radius-sm, 8px);
+  transition: all 0.2s ease;
+}
+.main-tab-btn:hover { background: var(--bg-selected); color: var(--text-main); }
+.main-tab-btn.active { background: var(--bg-header); color: var(--text-light); }

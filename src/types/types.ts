@@ -27,6 +27,28 @@ export interface Habit {
   emoji: string;
 }
 
+export interface DailyTimeBlock {
+  id: string;
+  startTime: string; // HH:MM
+  endTime: string;   // HH:MM
+  title: string;
+  category: 'work' | 'study' | 'health' | 'personal';
+  completed: boolean;
+}
+
+export interface DailyGoalItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  pinned?: boolean;
+}
+
+export interface DayPlan {
+  focus?: string;
+  timeBlocks: DailyTimeBlock[];
+  goals: DailyGoalItem[];
+}
+
 export interface MonthRecord {
   year: number;
   month: number; // 0-11
@@ -41,6 +63,10 @@ export interface MonthRecord {
   goals: { id: string; text: string; completed: boolean; pinned?: boolean }[];
   // Checklist for custom weekly targets
   weeklyGoals?: { id: string; weekIndex: number; text: string; completed: boolean; pinned?: boolean }[];
+  // Weekly focus/theme per weekIndex ("0".."4")
+  weeklyFocus?: Record<string, string>;
+  // Daily specific schedule (time-blocks) & daily goals per dayIndex ("0".."30")
+  dailyPlans?: Record<string, DayPlan>;
   // Tracked days of the month when the user watered the plant
   wateredDays?: number[];
   // Optional monthly reflection review data

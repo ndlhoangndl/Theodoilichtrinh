@@ -1,4 +1,4 @@
-import { state, WEEK_DAYS_VN, WEEK_DAYS_EN } from '../common/state';
+﻿import { state, WEEK_DAYS_VN, WEEK_DAYS_EN } from '../common/state';
 import { HabitStats, MonthRecord, Habit } from '../../types/types';
 import { MONTH_NAMES, getDaysInMonth, getDayOfWeek } from '../../utils/calendar';
 import { loadHabits, loadRecord, loadSelectedDate, saveSelectedDate, saveRecord, syncRecordFromServer } from '../../services/storage';
@@ -6,11 +6,11 @@ import {
   drawDailyProgressChart,
   drawWeeklyProgressChart,
   drawOverallDonutChart,
-  drawMoodMotivationTrendChart
 } from '../../services/charts';
 import { triggerConfetti } from '../../utils/confetti';
 import { showConfirm } from '../common/confirm';
 import { renderGoalsList, renderWeeklyGoalsWeekSelect, renderWeeklyGoalsList } from '../goals/goals';
+import { renderDailyPlanPanel, selectActiveDay, hasDayPlanContent } from './dailyPlan';
 import { renderGarden } from './garden';
 import { renderMemoryBook } from './review';
 import { setupJournalPanel } from '../journal/journal';
@@ -45,8 +45,10 @@ export function initializeState(): void {
   const today = new Date();
   if (today.getFullYear() === state.currentYear && today.getMonth() === state.currentMonth) {
     state.selectedWeekIdx = Math.floor((today.getDate() - 1) / 7);
+    state.selectedDayIdx = today.getDate() - 1;
   } else {
     state.selectedWeekIdx = 0;
+    state.selectedDayIdx = 0;
   }
 }
 
@@ -285,7 +287,8 @@ export function renderAll(): void {
   // Render spreadsheet grid
   renderSpreadsheetGrid(stats.habitStats);
 
-  // Render Analysis Table
+  // Render Daily Plan Panel
+  renderDailyPlanPanel();
   renderAnalysisTable(stats.habitStats);
 
   // Render Leaderboard
@@ -302,16 +305,15 @@ export function renderAll(): void {
   renderGarden();
 
   // Draw Charts
+  // Draw Charts
   drawDailyProgressChart(stats.dailyCompletionRates);
   drawWeeklyProgressChart(stats.weeklyCompletionRates);
   drawOverallDonutChart(stats.completionRate, stats.totalCompleted, stats.totalLeft);
-  drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
 
   // Render Monthly Memory Book
   renderMemoryBook();
 
-  // Call registered listeners
-  renderListeners.forEach(listener => {
+    renderListeners.forEach(listener => {
     try {
       listener();
     } catch (e) {
@@ -410,11 +412,16 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
         : '';
       const headerTitle = state.currentLang === 'vi' ? 'Click để viết nhật ký ngày này' : 'Click to write diary for this day';
 
+      const planIndicator = hasDayPlanContent(d - 1)
+        ? `<div style="font-size: 8px; margin-top:-2px;" title="Có lịch trình riêng">📅</div>`
+        : '';
+      const selectedClass = (d - 1 === state.selectedDayIdx) ? ' selected-day-col' : '';
+
       html += `
-        <th class="${cellClass}" style="cursor:pointer;" data-day="${d - 1}" title="${headerTitle}">
+        <th class="${cellClass}${selectedClass}" style="cursor:pointer;" data-day="${d - 1}" title="${headerTitle}">
           <div>${dayName}</div>
           <div style="font-size: 11px; margin-top:2px; font-weight:700;">${d}</div>
-          ${journalIndicator}
+          ${journalIndicator}${planIndicator}
         </th>
       `;
     }
@@ -429,16 +436,7 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
       h.addEventListener('click', () => {
         if (!state.currentRecord) return;
         const dayIdx = parseInt(h.getAttribute('data-day') || '0');
-        const selectDay = document.getElementById('select-journal-day') as HTMLSelectElement;
-        const textarea = document.getElementById('textarea-journal') as HTMLTextAreaElement;
-
-        if (selectDay && textarea) {
-          selectDay.value = dayIdx.toString();
-          textarea.value = state.currentRecord.diary[dayIdx] || '';
-          
-          textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          textarea.focus();
-        }
+        selectActiveDay(dayIdx, true);
       });
     });
   }
@@ -475,43 +473,6 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
       html += `</tr>`;
     });
 
-    // 4. Render Mood Selector Row
-    const labelMood = state.currentLang === 'vi' ? 'Mood (Tâm trạng)' : 'Mood';
-    html += `<tr class="row-mental-state">`;
-    html += `<td class="col-mental-label">${labelMood}</td>`;
-    for (let d = startDay - 1; d < endDay; d++) {
-      const rating = state.currentRecord.mood[d] || 0;
-      html += `
-        <td class="cell-mental-state">
-          <select class="select-mental select-mood" data-day="${d}">
-            <option value="0">-</option>
-            ${Array.from({ length: 10 }, (_, i) => i + 1).map(num => `
-              <option value="${num}" ${rating === num ? 'selected' : ''}>${num}</option>
-            `).join('')}
-          </select>
-        </td>
-      `;
-    }
-    html += `</tr>`;
-
-    // 5. Render Motivation Selector Row
-    const labelMot = state.currentLang === 'vi' ? 'Motivation (Động lực)' : 'Motivation';
-    html += `<tr class="row-mental-state">`;
-    html += `<td class="col-mental-label">${labelMot}</td>`;
-    for (let d = startDay - 1; d < endDay; d++) {
-      const rating = state.currentRecord.motivation[d] || 0;
-      html += `
-        <td class="cell-mental-state">
-          <select class="select-mental select-motivation" data-day="${d}">
-            <option value="0">-</option>
-            ${Array.from({ length: 10 }, (_, i) => i + 1).map(num => `
-              <option value="${num}" ${rating === num ? 'selected' : ''}>${num}</option>
-            `).join('')}
-          </select>
-        </td>
-      `;
-    }
-    html += `</tr>`;
 
     gridBody.innerHTML = html;
 
@@ -574,31 +535,6 @@ export function renderSpreadsheetGrid(habitStats: HabitStats[]): void {
       });
     });
 
-    // Attach Mood select events
-    const moodSelects = gridBody.querySelectorAll('.select-mood');
-    moodSelects.forEach(select => {
-      select.addEventListener('change', (e) => {
-        if (!state.currentUser || !state.currentRecord) return;
-        const el = e.target as HTMLSelectElement;
-        const day = parseInt(el.getAttribute('data-day') || '0');
-        state.currentRecord.mood[day] = parseInt(el.value);
-        saveRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.currentRecord);
-        drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
-      });
-    });
-
-    // Attach Motivation select events
-    const motSelects = gridBody.querySelectorAll('.select-motivation');
-    motSelects.forEach(select => {
-      select.addEventListener('change', (e) => {
-        if (!state.currentUser || !state.currentRecord) return;
-        const el = e.target as HTMLSelectElement;
-        const day = parseInt(el.getAttribute('data-day') || '0');
-        state.currentRecord.motivation[day] = parseInt(el.value);
-        saveRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.currentRecord);
-        drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
-      });
-    });
   }
 }
 
@@ -745,6 +681,8 @@ export function initTracker(): void {
         state.currentRecord.weeklyGoals = [];
         state.currentRecord.wateredDays = [];
         state.currentRecord.notes = {};
+        state.currentRecord.dailyPlans = {};
+        state.currentRecord.weeklyFocus = {};
         state.currentRecord.monthlyReview = undefined;
 
         saveRecord(state.currentUser.username, state.currentYear, state.currentMonth, state.currentRecord);
@@ -783,7 +721,6 @@ export function initTracker(): void {
       drawDailyProgressChart(stats.dailyCompletionRates);
       drawWeeklyProgressChart(stats.weeklyCompletionRates);
       drawOverallDonutChart(stats.completionRate, stats.totalCompleted, stats.totalLeft);
-      drawMoodMotivationTrendChart(state.currentYear, state.currentMonth, state.currentRecord);
     }
   });
 }

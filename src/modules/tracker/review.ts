@@ -1,4 +1,4 @@
-import { state } from '../common/state';
+﻿import { state } from '../common/state';
 import { getDaysInMonth, MONTH_NAMES } from '../../utils/calendar';
 import { saveRecord } from '../../services/storage';
 import { calculateStreak, calculateStats } from './tracker';
@@ -96,12 +96,6 @@ export function openReviewModal(): void {
   // Calculate statistics for Step 1
   const stats = calculateStats();
   const daysCount = getDaysInMonth(state.currentYear, state.currentMonth);
-  const mood = state.currentRecord.mood || [];
-
-  // Mood average calculation
-  const validMoods = mood.filter(v => v > 0);
-  const avgMood = validMoods.length > 0 ? (validMoods.reduce((a, b) => a + b, 0) / validMoods.length).toFixed(1) : '---';
-
   // Best habit spotlight
   let bestHabitName = '---';
   let bestHabitRate = -1;
@@ -123,7 +117,6 @@ export function openReviewModal(): void {
   const step1Stats = modal.querySelector('.review-stats-summary');
   if (step1Stats) {
     const labelRate = state.currentLang === 'vi' ? 'Tỉ lệ hoàn thành thói quen:' : 'Habit Completion Rate:';
-    const labelMood = state.currentLang === 'vi' ? 'Tâm trạng trung bình:' : 'Average Mood Score:';
     const labelBest = state.currentLang === 'vi' ? 'Thói quen tốt nhất:' : 'Consistency Champ:';
     const labelStreak = state.currentLang === 'vi' ? 'Chuỗi hoàn thành dài nhất:' : 'Longest Streak:';
 
@@ -131,10 +124,6 @@ export function openReviewModal(): void {
       <div style="background:var(--bg-widget); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px; text-align:center;">
         <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">${labelRate}</div>
         <div style="font-size:24px; font-weight:700; color:var(--accent-green); margin-top:4px;">${Math.round(stats.completionRate)}%</div>
-      </div>
-      <div style="background:var(--bg-widget); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px; text-align:center;">
-        <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase;">${labelMood}</div>
-        <div style="font-size:24px; font-weight:700; color:var(--accent-orange); margin-top:4px;">🎭 ${avgMood}</div>
       </div>
       <div style="background:var(--bg-widget); border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:10px; text-align:center; grid-column:1/-1;">
         <div style="font-size:11px; color:var(--text-muted); text-transform:uppercase; margin-bottom:4px;">${labelBest}</div>
@@ -190,9 +179,6 @@ export function renderMemoryBook(): void {
 
   // If monthly review completed, render polaroid card
   const stats = calculateStats();
-  const mood = state.currentRecord.mood || [];
-  const validMoods = mood.filter(v => v > 0);
-  const avgMood = validMoods.length > 0 ? (validMoods.reduce((a, b) => a + b, 0) / validMoods.length).toFixed(1) : '---';
 
   const labelQ1 = lang === 'vi' ? '🌟 Tự hào nhất:' : '🌟 Most Proud Of:';
   const labelQ2 = lang === 'vi' ? '📖 Bài học lớn:' : '📖 Biggest Lesson:';
@@ -217,10 +203,6 @@ export function renderMemoryBook(): void {
           <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
             <span>🎯 Thói quen đạt:</span>
             <strong style="color:var(--accent-green); font-size:14px;">${Math.round(stats.completionRate)}%</strong>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
-            <span>🎭 Tâm trạng tb:</span>
-            <strong style="color:var(--accent-orange); font-size:14px;">${avgMood}</strong>
           </div>
           <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px;">
             <span>💧 Số ngày tưới cây:</span>

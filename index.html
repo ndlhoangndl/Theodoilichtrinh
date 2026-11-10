@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -61,11 +61,6 @@
               🛠️ <span data-i18n="menu_trigger">Menu</span> ▾
             </button>
             <div class="menu-dropdown-content" id="menu-dropdown-content">
-              <button class="menu-item active" id="menu-tab-tracker" data-i18n="tab_tracker">📅 Lịch Trình</button>
-              <button class="menu-item" id="menu-tab-stats" data-i18n="tab_stats">📊 Thống Kê</button>
-              <button class="menu-item" id="menu-tab-profile" data-i18n="tab_profile">👤 Cá Nhân</button>
-              <a href="/calendar.html" class="menu-item" style="text-decoration: none; display: flex; align-items: center; gap: 4px; color: inherit;">📅 Lịch lớp học (Outlook)</a>
-              <div class="menu-divider"></div>
               <button class="menu-item btn-danger-text" id="btn-reset-data" title="Xóa dữ liệu thói quen của tháng hiện tại" data-i18n-title="btn_reset_title" data-i18n="btn_reset">🗑️ Xóa dữ liệu tháng</button>
             </div>
           </div>
@@ -73,11 +68,17 @@
       </div>
     </header>
 
-    <!-- Main Tracker View Tab (Lịch Trình) -->
-    <div id="view-tracker" class="tab-view active" style="display: flex; flex-direction: column; gap: 20px;">
-      <section class="dashboard-grid">
-        <!-- Main Column: Habit Sheet & Reflections -->
-        <div class="main-column">
+    <!-- Main Navigation Tabs -->
+    <nav class="main-tabs" id="main-tabs">
+      <button type="button" class="main-tab-btn active" data-view="view-tracker">📅 Hôm nay</button>
+      <button type="button" class="main-tab-btn" data-view="view-goals">🎯 Mục tiêu</button>
+      <button type="button" class="main-tab-btn" data-view="view-journal">📔 Nhật ký</button>
+      <button type="button" class="main-tab-btn" data-view="view-habits">🌱 Thói quen</button>
+      <button type="button" class="main-tab-btn" data-view="view-stats">📊 Thống kê</button>
+    </nav>
+
+    <!-- Tab: Hôm nay (Bảng thói quen + Lịch trình theo ngày) -->
+    <div id="view-tracker" class="tab-view active" style="display: flex; flex-direction: column; gap: 16px;">
           <!-- Habit sheet grid -->
           <div class="panel">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;">
@@ -147,6 +148,114 @@
             </div>
           </div>
 
+          <!-- Daily Planner Panel -->
+          <div class="panel" id="panel-daily-planner" style="margin-top:12px;">
+            <div class="panel-header" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;">
+              <span data-i18n="panel_daily_plan">Lịch Trình & Mục Tiêu Theo Ngày</span>
+              <div style="display:flex; align-items:center; gap:4px;">
+                <button class="btn btn-icon" id="btn-daily-prev" title="Ngày trước" style="padding:4px;">◀</button>
+                <select id="select-daily-plan-day" class="btn" style="padding:4px 8px; font-size:12px;"></select>
+                <button class="btn btn-icon" id="btn-daily-next" title="Ngày sau" style="padding:4px;">▶</button>
+                <button class="btn" id="btn-daily-today" title="Hôm nay" style="padding:4px 8px;">📅 Hôm nay</button>
+                <button class="btn" id="btn-copy-prev-day-schedule" title="Sao chép lịch từ ngày trước" style="padding:4px 8px;">📋 Sao chép ngày trước</button>
+              </div>
+              <span id="daily-plan-context-badge" style="font-size:11px; color:var(--text-muted);"></span>
+            </div>
+            <div class="panel-content" style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; align-items:center; gap:6px;">
+                <label for="input-daily-focus" style="font-weight:600;">Focus ngày:</label>
+                <input type="text" id="input-daily-focus" class="form-control" placeholder="Mục tiêu chính của ngày..." style="flex:1; min-width:0;" />
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:16px;">
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span>⏰ Khung giờ</span>
+                    <span id="daily-timeblocks-ratio" style="font-size:12px; color:var(--text-muted);"></span>
+                  </div>
+                  <form id="form-add-timeblock" style="display:grid; grid-template-columns: 1fr 1fr 1.4fr; gap:6px; margin-bottom:8px;">
+                    <input type="time" id="input-tb-start" class="form-control" required title="Bắt đầu" style="min-width:0;" />
+                    <input type="time" id="input-tb-end" class="form-control" required title="Kết thúc" style="min-width:0;" />
+                    <select id="select-tb-category" class="form-control" required title="Loại" style="min-width:0;">
+                      <option value="work">💼 Công việc</option>
+                      <option value="study">📚 Học tập</option>
+                      <option value="health">💪 Sức khỏe</option>
+                      <option value="personal">👤 Cá nhân</option>
+                    </select>
+                    <input type="text" id="input-tb-title" class="form-control" placeholder="Tiêu đề (vd: Học tiếng Nhật)" required style="grid-column: 1 / 3; min-width:0;" />
+                    <button type="submit" class="btn btn-primary" title="Thêm khung giờ" style="justify-content:center;">+ Thêm</button>
+                  </form>
+                  <div id="daily-timeblocks-list" style="display:flex; flex-direction:column; gap:4px;"></div>
+                </div>
+                <div>
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                    <span>🎯 Mục tiêu ngày</span>
+                    <span id="daily-goals-progress-ratio" style="font-size:12px; color:var(--text-muted);"></span>
+                  </div>
+                  <form id="form-add-daily-goal" style="display:flex; gap:4px; margin-bottom:6px;">
+                    <input type="text" id="input-new-daily-goal" class="form-control" placeholder="Mục tiêu mới..." required />
+                    <button type="submit" class="btn btn-primary" title="Thêm mục tiêu">+</button>
+                  </form>
+                  <div id="daily-goals-list-container" style="display:flex; flex-direction:column; gap:4px;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+
+    <!-- Tab: Mục tiêu -->
+    <div id="view-goals" class="tab-view" style="display: none; flex-direction: column; gap: 16px; max-width: 720px; margin: 0 auto; width: 100%;">
+          <!-- Merged Goals Checklist Panel -->
+          <div class="panel" id="panel-goals-tabbed">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+              <span data-i18n="panel_goals">Mục tiêu</span>
+              <div class="goals-tab-buttons" style="display: flex; gap: 4px; background: rgba(0,0,0,0.15); padding: 2px; border-radius: 6px;">
+                <button type="button" class="goals-tab-btn active" id="goals-tab-btn-month" style="font-size: 11px; padding: 3px 8px; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.2s;">Tháng</button>
+                <button type="button" class="goals-tab-btn" id="goals-tab-btn-week" style="font-size: 11px; padding: 3px 8px; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.2s;">Tuần</button>
+              </div>
+            </div>
+            
+            <div class="panel-content" style="padding: 14px;">
+              <!-- Month Goals Sub-view -->
+              <div id="goals-subview-month" style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);" data-i18n="panel_monthly_goals_subtitle">Mục tiêu trong tháng</span>
+                  <span id="goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
+                </div>
+                <form id="form-add-goal" style="display:flex; gap:6px;">
+                  <input type="text" id="input-new-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tháng..." data-i18n-placeholder="goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
+                  <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
+                </form>
+                <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
+                  <!-- Generated by JS -->
+                </div>
+              </div>
+
+              <!-- Week Goals Sub-view -->
+              <div id="goals-subview-week" style="display: none; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                  <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);" data-i18n="panel_weekly_goals_subtitle">Mục tiêu trong tuần</span>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <select id="select-goal-week" style="font-size: 11px; padding: 3px 6px; border-radius: var(--radius-sm); border: none; background: var(--bg-selected); color: var(--text-main); font-weight: 600; outline: none; cursor: pointer;">
+                      <!-- Options generated dynamically by JS -->
+                    </select>
+                    <span id="weekly-goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
+                  </div>
+                </div>
+                <input type="text" id="input-weekly-focus" class="form-control" placeholder="🎯 Trọng tâm của tuần này..." style="padding:6px 10px; font-size:12px;" autocomplete="off">
+                <form id="form-add-weekly-goal" style="display:flex; gap:6px;">
+                  <input type="text" id="input-new-weekly-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tuần..." data-i18n-placeholder="weekly_goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
+                  <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
+                </form>
+                <div id="weekly-goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
+                  <!-- Generated by JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
+
+    <!-- Tab: Nhật ký -->
+    <div id="view-journal" class="tab-view" style="display: none; flex-direction: column; gap: 16px;">
           <!-- Daily Journal Reflections -->
           <div class="panel">
             <div class="panel-header">
@@ -173,6 +282,22 @@
             </div>
           </div>
 
+          <!-- Memory Book / Monthly Review Panel -->
+          <div class="panel memory-panel" style="margin-top: 20px;">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <span data-i18n="panel_memory_book">📖 Cuốn Sách Kỷ Niệm (Monthly Reviews)</span>
+              <button class="btn btn-sm" id="btn-open-monthly-review" style="font-size: 11px; padding: 4px 10px; height: auto;">✍️ Viết Nhìn Lại</button>
+            </div>
+            <div class="panel-content">
+              <div class="memory-cards-grid" id="memory-cards-list">
+                <!-- Polaroid cards generated by JS -->
+              </div>
+            </div>
+          </div>
+    </div>
+
+    <!-- Tab: Thói quen (Quản lý + Khu vườn) -->
+    <div id="view-habits" class="tab-view" style="display: none; flex-direction: column; gap: 16px;">
           <!-- Panel: Quản lý thói quen (Cấu hình) -->
           <div class="panel" id="panel-manage-habits" style="scroll-margin-top: 20px;">
             <div class="panel-header">
@@ -213,10 +338,7 @@
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Sidebar Column: Goals & Leaderboard -->
-        <div class="sidebar-column">
           <!-- Habit Garden Panel -->
           <div class="panel" id="panel-habit-garden">
             <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
@@ -246,56 +368,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Merged Goals Checklist Panel -->
-          <div class="panel" id="panel-goals-tabbed">
-            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-              <span data-i18n="panel_goals">Mục tiêu</span>
-              <div class="goals-tab-buttons" style="display: flex; gap: 4px; background: rgba(0,0,0,0.15); padding: 2px; border-radius: 6px;">
-                <button type="button" class="goals-tab-btn active" id="goals-tab-btn-month" style="font-size: 11px; padding: 3px 8px; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.2s;">Tháng</button>
-                <button type="button" class="goals-tab-btn" id="goals-tab-btn-week" style="font-size: 11px; padding: 3px 8px; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.2s;">Tuần</button>
-              </div>
-            </div>
-            
-            <div class="panel-content" style="padding: 14px;">
-              <!-- Month Goals Sub-view -->
-              <div id="goals-subview-month" style="display: flex; flex-direction: column; gap: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);" data-i18n="panel_monthly_goals_subtitle">Mục tiêu trong tháng</span>
-                  <span id="goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
-                </div>
-                <form id="form-add-goal" style="display:flex; gap:6px;">
-                  <input type="text" id="input-new-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tháng..." data-i18n-placeholder="goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
-                  <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
-                </form>
-                <div id="goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
-                  <!-- Generated by JS -->
-                </div>
-              </div>
-
-              <!-- Week Goals Sub-view -->
-              <div id="goals-subview-week" style="display: none; flex-direction: column; gap: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                  <span style="font-size: 12px; font-weight: 600; color: var(--text-muted);" data-i18n="panel_weekly_goals_subtitle">Mục tiêu trong tuần</span>
-                  <div style="display: flex; align-items: center; gap: 6px;">
-                    <select id="select-goal-week" style="font-size: 11px; padding: 3px 6px; border-radius: var(--radius-sm); border: none; background: var(--bg-selected); color: var(--text-main); font-weight: 600; outline: none; cursor: pointer;">
-                      <!-- Options generated dynamically by JS -->
-                    </select>
-                    <span id="weekly-goals-progress-ratio" style="font-size:11px; text-transform:none; font-weight:normal; background:var(--accent-green); color:var(--text-light); padding:2px 6px; border-radius:10px;">0/0</span>
-                  </div>
-                </div>
-                <form id="form-add-weekly-goal" style="display:flex; gap:6px;">
-                  <input type="text" id="input-new-weekly-goal" class="form-control" placeholder="Đặt mục tiêu mới cho tuần..." data-i18n-placeholder="weekly_goals_input_placeholder" style="padding:6px 10px; font-size:12px;" required autocomplete="off">
-                  <button type="submit" class="btn btn-primary" style="padding:4px 10px; font-size:12px;">+</button>
-                </form>
-                <div id="weekly-goals-list-container" style="display:flex; flex-direction:column; gap:8px; max-height:180px; overflow-y:auto; padding-right:4px;">
-                  <!-- Generated by JS -->
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
 
     <!-- Statistics View Tab (Thống Kê) -->
@@ -362,37 +434,7 @@
         </div>
       </section>
 
-      <section class="dashboard-grid">
-        <!-- Main Column: Mood & Motivation Correlation -->
-        <div class="main-column">
-          <!-- Mood & Motivation correlation line chart -->
-          <div class="panel trend-panel">
-            <div class="panel-header">
-              <span data-i18n="panel_trend">Biểu Đồ Xu Hướng Trạng Thái Tinh Thần (Mood & Motivation)</span>
-            </div>
-            <div class="panel-content">
-              <div class="trend-chart-container">
-                <svg class="chart-svg" id="trend-chart-svg"></svg>
-              </div>
-            </div>
-          </div>
-
-          <!-- Memory Book / Monthly Review Panel -->
-          <div class="panel memory-panel" style="margin-top: 20px;">
-            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center;">
-              <span data-i18n="panel_memory_book">📖 Cuốn Sách Kỷ Niệm (Monthly Reviews)</span>
-              <button class="btn btn-sm" id="btn-open-monthly-review" style="font-size: 11px; padding: 4px 10px; height: auto;">✍️ Viết Nhìn Lại</button>
-            </div>
-            <div class="panel-content">
-              <div class="memory-cards-grid" id="memory-cards-list">
-                <!-- Polaroid cards generated by JS -->
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sidebar Column: Detailed Performance Analysis -->
-        <div class="sidebar-column">
+      <section style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
           <!-- Analysis Table -->
           <div class="panel">
             <div class="panel-header">
@@ -429,106 +471,9 @@
               </div>
             </div>
           </div>
-        </div>
       </section>
     </div> <!-- Close view-stats -->
 
-    <div id="view-profile" class="tab-view" style="display: none;">
-      <div class="profile-layout fade-in">
-        <!-- Top Row: Account Card & Profile Actions Card -->
-        <div class="profile-top-row">
-          <!-- Left side: Account Banner Card -->
-          <div class="panel profile-panel-left">
-            <div class="panel-header">
-              <span data-i18n="profile_title_banner">Trạng thái tài khoản</span>
-            </div>
-            <div class="panel-content profile-banner-content">
-              <div class="profile-avatar-frame" id="profile-avatar-container">
-                <span id="profile-avatar-display">👤</span>
-              </div>
-              <div class="profile-meta-info">
-                <span class="profile-badge-tag">PERSONAL WORKSPACE</span>
-                <h2 id="profile-fullname-display" class="profile-large-name">Nguyễn Đăng Lê Hoàng</h2>
-                <p class="profile-handles">
-                  <span id="profile-username-handle">@ndlhoangndl</span> • <span id="profile-email-handle">ndlhoangndl@gmail.com</span>
-                </p>
-                <div class="profile-bio-box">
-                  <p id="profile-bio-display">Đây là không gian dành riêng cho bạn. Nơi lưu giữ những thông tin cá nhân cơ bản và định hình trải nghiệm lịch trình của bạn.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right side: Custom Actions Card -->
-          <div class="panel profile-panel-right">
-            <div class="panel-header">
-              <span data-i18n="profile_title_settings">Settings & Actions</span>
-            </div>
-            <div class="panel-content profile-actions-content">
-              <h3 class="profile-settings-title" data-i18n="profile_custom_title">Tuỳ chỉnh hồ sơ</h3>
-              <div class="profile-buttons-list">
-                <button class="btn btn-profile-action" id="btn-edit-profile-trigger">
-                  <span>📝</span> <span data-i18n="profile_btn_update_info">Cập nhật thông tin cơ bản</span>
-                </button>
-                <button class="btn btn-profile-action" id="btn-edit-password-trigger">
-                  <span>🔑</span> <span data-i18n="profile_btn_change_password">Đổi mật khẩu</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- Bottom Row: Overview Cards Grid -->
-        <div class="profile-overview-section">
-          <h4 class="profile-overview-title" data-i18n="profile_overview_details">Overview Details</h4>
-          <div class="profile-grid">
-            <!-- Card 1: Account -->
-            <div class="profile-grid-card">
-              <div class="profile-card-header">
-                <span>👤</span> <span data-i18n="profile_card_account">ACCOUNT</span>
-              </div>
-              <div class="profile-card-value" id="profile-card-val-username">ndlhoangndl</div>
-            </div>
-            <!-- Card 2: Email -->
-            <div class="profile-grid-card">
-              <div class="profile-card-header">
-                <span>✉️</span> <span data-i18n="profile_card_email">EMAIL</span>
-              </div>
-              <div class="profile-card-value" id="profile-card-val-email">ndlhoangndl@gmail.com</div>
-            </div>
-            <!-- Card 3: Gender -->
-            <div class="profile-grid-card">
-              <div class="profile-card-header">
-                <span>💚</span> <span data-i18n="profile_card_gender">GIỚI TÍNH</span>
-              </div>
-              <div class="profile-card-value" id="profile-card-val-gender">Nam</div>
-            </div>
-            <!-- Card 4: Country -->
-            <div class="profile-grid-card">
-              <div class="profile-card-header">
-                <span>🌐</span> <span data-i18n="profile_card_country">QUỐC GIA</span>
-              </div>
-              <div class="profile-card-value" id="profile-card-val-country">Vietnam</div>
-            </div>
-            <!-- Card 5: Day of Birth -->
-            <div class="profile-grid-card">
-              <div class="profile-card-header">
-                <span>📅</span> <span data-i18n="profile_card_dob">NGÀY SINH</span>
-              </div>
-              <div class="profile-card-value" id="profile-card-val-dob">1998-05-15</div>
-            </div>
-            <!-- Card 6: Role -->
-            <div class="profile-grid-card">
-              <div class="profile-card-header">
-                <span>🛡️</span> <span data-i18n="profile_card_role">VAI TRÒ HỆ THỐNG</span>
-              </div>
-              <div class="profile-card-value" id="profile-card-val-role">CHỦ SỞ HỮU</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -546,164 +491,6 @@
     <div class="modal-footer" style="justify-content: center; gap: 16px; padding: 12px 24px;">
       <button class="btn" id="confirm-btn-no" style="min-width: 100px;">Không</button>
       <button class="btn btn-primary" id="confirm-btn-yes" style="min-width: 100px; background-color: #a94442; border-color: #903a3a; color: white;">Có</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Cập nhật thông tin cơ bản -->
-<div class="modal" id="modal-edit-profile">
-  <div class="modal-content" style="max-width: 450px;">
-    <div class="modal-header">
-      <h3 data-i18n="modal_edit_profile_title">Cập nhật thông tin cá nhân</h3>
-      <button class="btn btn-icon modal-close-trigger" style="border:none; background:transparent; font-size:16px;">✕</button>
-    </div>
-    <div class="modal-body">
-      <form id="form-edit-profile">
-        <div class="form-group">
-          <label for="edit-profile-fullname" data-i18n="fullname">Họ và tên</label>
-          <input type="text" id="edit-profile-fullname" class="form-control" required autocomplete="name">
-        </div>
-        <div class="form-group">
-          <label for="edit-profile-email" data-i18n="email">Địa chỉ Email</label>
-          <input type="email" id="edit-profile-email" class="form-control" required autocomplete="email">
-        </div>
-        <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-          <div style="flex: 1;">
-            <label for="edit-profile-gender" style="display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;" data-i18n="gender">Giới tính</label>
-            <select id="edit-profile-gender" class="form-control" style="cursor:pointer; height:38px;">
-              <option value="male" data-i18n="gender_male">Nam</option>
-              <option value="female" data-i18n="gender_female">Nữ</option>
-              <option value="other" data-i18n="gender_other">Khác</option>
-            </select>
-          </div>
-          <div style="flex: 1;">
-            <label for="edit-profile-dob" style="display:block; font-size:13px; font-weight:600; color:var(--text-muted); margin-bottom:6px;" data-i18n="dob">Ngày sinh</label>
-            <input type="date" id="edit-profile-dob" class="form-control" style="height:38px;">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="edit-profile-country" data-i18n="profile_card_country">Quốc gia</label>
-          <input type="text" id="edit-profile-country" class="form-control" autocomplete="country">
-        </div>
-        <div class="form-group">
-          <label for="edit-profile-bio" data-i18n="profile_label_bio">Giới thiệu bản thân (Bio)</label>
-          <textarea id="edit-profile-bio" class="form-control" rows="3" style="resize: vertical; font-family:var(--font-body); font-size:13px;"></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" style="display: flex !important; margin: 20px auto 0 auto !important; min-width: 160px; height:38px; justify-content: center; align-items: center;" data-i18n="modal_btn_update">Cập nhật</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Tùy chỉnh ảnh đại diện -->
-<div class="modal" id="modal-avatar-customizer">
-  <div class="modal-content" style="max-width: 450px;">
-    <div class="modal-header">
-      <h3 data-i18n="modal_avatar_title">Tùy chỉnh ảnh đại diện</h3>
-      <button class="btn btn-icon modal-close-trigger" style="border:none; background:transparent; font-size:16px;">✕</button>
-    </div>
-    <div class="modal-body" style="display: flex; flex-direction: column; gap: 20px; align-items: center;">
-      <!-- Avatar Preview -->
-      <div class="avatar-preview-container" id="avatar-preview-box" style="position: relative; width: 140px; height: 140px; border-radius: var(--radius-lg); border: 3px solid var(--accent-brown); display: flex; align-items: center; justify-content: center; background: var(--bg-selected); overflow: hidden; font-size: 60px;">
-        <span id="customizer-avatar-preview">👤</span>
-      </div>
-      
-      <!-- Option Tabs or Sections -->
-      <div style="width: 100%; display: flex; flex-direction: column; gap: 16px;">
-        
-        <!-- Predefined Gallery -->
-        <div>
-          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;" data-i18n="avatar_gallery_label">Chọn từ thư viện biểu tượng</label>
-          <div class="avatar-emoji-grid" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;">
-            <div class="emoji-option" data-emoji="🦊">🦊</div>
-            <div class="emoji-option" data-emoji="🦁">🦁</div>
-            <div class="emoji-option" data-emoji="🐼">🐼</div>
-            <div class="emoji-option" data-emoji="🐨">🐨</div>
-            <div class="emoji-option" data-emoji="🐱">🐱</div>
-            <div class="emoji-option" data-emoji="🐶">🐶</div>
-            <div class="emoji-option" data-emoji="🦄">🦄</div>
-            <div class="emoji-option" data-emoji="☕">☕</div>
-            <div class="emoji-option" data-emoji="🌟">🌟</div>
-            <div class="emoji-option" data-emoji="💻">💻</div>
-            <div class="emoji-option" data-emoji="🎯">🎯</div>
-            <div class="emoji-option" data-emoji="🚀">🚀</div>
-          </div>
-        </div>
-
-        <!-- Initials Gradient Generator -->
-        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;" data-i18n="avatar_initials_label">Tạo avatar theo tên viết tắt</label>
-          <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center;">
-            <span style="font-size: 11px; color: var(--text-muted);" data-i18n="avatar_initials_desc">Tự động tạo ảnh đại diện từ tên viết tắt của bạn trên nền gradient.</span>
-            <button type="button" class="btn" id="btn-generate-initials" style="font-size: 12px; padding: 6px 12px;" data-i18n="avatar_btn_generate">Tạo ảnh</button>
-          </div>
-        </div>
-
-        <!-- File Upload -->
-        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
-          <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;" data-i18n="avatar_upload_label">Tải lên ảnh từ thiết bị</label>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <input type="file" id="input-avatar-file" accept="image/*" style="display: none;">
-            <button type="button" class="btn" id="btn-trigger-file-input" style="width: 100%; justify-content: center; height: 38px;">
-              <span>📁</span> <span data-i18n="avatar_btn_choose_file">Chọn tệp ảnh...</span>
-            </button>
-            <span id="avatar-file-name" style="font-size: 11px; color: var(--text-muted); text-align: center; display: none;"></span>
-          </div>
-        </div>
-        
-      </div>
-
-      <!-- Action Buttons -->
-      <div style="display: flex; gap: 12px; width: 100%; margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 16px;">
-        <button type="button" class="btn modal-close-trigger" style="flex: 1; justify-content: center; height: 38px;" data-i18n="btn_cancel">Hủy</button>
-        <button type="button" class="btn btn-primary" id="btn-save-avatar" style="flex: 1; justify-content: center; height: 38px;" data-i18n="btn_save">Lưu</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Đổi mật khẩu -->
-<div class="modal" id="modal-edit-password">
-  <div class="modal-content" style="max-width: 400px;">
-    <div class="modal-header">
-      <h3 data-i18n="modal_edit_password_title">Đổi mật khẩu bảo mật</h3>
-      <button class="btn btn-icon modal-close-trigger" style="border:none; background:transparent; font-size:16px;">✕</button>
-    </div>
-    <div class="modal-body">
-      <form id="form-edit-password">
-        <div class="form-group">
-          <label for="edit-password-old" data-i18n="password_old">Mật khẩu cũ</label>
-          <div class="password-input-container">
-            <input type="password" id="edit-password-old" class="form-control" placeholder="Nhập mật khẩu hiện tại..." data-i18n-placeholder="password_old_placeholder" required autocomplete="current-password">
-            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="edit-password-new" data-i18n="password_new">Mật khẩu mới</label>
-          <div class="password-input-container">
-            <input type="password" id="edit-password-new" class="form-control" placeholder="Nhập mật khẩu mới..." data-i18n-placeholder="password_new_placeholder" required autocomplete="new-password">
-            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-            </button>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="edit-password-confirm" data-i18n="confirm_password">Xác nhận mật khẩu mới</label>
-          <div class="password-input-container">
-            <input type="password" id="edit-password-confirm" class="form-control" placeholder="Nhập lại mật khẩu mới..." data-i18n-placeholder="register_confirm_password_placeholder" required autocomplete="new-password">
-            <button type="button" class="password-toggle-btn" tabindex="-1" aria-label="Toggle Password Visibility">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-open"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eye-closed" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-            </button>
-          </div>
-        </div>
-        <div id="edit-password-error" class="auth-error-msg" style="display: none;"></div>
-        <button type="submit" class="btn btn-primary" style="display: flex !important; margin: 20px auto 0 auto !important; min-width: 180px; height:38px; justify-content: center; align-items: center;" data-i18n="modal_btn_change_password">Cập nhật mật khẩu</button>
-      </form>
     </div>
   </div>
 </div>
